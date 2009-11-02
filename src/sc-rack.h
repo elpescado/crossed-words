@@ -82,6 +82,16 @@ Alphabet *
 sc_rack_get_alphabet            (ScRack *rack);
 
 
+void
+sc_rack_remove_tile (ScRack *rack,
+                     LID     tile);
+
+
+void
+sc_rack_remove_tiles (ScRack *rack,
+                      LID    *tiles,
+                      gint    n_tiles);
+
 G_END_DECLS
 
 #endif

@@ -9,6 +9,7 @@
 
 #include <gtk/gtk.h>
 
+#include "common.h"
 #include "letter.h"
 #include "sc-rack.h"
 
@@ -206,7 +207,7 @@ sc_rack_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScRack* self = SC_RACK (object);
-	ScRackPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -220,7 +221,7 @@ sc_rack_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScRack* self = SC_RACK (object);
-	ScRackPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

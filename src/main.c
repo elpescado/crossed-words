@@ -12,13 +12,15 @@
 #include "scx-board-view.h"
 #include "scx-move-entry.h"
 #include "scx-rack-view.h"
+#include "scx-main-window.h"
 
 
 
 int main (int argc, char *argv[])
 {
-	GtkWidget *board_view;
 	GtkWidget *main_window;
+	/*
+	GtkWidget *board_view;
 	GtkWidget *move_entry;
 	GtkWidget *main_window2;
 	GtkWidget *main_window3;
@@ -31,6 +33,7 @@ int main (int argc, char *argv[])
 	ScBag     *bag;
 	ScPlayer  *p1;
 	ScPlayer  *p2;
+	*/
 
 	gtk_init (&argc, &argv);
 	srand (time (NULL));

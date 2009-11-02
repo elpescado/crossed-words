@@ -116,7 +116,7 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 		g_print ("move ok\n");
 
 		ctx->points += points;
-		if (needed_tiles == 7) {
+		if (n_needed_tiles == 7) {
 			ctx->points += BINGO_BONUS;
 		}
 

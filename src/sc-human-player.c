@@ -7,6 +7,8 @@
  */
 
 #include <gtk/gtk.h>
+
+#include "common.h"
 #include "sc-human-player.h"
 
 
@@ -74,7 +76,7 @@ sc_human_player_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScHumanPlayer* self = SC_HUMAN_PLAYER (object);
-	ScHumanPlayerPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -88,7 +90,7 @@ sc_human_player_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScHumanPlayer* self = SC_HUMAN_PLAYER (object);
-	ScHumanPlayerPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

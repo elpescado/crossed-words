@@ -7,6 +7,8 @@
  */
 
 #include <gtk/gtk.h>
+
+#include "common.h"
 #include "sc-player.h"
 
 #include "marshal.h"
@@ -103,7 +105,7 @@ sc_player_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScPlayer* self = SC_PLAYER (object);
-	ScPlayerPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -117,7 +119,7 @@ sc_player_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScPlayer* self = SC_PLAYER (object);
-	ScPlayerPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

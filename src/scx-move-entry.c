@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
+#include "common.h"
 #include "scx-move-entry.h"
 
 #define PIXMAP_PATH "../pixmaps/"
@@ -246,7 +247,7 @@ scx_move_entry_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScxMoveEntry* self = SCX_MOVE_ENTRY (object);
-	ScxMoveEntryPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -260,7 +261,7 @@ scx_move_entry_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScxMoveEntry* self = SCX_MOVE_ENTRY (object);
-	ScxMoveEntryPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

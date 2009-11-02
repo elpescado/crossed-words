@@ -6,6 +6,8 @@
  * 
  */
 
+#include <string.h>
+
 #include <gtk/gtk.h>
 #include "sc-board.h"
 
@@ -295,9 +297,7 @@ sc_board_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScBoard* self = SC_BOARD (object);
-	ScBoardPrivate* priv = self->priv;
-
-	G_UNUSED (priv);
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -311,9 +311,7 @@ sc_board_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScBoard* self = SC_BOARD (object);
-	ScBoardPrivate* priv = self->priv;
-
-	G_UNUSED (priv);
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

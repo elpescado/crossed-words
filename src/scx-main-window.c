@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 
+#include "common.h"
 #include "sc-game.h"
 #include "sc-human-player.h"
 
@@ -67,7 +68,7 @@ scx_main_window_move_activated (ScxMoveEntry  *entry,
                                 ScMoveType     move_type,
                                 ScxMainWindow *self);
 
-ScxMainWindow*
+GtkWidget*
 scx_main_window_new (void)
 {
 	ScxMainWindow *self = g_object_new (SCX_TYPE_MAIN_WINDOW, NULL);
@@ -391,7 +392,7 @@ scx_main_window_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScxMainWindow* self = SCX_MAIN_WINDOW (object);
-	ScxMainWindowPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -405,7 +406,7 @@ scx_main_window_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScxMainWindow* self = SCX_MAIN_WINDOW (object);
-	ScxMainWindowPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
