@@ -50,7 +50,7 @@ struct _ScxMainWindowClass
 GType
 scx_main_window_get_type				(void);
 
-ScxMainWindow*
+GtkWidget*
 scx_main_window_new				(void);
 
 

@@ -10,11 +10,11 @@
 
 #include <gtk/gtk.h>
 
+#include "common.h"
 #include "sc-move.h"
 #include "scx-board-view.h"
 #include "scx-painter.h"
 
-#include "common.h"
 
 
 G_DEFINE_TYPE (ScxBoardView, scx_board_view, GTK_TYPE_DRAWING_AREA)
@@ -364,9 +364,7 @@ scx_board_view_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScxBoardView* self = SCX_BOARD_VIEW (object);
-	ScxBoardViewPrivate* priv = self->priv;
-
-	G_UNUSED (priv);
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -380,9 +378,7 @@ scx_board_view_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScxBoardView* self = SCX_BOARD_VIEW (object);
-	ScxBoardViewPrivate* priv = self->priv;
-
-	G_UNUSED (priv);
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

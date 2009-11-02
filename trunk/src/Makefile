@@ -1,4 +1,4 @@
-CC=colorgcc
+CC=gcc
 REFERENCES=gtk+-2.0
 CFLAGS=-Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
@@ -12,6 +12,7 @@ PKG=$(PACKAGE)-$(VERSION)
 SOURCES=\
 	main.c \
 	alphabet.c \
+	compat.c \
 	letter.c \
 	marshal.c \
 	sc-bag.c \
@@ -31,6 +32,7 @@ SOURCES=\
 HEADERS=\
 	alphabet.h \
 	letter.h \
+	compat.h \
 	marshal.h \
 	sc-bag.h \
 	sc-board.h \

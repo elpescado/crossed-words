@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 
+#include "common.h"
 #include "sc-bag.h"
 
 
@@ -166,7 +167,7 @@ sc_bag_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScBag* self = SC_BAG (object);
-	ScBagPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -180,7 +181,7 @@ sc_bag_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScBag* self = SC_BAG (object);
-	ScBagPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

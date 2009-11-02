@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "common.h"
 #include "scx-rack-view.h"
 #include "scx-painter.h"
 
@@ -137,7 +138,7 @@ scx_rack_view_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScxRackView* self = SCX_RACK_VIEW (object);
-	ScxRackViewPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -151,7 +152,7 @@ scx_rack_view_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScxRackView* self = SCX_RACK_VIEW (object);
-	ScxRackViewPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:

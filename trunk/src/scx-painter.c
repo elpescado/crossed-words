@@ -7,6 +7,8 @@
  */
 
 #include <gtk/gtk.h>
+
+#include "common.h"
 #include "scx-painter.h"
 
 
@@ -158,7 +160,7 @@ scx_painter_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
 	ScxPainter* self = SCX_PAINTER (object);
-	ScxPainterPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
@@ -172,7 +174,7 @@ scx_painter_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
 	ScxPainter* self = SCX_PAINTER (object);
-	ScxPainterPrivate* priv = self->priv;
+	G_UNUSED (self);
 
 	switch (property_id) {
 		default:
