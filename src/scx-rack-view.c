@@ -45,7 +45,7 @@ scx_rack_view_new (void)
 
 	gtk_widget_set_size_request (GTK_WIDGET (self), min_width, min_height);
 
-	return self;
+	return GTK_WIDGET(self);
 }
 
 
@@ -81,9 +81,10 @@ scx_rack_view_set_rack (ScxRackView *self, ScRack *rack)
 }
 
 static gboolean
-scx_rack_view_expose_event (ScxRackView        *self,
+scx_rack_view_expose_event (GtkWidget          *widget,
                             GdkEventExpose     *event)
 {
+	ScxRackView        *self = SCX_RACK_VIEW (widget);
 	ScxRackViewPrivate *priv = self->priv;
 
 	if (priv->rack == NULL)

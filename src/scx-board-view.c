@@ -233,9 +233,10 @@ scx_board_view_draw_tile (ScxBoardView  *self,
 
 
 static gboolean
-scx_board_view_expose_event (ScxBoardView        *self,
+scx_board_view_expose_event (GtkWidget           *widget,
                              GdkEventExpose      *event)
 {
+	ScxBoardView *self = SCX_BOARD_VIEW (widget);
 	ScxBoardViewPrivate *priv = self->priv;
 	g_print ("Expose!!!\n");
 	
@@ -283,8 +284,8 @@ scx_board_view_expose_event (ScxBoardView        *self,
 	/* Draw tiles */
 	for (i = 0; i < 15; i++) {
 		for (j = 0; j < 15; j++) {
-			int x = ox + i * (TILE_SIZE + TILE_SPACING);
-			int y = oy + j * (TILE_SIZE + TILE_SPACING);
+			//int x = ox + i * (TILE_SIZE + TILE_SPACING);
+			//int y = oy + j * (TILE_SIZE + TILE_SPACING);
 
 			Letter *l = sc_board_get_letter (priv->board, i, j);
 
@@ -301,8 +302,8 @@ scx_board_view_expose_event (ScxBoardView        *self,
 		int k;
 
 		for (k = 0, i = priv->move.x, j = priv->move.y ; k < priv->move.n_letters; k++, i += di, j += dj) {
-			int x = ox + i * (TILE_SIZE + TILE_SPACING);
-			int y = oy + j * (TILE_SIZE + TILE_SPACING);
+			//int x = ox + i * (TILE_SIZE + TILE_SPACING);
+			//int y = oy + j * (TILE_SIZE + TILE_SPACING);
 
 			Letter *l = alphabet_lookup_letter (sc_board_get_alphabet (priv->board), priv->move.letters[k]);
 			if (l && sc_board_get_letter (priv->board, i, j) == NULL) {

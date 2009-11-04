@@ -34,7 +34,7 @@ GtkWidget*
 scx_alphabet_panel_new (void)
 {
 	ScxAlphabetPanel *self = g_object_new (SCX_TYPE_ALPHABET_PANEL, NULL);
-	return self;
+	return GTK_WIDGET(self);
 }
 
 
@@ -43,7 +43,7 @@ scx_alphabet_panel_init_gui (ScxAlphabetPanel *self)
 {
 	ScxAlphabetPanelPrivate *priv = self->priv;
 
-	priv->model = gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	priv->model = GTK_TREE_MODEL (gtk_list_store_new (3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING));
 
 	GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

@@ -72,7 +72,7 @@ GtkWidget*
 scx_main_window_new (void)
 {
 	ScxMainWindow *self = g_object_new (SCX_TYPE_MAIN_WINDOW, NULL);
-	return self;
+	return GTK_WIDGET (self);
 }
 
 	
@@ -84,7 +84,7 @@ _action_game_new  (GtkAction     *action,
                    ScxMainWindow *self)
 {
 	ScxMainWindowPrivate *priv = self->priv;
-	ScMove     move;
+	//ScMove     move;
 
 	priv->game = sc_game_new ();
 
@@ -299,7 +299,7 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 	scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), NULL);
 
 	ScRack *rack = sc_game_get_players_rack (priv->game, player);
-	scx_rack_view_set_rack (priv->rack_view, rack);
+	scx_rack_view_set_rack (SCX_RACK_VIEW(priv->rack_view), rack);
 	g_object_unref (rack);
 }
 

@@ -65,7 +65,7 @@ void
 sc_game_set_player (ScGame *self, gint num, ScPlayer *player);
 
 
-ScGame *
+ScBoard *
 sc_game_get_board (ScGame *self);
 
 

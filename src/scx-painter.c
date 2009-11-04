@@ -51,9 +51,6 @@ scx_painter_init (ScxPainter *self)
 	ScxPainterPrivate *priv = self->priv;
 
 	priv->disposed = FALSE;
-
-	GdkColor color;
-
 }
 
 static void

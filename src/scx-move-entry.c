@@ -68,7 +68,7 @@ GtkWidget*
 scx_move_entry_new (void)
 {
 	ScxMoveEntry *self = g_object_new (SCX_TYPE_MOVE_ENTRY, NULL);
-	return self;
+	return GTK_WIDGET(self);
 }
 
 
@@ -169,13 +169,13 @@ scx_move_entry_button_clicked (GtkButton    *button,
 
 	ScMoveType type;
 
-	if (button == priv->ok_button) {
+	if ((void*)button == (void*)priv->ok_button) {
 		type = SC_MOVE_TYPE_MOVE;
 		g_print ("OK\n");
-	} else if (button == priv->exchange_button) {
+	} else if ((void*)button == (void*)priv->exchange_button) {
 		type = SC_MOVE_TYPE_EXCHANGE;
 		g_print ("Exchange\n");
-	} else if (button == priv->pass_button) {
+	} else if ((void*)button == (void*)priv->pass_button) {
 		type = SC_MOVE_TYPE_PASS;
 		g_print ("Pass\n");
 	}
@@ -285,7 +285,7 @@ scx_move_entry_class_init (ScxMoveEntryClass *klass)
 	signals[CHANGED] = g_signal_new ("changed",
 			G_TYPE_FROM_CLASS (klass),
 			(GSignalFlags)(G_SIGNAL_RUN_LAST),
-			NULL,
+			0,
 			NULL,
 			NULL,
 			g_cclosure_marshal_VOID__VOID,
@@ -295,7 +295,7 @@ scx_move_entry_class_init (ScxMoveEntryClass *klass)
 	signals[ACTIVATED] = g_signal_new ("activated",
 			G_TYPE_FROM_CLASS (klass),
 			(GSignalFlags)(G_SIGNAL_RUN_LAST),
-			NULL,
+			0,
 			NULL,
 			NULL,
 			g_cclosure_marshal_VOID__INT,
