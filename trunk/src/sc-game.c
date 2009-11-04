@@ -131,8 +131,8 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 static gboolean
 sc_game_do_exchange (ScPlayer *player, ScMove *move, ScGame *game)
 {
-	ScGamePrivate *priv = game->priv;
-	ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
+	//ScGamePrivate *priv = game->priv;
+	//ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
 	g_print ("Move done\n");
 
 	return TRUE;
@@ -182,7 +182,7 @@ sc_game_set_player (ScGame *self, gint num, ScPlayer *player)
 }
 
 
-ScGame *
+ScBoard *
 sc_game_get_board (ScGame *self)
 {
 	ScGamePrivate *priv = self->priv;
