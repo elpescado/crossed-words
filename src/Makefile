@@ -24,6 +24,7 @@ SOURCES=\
 	sc-rack.c \
 	scx-alphabet-panel.c \
 	scx-board-view.c \
+	scx-console.c \
 	scx-main-window.c \
 	scx-move-entry.c \
 	scx-painter.c \
@@ -43,6 +44,7 @@ HEADERS=\
 	sc-rack.h \
 	scx-alphabet-panel.h \
 	scx-board-view.h \
+	scx-console.h \
 	scx-main-window.h \
 	scx-move-entry.h \
 	scx-painter.h \

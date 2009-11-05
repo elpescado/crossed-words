@@ -179,8 +179,6 @@ scx_board_view_button_pressed (GtkWidget      *widget,
 		int i = x / (TILE_SIZE + TILE_SPACING);
 		int j = y / (TILE_SIZE + TILE_SPACING);
 
-		g_print ("Click!!! @ %d, %d => %d, %d => %d, %d\n", (int)event->x, (int)event->y, x, y, i, j);
-
 		if (priv->selection_enabled)
 			scx_board_view_set_selection (self, i, j);
 	}
@@ -238,7 +236,6 @@ scx_board_view_expose_event (GtkWidget           *widget,
 {
 	ScxBoardView *self = SCX_BOARD_VIEW (widget);
 	ScxBoardViewPrivate *priv = self->priv;
-	g_print ("Expose!!!\n");
 	
 	if (priv->board == NULL)
 		return TRUE;
