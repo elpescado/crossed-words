@@ -59,8 +59,10 @@ alphabet_load (Alphabet *al, const gchar *file_name)
 			strncpy (l->label, label, 4);
 
 			
+			/*
 			g_print ("LETTER %2d '%s' count = %d, value = %d points\n",
 			         l->index, l->label, l->count, l->value);
+			*/
 			
 			al->n_letters++;
 		}
@@ -106,7 +108,7 @@ alphabet_translate (Alphabet *al, const gchar *word, LID *out)
 		g_utf8_strncpy(cbuf, c, 1);
 		LID lid = alphabet_translate_char (al, cbuf);
 		out[i++] = lid;
-		g_print ("alphabet_translate %s -> %d\n", cbuf, lid);
+		//g_print ("alphabet_translate %s -> %d\n", cbuf, lid);
 		c = g_utf8_find_next_char (c, NULL);
 	}
 	g_free (tmp);

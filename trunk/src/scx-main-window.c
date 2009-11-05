@@ -13,11 +13,12 @@
 #include "sc-game.h"
 #include "sc-human-player.h"
 
-#include "scx-rack-view.h"
-#include "scx-move-entry.h"
-#include "scx-board-view.h"
 #include "scx-alphabet-panel.h"
+#include "scx-console.h"
+#include "scx-board-view.h"
 #include "scx-main-window.h"
+#include "scx-move-entry.h"
+#include "scx-rack-view.h"
 
 
 G_DEFINE_TYPE (ScxMainWindow, scx_main_window, GTK_TYPE_WINDOW)
@@ -187,7 +188,12 @@ scx_main_window_init_sidebar (ScxMainWindow *self)
 	sample = gtk_label_new ("Scrabble");
 	scx_main_window_add_sidebar_panel (self, sample, "History");
 	gtk_widget_show (sample);
+
+	sample = scx_console_new ();
+	scx_main_window_add_sidebar_panel (self, sample, "Console");
+	gtk_widget_show (sample);
 }
+
 
 
 static void

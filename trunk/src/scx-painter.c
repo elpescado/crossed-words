@@ -102,7 +102,6 @@ scx_painter_draw_tile (ScxPainter  *self,
 						TRUE, x+1, y+1, TILE_SIZE-1, TILE_SIZE-1);
 
 	set_color (priv->tile_gc, "#000000");
-	g_print (" %d -> '%s'\n", l->index, l->label);
 	pango_layout_set_text (layout, l->label, -1);
 	gdk_draw_layout (gtk_widget_get_window (priv->widget),
 	                 priv->tile_gc, x+1, 4 + y+1,
