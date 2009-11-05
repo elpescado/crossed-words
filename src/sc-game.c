@@ -131,9 +131,17 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 static gboolean
 sc_game_do_exchange (ScPlayer *player, ScMove *move, ScGame *game)
 {
-	//ScGamePrivate *priv = game->priv;
-	//ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
-	g_print ("Move done\n");
+	ScGamePrivate *priv = game->priv;
+	ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
+	sc_rack_remove_tiles (ctx->rack, move->letters, move->n_letters);
+
+	int i;
+	for (i = 0; i < move->n_letters; i++) {
+		sc_bag_push (priv->bag, move->letters[i]);
+	}
+	sc_bag_shuffle (priv->bag);
+
+	sc_game_fill_rack (game, ctx->rack, priv->bag);
 
 	return TRUE;
 }

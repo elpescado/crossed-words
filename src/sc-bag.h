@@ -61,9 +61,16 @@ LID
 sc_bag_pop (ScBag *self);
 
 
+void
+sc_bag_push (ScBag *self, LID lid);
+
+
+
 gint
 sc_bag_n_tiles (ScBag *self);
 
+void
+sc_bag_shuffle (ScBag *self);
 
 void
 sc_bag_load (ScBag *bag, Alphabet *al);

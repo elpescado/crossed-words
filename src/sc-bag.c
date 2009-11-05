@@ -70,6 +70,18 @@ sc_bag_pop (ScBag *self)
 
 
 /**
+ * Put a tile back in the bag
+ **/
+void
+sc_bag_push (ScBag *self, LID lid)
+{
+	ScBagPrivate *priv = self->priv;
+
+	priv->tiles[priv->n_tiles++] = lid;
+}
+
+
+/**
  * Count tiles inside bag
  **/
 gint
@@ -84,7 +96,7 @@ sc_bag_n_tiles (ScBag *self)
 /**
  * Shuffle tiles inside bag
  **/
-static void
+void
 sc_bag_shuffle (ScBag *self)
 {
 	ScBagPrivate *priv = self->priv;

@@ -11,6 +11,7 @@
 
 #include "common.h"
 #include "sc-game.h"
+#include "sc-dumb-player.h"
 #include "sc-human-player.h"
 
 #include "scx-alphabet-panel.h"
@@ -181,16 +182,16 @@ scx_main_window_init_sidebar (ScxMainWindow *self)
 	GtkWidget *sample;
 
 	sample = scx_alphabet_panel_new ();
-	scx_main_window_add_sidebar_panel (self, sample, "Scrabble");
+	scx_main_window_add_sidebar_panel (self, sample, _("Scrabble"));
 	gtk_widget_show (sample);
 	priv->alphabet_panel = sample;
 
 	sample = gtk_label_new ("Scrabble");
-	scx_main_window_add_sidebar_panel (self, sample, "History");
+	scx_main_window_add_sidebar_panel (self, sample, _("History"));
 	gtk_widget_show (sample);
 
 	sample = scx_console_new ();
-	scx_main_window_add_sidebar_panel (self, sample, "Console");
+	scx_main_window_add_sidebar_panel (self, sample, _("Console"));
 	gtk_widget_show (sample);
 }
 
@@ -315,7 +316,7 @@ scx_main_window_create_player (ScxMainWindow *self, int num)
 {
 	ScxMainWindowPrivate *priv = self->priv;
 
-	ScHumanPlayer *p1 = sc_human_player_new ();
+	ScPlayer *p1 = num ? SC_PLAYER (sc_human_player_new ()) : SC_PLAYER (sc_dumb_player_new());
 	sc_game_set_player (priv->game, num, SC_PLAYER (p1));
 
 	g_signal_connect (p1, "your-turn", G_CALLBACK (scx_main_window_players_turn_cb), self);
