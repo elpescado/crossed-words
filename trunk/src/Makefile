@@ -17,6 +17,7 @@ SOURCES=\
 	marshal.c \
 	sc-bag.c \
 	sc-board.c \
+	sc-dumb-player.c \
 	sc-game.c \
 	sc-human-player.c \
 	sc-move.c \
@@ -37,6 +38,7 @@ HEADERS=\
 	marshal.h \
 	sc-bag.h \
 	sc-board.h \
+	sc-dumb-player.h \
 	sc-game.h \
 	sc-human-player.h \
 	sc-move.h \
