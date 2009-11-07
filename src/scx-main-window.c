@@ -244,6 +244,8 @@ scx_main_window_init_gui (ScxMainWindow *self)
 	gtk_widget_show (sw);
 
 	priv->board_view = scx_board_view_new ();
+	g_signal_connect_swapped (priv->board_view, "changed",
+	                          G_CALLBACK (scx_main_window_update_move), self);
 	gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (sw), priv->board_view);
 	gtk_widget_show (priv->board_view);
 
