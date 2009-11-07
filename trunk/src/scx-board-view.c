@@ -40,6 +40,15 @@ struct _ScxBoardViewPrivate
 };
 
 
+enum {
+	CHANGED,
+
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL];
+
+
 
 const int TILE_SIZE = 48;
 const int TILE_SPACING = 4;
@@ -157,6 +166,8 @@ scx_board_view_set_selection (ScxBoardView *self, gint i, gint j)
 	priv->selection_y = j;
 
 	gtk_widget_queue_draw (GTK_WIDGET (self));
+	
+	g_signal_emit (self, signals[CHANGED], 0);
 }
 
 
@@ -397,6 +408,16 @@ scx_board_view_class_init (ScxBoardViewClass *klass)
 	gobject_class->finalize = scx_board_view_finalize;
 
 	widget_class->expose_event = scx_board_view_expose_event;
+
+	signals[CHANGED] = g_signal_new ("changed",
+			G_TYPE_FROM_CLASS (klass),
+			(GSignalFlags)(G_SIGNAL_RUN_LAST),
+			0,
+			NULL,
+			NULL,
+			g_cclosure_marshal_VOID__VOID,
+			G_TYPE_NONE, 0,
+			NULL);
 
 	g_type_class_add_private (klass, sizeof (ScxBoardViewPrivate));
 }
