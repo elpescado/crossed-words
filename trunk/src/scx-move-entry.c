@@ -157,6 +157,10 @@ static void
 scx_move_entry_text_changed (GtkEditable  *editable,
                              ScxMoveEntry *self)
 {
+	ScxMoveEntryPrivate *priv = self->priv;
+	const gchar *text = gtk_entry_get_text (GTK_ENTRY (editable));
+	gtk_widget_set_sensitive (priv->exchange_button, *text != '\0');
+	gtk_widget_set_sensitive (priv->ok_button, *text != '\0');
 	g_signal_emit (self, signals[CHANGED], 0);
 }
 
@@ -213,6 +217,15 @@ scx_move_entry_get_text (ScxMoveEntry *self)
 	ScxMoveEntryPrivate *priv = self->priv;
 
 	return gtk_entry_get_text (GTK_ENTRY (priv->entry));
+}
+
+
+void
+scx_move_entry_set_text (ScxMoveEntry *self, const gchar *text)
+{
+	ScxMoveEntryPrivate *priv = self->priv;
+
+	gtk_entry_set_text (GTK_ENTRY (priv->entry), text);
 }
 
 

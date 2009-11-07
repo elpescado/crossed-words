@@ -59,8 +59,8 @@ GtkWidget*
 scx_board_view_new (void)
 {
 	ScxBoardView *self = g_object_new (SCX_TYPE_BOARD_VIEW, NULL);
-
-	gtk_widget_set_size_request (GTK_WIDGET (self), 960, 800);
+	int board_size = (TILE_SIZE + TILE_SPACING) * 15 - TILE_SPACING + 4;
+	gtk_widget_set_size_request (GTK_WIDGET (self), board_size, board_size);
 
 	return GTK_WIDGET (self);
 }
