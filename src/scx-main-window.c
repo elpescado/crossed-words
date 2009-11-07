@@ -293,12 +293,17 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 {
 	ScxMainWindowPrivate *priv = self->priv;
 
+	if (! SC_IS_HUMAN_PLAYER(player)) {
+		gtk_widget_set_sensitive (priv->bottom_hbox, FALSE);
+		return;
+	}
+
 
 	GtkWidget *msg = gtk_message_dialog_new (GTK_WINDOW (self),
 	                                         0/*GTK_DIALOG_NO_SEPARATOR*/,
 											 GTK_MESSAGE_INFO,
 											 GTK_BUTTONS_OK,
-	                                         "Your turn!!!");
+	                                         _("Your turn!!!"));
 	gtk_dialog_run (GTK_DIALOG (msg));
 	gtk_widget_destroy (msg);
 
@@ -308,6 +313,11 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 	ScRack *rack = sc_game_get_players_rack (priv->game, player);
 	scx_rack_view_set_rack (SCX_RACK_VIEW(priv->rack_view), rack);
 	g_object_unref (rack);
+
+	scx_move_entry_set_text (SCX_MOVE_ENTRY (priv->move_entry), "");
+
+
+	gtk_widget_set_sensitive (priv->bottom_hbox, TRUE);
 }
 
 

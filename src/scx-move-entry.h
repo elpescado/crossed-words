@@ -63,6 +63,9 @@ const gchar *
 scx_move_entry_get_text (ScxMoveEntry *self);
 
 
+void
+scx_move_entry_set_text (ScxMoveEntry *self, const gchar *text);
+
 
 G_END_DECLS
 
