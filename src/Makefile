@@ -17,6 +17,7 @@ SOURCES=\
 	marshal.c \
 	sc-bag.c \
 	sc-board.c \
+	sc-dag.c \
 	sc-dumb-player.c \
 	sc-game.c \
 	sc-human-player.c \
@@ -29,7 +30,8 @@ SOURCES=\
 	scx-main-window.c \
 	scx-move-entry.c \
 	scx-painter.c \
-	scx-rack-view.c
+	scx-rack-view.c \
+	util.c
 
 HEADERS=\
 	alphabet.h \
@@ -38,6 +40,7 @@ HEADERS=\
 	marshal.h \
 	sc-bag.h \
 	sc-board.h \
+	sc-dag.h \
 	sc-dumb-player.h \
 	sc-game.h \
 	sc-human-player.h \
@@ -50,7 +53,8 @@ HEADERS=\
 	scx-main-window.h \
 	scx-move-entry.h \
 	scx-painter.h \
-	scx-rack-view.h
+	scx-rack-view.h \
+	util.h
 
 EXTRA_DIST=\
 	Makefile
