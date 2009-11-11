@@ -6,6 +6,7 @@
 #include "alphabet.h"
 #include "letter.h"
 #include "sc-board.h"
+#include "sc-dag.h"
 #include "sc-game.h"
 #include "sc-move.h"
 #include "sc-bag.h"
@@ -13,6 +14,7 @@
 #include "scx-move-entry.h"
 #include "scx-rack-view.h"
 #include "scx-main-window.h"
+#include "util.h"
 
 
 
@@ -34,10 +36,23 @@ int main (int argc, char *argv[])
 	ScPlayer  *p1;
 	ScPlayer  *p2;
 	*/
+	Alphabet  *al;
+	ScDag *dag;
 
 	gtk_init (&argc, &argv);
 	srand (time (NULL));
 
+	al = alphabet_new ();
+	alphabet_load (al, "lang/pl/alphabet.txt");
+
+	dag = sc_dag_new ();
+	double t0 = foo_microtime ();
+	sc_dag_load_file (dag, "lang/pl/dictionary.txt", al);
+	double t1 = foo_microtime ();
+	sc_dag_print_stats (dag);
+	g_print ("Construction took %lf secs\n", t1 - t0);
+
+	return 0;
 	/*
 	al = alphabet_new ();
 	alphabet_load (al, "lang/pl/alphabet.txt");
