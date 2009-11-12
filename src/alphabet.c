@@ -107,6 +107,8 @@ alphabet_translate (Alphabet *al, const gchar *word, LID *out)
 		gchar cbuf[4] = {0};
 		g_utf8_strncpy(cbuf, c, 1);
 		LID lid = alphabet_translate_char (al, cbuf);
+		if (lid == 0)
+			return FALSE;
 		out[i++] = lid;
 		//g_print ("alphabet_translate %s -> %d\n", cbuf, lid);
 		c = g_utf8_find_next_char (c, NULL);

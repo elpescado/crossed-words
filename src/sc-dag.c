@@ -4,9 +4,6 @@
 
 #include "sc-dag.h"
 
-void
-sc_dag_add_word_translated (ScDag *self, LID *letters, glong len);
-
 ScDag *
 sc_dag_new (void)
 {
@@ -41,7 +38,7 @@ guint16
 sc_dag_node_hash (ScDagNode *node)
 {
 	return 0x1234;
-	guint32 h = 0x12345678 ^ node->lid;
+	guint32 h = 0x12345678 ^ node->lid ^ (node->flags << 8);
 	gint i = 0;
 	for (i = 1; i < 33; i++) {
 		h ^= GPOINTER_TO_INT(node->children[i]);
@@ -97,7 +94,10 @@ sc_dag_add_word (ScDag *self, const gchar *word, Alphabet *al)
 	}
 
 	LID letters[15];
-	alphabet_translate (al, word, letters);
+	if (! alphabet_translate (al, word, letters)) {
+		//g_print ("sc_dag_add_word: Invalid word '%s', discarding\n", word);
+		return;
+	}
 
 	sc_dag_add_word_translated (self, letters, len);
 }
@@ -124,7 +124,44 @@ sc_dag_add_word_translated (ScDag *self, LID *letters, glong len)
 			node = node->children[lid];
 		}
 	}
+	node->flags |= SC_DAG_NODE_FINAL;
 //	g_print ("\n");
+}
+
+
+gboolean
+sc_dag_test_word (ScDag *self, const gchar *word, Alphabet *al)
+{
+	glong len = g_utf8_strlen (word, -1);
+	if (len > 15) {
+		g_print ("too long, discarding: '%s'\n", word);
+		return FALSE;
+	}
+
+	LID letters[15];
+	if (! alphabet_translate (al, word, letters))
+		return FALSE;
+
+	return sc_dag_test_word_translated (self, letters, len);
+}
+
+
+gboolean
+sc_dag_test_word_translated (ScDag *self, LID *letters, glong len)
+{
+	ScDagNode *node = self->root;
+
+	gint i;
+	for (i = 0; i < len; i++) {
+		LID lid = letters[i];
+		if (node->children[lid] == NULL) {
+			return FALSE;
+		} else {
+			node = node->children[lid];
+		}
+	}
+
+	return node->flags & SC_DAG_NODE_FINAL;
 }
 
 
@@ -198,6 +235,9 @@ sc_dag_node_equal (const ScDagNode *a, const ScDagNode *b)
 	if (a->lid != b->lid)
 		return FALSE;
 
+	if (a->flags != b->flags)
+		return FALSE;
+
 	int i;
 	for (i = 1; i < 33; i++) {
 		if (a->children[i] != b->children[i])
@@ -233,7 +273,7 @@ sc_dag_print_stats (ScDag *self)
 	g_print ("Total nodes = %d (%s)\n", total_nodes, total_nodes == self->n_nodes ? "ok" : "fail");
 
 	g_print ("Sorting...\n");
-	for (i = 0; i < 2; i++) {
+	for (i = 0; i < 16; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
 			ScDagNode *node = nodes_tmp[i][j];
@@ -243,7 +283,42 @@ sc_dag_print_stats (ScDag *self)
 		qsort (nodes_tmp[i], nodes_per_level[i], sizeof (ScDagNode*),
 		       _sort_cmp_func);
 
+		gint n_duplicates = 0;
+
+		/* Remove duplicates */
+		for (j = 0; j < nodes_per_level[i]; j++) {
+			ScDagNode *node1 = nodes_tmp[i][j];
+			if (node1 == NULL)
+				continue;
+
+			int k;
+			for (k = j+1; k < nodes_per_level[i]; k++) {
+				ScDagNode *node2 = nodes_tmp[i][k];
+				if (node2 == NULL)
+					continue;
+				if (node2->hash_code != node1->hash_code)
+					break;
+
+				if (sc_dag_node_equal (node1, node2)) {
+					/* Found duplicate */
+					ScDagNode *parent = node2->children[0];
+					LID lid = node1->lid;
+				//	g_print ("node1 = %p, node2 = %p, parent = %p, lid = %d\n",
+				//	         node1, node2, parent, (int) lid);
+					parent->children[lid] = node1;
+					nodes_tmp[i][k] = NULL; //node2 = NULL;
+					n_duplicates++;
+					g_free (node2);
+					self->n_nodes--;
+					self->size -= sizeof (ScDagNode);
+				} // if
+			} // for k
+		} // for j
+		g_print (" %2d: %d duplicates\n", i, n_duplicates);
+	} // for i
+
 	//	do {
+#if 0
 		int k = 1;
 		int tt = 0;
 	//	for (k = 1; k < nodes_per_level[i]; k *= 2) {
@@ -286,10 +361,10 @@ sc_dag_print_stats (ScDag *self)
 			//g_print (" %2d: %d duplicates\n", i, n_duplicates);
 	//	} // k
 	//	} while (FALSE/*n_duplicates > 0*/);
-
 		g_print (" %2d: %d duplicates\n", i, tt);
+#endif
 
-	}
+//	}
 	g_print ("After minimization:\n");
 
 	g_print ("DAG: n_nodes=%d, size=%d bytes\n",
