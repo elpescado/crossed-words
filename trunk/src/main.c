@@ -46,8 +46,19 @@ int main (int argc, char *argv[])
 	alphabet_load (al, "lang/pl/alphabet.txt");
 
 	dag = sc_dag_new ();
+	/*
+	sc_dag_add_drowword (dag, "COPY", al);
+	sc_dag_add_drowword (dag, "ATLAS", al);
+	sc_dag_add_drowword (dag, "ABCDEF", al);
+	sc_dag_add_drowword (dag, "WARYJAT", al);
+	sc_dag_add_drowword (dag, "KWIATOSTAN", al);
+	sc_dag_add_drowword (dag, "ABDOMINOPLASTYK", al);
+	return 0;
+	*/
+
 	double t0 = foo_microtime ();
-	sc_dag_load_file (dag, "lang/pl/dictionary.txt", al);
+	sc_dag_load_file (dag, "test.txt", al);
+	//sc_dag_load_file (dag, "lang/pl/dictionary.txt", al);
 	double t1 = foo_microtime ();
 	sc_dag_print_stats (dag);
 	g_print ("Construction took %lf secs\n", t1 - t0);

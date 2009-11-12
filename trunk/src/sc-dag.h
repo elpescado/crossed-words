@@ -8,7 +8,7 @@
 typedef struct ScDagNode {
 	char               lid;
 	guint16            hash_code;
-	struct ScDagNode  *children[34];
+	struct ScDagNode  *children[35];
 } ScDagNode;
 
 

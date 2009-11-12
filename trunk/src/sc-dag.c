@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "sc-dag.h"
 
+void
+sc_dag_add_word_translated (ScDag *self, LID *letters, glong len);
 
 ScDag *
 sc_dag_new (void)
@@ -37,6 +40,7 @@ sc_dag_alloc_node (ScDag *self)
 guint16
 sc_dag_node_hash (ScDagNode *node)
 {
+	return 0x1234;
 	guint32 h = 0x12345678 ^ node->lid;
 	gint i = 0;
 	for (i = 1; i < 33; i++) {
@@ -44,6 +48,42 @@ sc_dag_node_hash (ScDagNode *node)
 	}
 
 	return ((guint16)h) ^ (h >> 16);
+}
+
+void
+sc_dag_add_drowword (ScDag *self, const gchar *word, Alphabet *al)
+{
+	glong len = g_utf8_strlen (word, -1);
+	if (len > 10) {
+	//	g_print ("too long, discarding: '%s'\n", word);
+		return;
+	}
+	
+	LID letters[15];
+	alphabet_translate (al, word, letters);
+
+
+	int i, j;
+	for (i = 0; i < len; i++) {
+		LID new_letters[17];
+		memset (new_letters, '\0', sizeof (new_letters));
+		for (j = 0; j <= i; j++) {
+			new_letters[i - j] = letters[j];
+		}
+		new_letters[i+1] = 0;
+		for (j = i+1; j <= len; j++) {
+			new_letters[j+1] = letters[j];
+		}
+
+		/*
+		for (j = 0; j <= len; j++) {
+			Letter *l = alphabet_lookup_letter (al, new_letters[j]);
+			g_print ("%s", l ? l->label : "_");
+		}
+		g_print ("\n");
+		*/
+		sc_dag_add_word_translated (self, new_letters, len+1);
+	}
 }
 
 
@@ -59,6 +99,12 @@ sc_dag_add_word (ScDag *self, const gchar *word, Alphabet *al)
 	LID letters[15];
 	alphabet_translate (al, word, letters);
 
+	sc_dag_add_word_translated (self, letters, len);
+}
+
+void
+sc_dag_add_word_translated (ScDag *self, LID *letters, glong len)
+{
 	ScDagNode *node = self->root;
 
 //	g_print ("%s", word);
@@ -170,7 +216,7 @@ sc_dag_print_stats (ScDag *self)
 
 	gint i;
 	for (i = 0; i < 16; i++) {
-		nodes_tmp[i] = g_malloc (sizeof (ScDagNode *) * 1948644);
+		nodes_tmp[i] = g_malloc (sizeof (ScDagNode *) * 8*1024*1024/*1948644*/);
 	}
 
 	_traverse_tree (self, self->root);
@@ -187,7 +233,7 @@ sc_dag_print_stats (ScDag *self)
 	g_print ("Total nodes = %d (%s)\n", total_nodes, total_nodes == self->n_nodes ? "ok" : "fail");
 
 	g_print ("Sorting...\n");
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i < 2; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
 			ScDagNode *node = nodes_tmp[i][j];
@@ -198,13 +244,26 @@ sc_dag_print_stats (ScDag *self)
 		       _sort_cmp_func);
 
 	//	do {
-		int k;
+		int k = 1;
 		int tt = 0;
-		for (k = 1; k < nodes_per_level[i]; k *= 2) {
+	//	for (k = 1; k < nodes_per_level[i]; k *= 2) {
 			gint n_duplicates = 0;
 			for (j = k; j < nodes_per_level[i]; j++) {
 				ScDagNode *node1 = nodes_tmp[i][j-k];
 				ScDagNode *node2 = nodes_tmp[i][j];
+
+				if (i == 1) {
+					g_print ("%p:  ", node1);
+
+					int l;
+					for (l = 1; l < 33; l++) {
+						if (node1->children[l] != NULL) {
+							g_print ("%d -> %p   ", l, node1->children[l]);
+						}
+					}
+
+					g_print ("\n");
+				}
 
 				if (node1 == NULL || node2 == NULL)
 					continue;
@@ -213,6 +272,8 @@ sc_dag_print_stats (ScDag *self)
 					/* Get rid of node 1 */
 					ScDagNode *parent = node1->children[0];
 					LID lid = node1->lid;
+					g_print ("node1 = %p, node2 = %p, parent = %p, lid = %d\n",
+					         node1, node2, parent, (int) lid);
 					parent->children[lid] = node2;
 					nodes_tmp[i][j-k] = NULL; //node1 = NULL;
 					n_duplicates++;
@@ -223,7 +284,7 @@ sc_dag_print_stats (ScDag *self)
 				}
 			}
 			//g_print (" %2d: %d duplicates\n", i, n_duplicates);
-		}
+	//	} // k
 	//	} while (FALSE/*n_duplicates > 0*/);
 
 		g_print (" %2d: %d duplicates\n", i, tt);
