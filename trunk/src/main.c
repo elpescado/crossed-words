@@ -17,6 +17,50 @@
 #include "util.h"
 
 
+void test_word (ScDag *dag, Alphabet *al, const gchar *word)
+{
+	g_print (" -> testing '%s' -> %s\n", word,
+			sc_dag_test_word (dag, word, al) ? "true" : "false");
+}
+
+
+void test_dictionary (ScDag *dag, Alphabet *al, const gchar *file_name)
+{
+	g_print ("test dictionary: ");	
+	FILE *f = fopen (file_name, "r");
+	if (f == NULL) {
+		return;
+	}
+
+	gchar buffer[128];
+
+	gint missed = 0;
+	gint n_words = 0;
+
+	LID letters[15];
+
+	double t0 = foo_microtime ();
+	while (fgets (buffer, 128, f)) {
+		char *word = g_strstrip (buffer);
+
+		if (!alphabet_translate (al, word, letters))
+			continue;
+
+		glong len = g_utf8_strlen (word, -1);
+
+		n_words++;
+		if (!sc_dag_test_word_translated (dag, letters, len)) {
+			g_print ("    Word '%s' not present\n", word);
+			missed++;
+		}
+	}
+	double t1 = foo_microtime ();
+
+	fclose (f);	
+
+	g_print ("%d tested, %d missed, %lf seconds, %lf%% words lost\n", n_words, missed, t1 - t0, 100*(double)missed/(double)n_words);
+}
+
 
 int main (int argc, char *argv[])
 {
@@ -57,11 +101,21 @@ int main (int argc, char *argv[])
 	*/
 
 	double t0 = foo_microtime ();
-	sc_dag_load_file (dag, "test.txt", al);
-	//sc_dag_load_file (dag, "lang/pl/dictionary.txt", al);
+	//sc_dag_load_file (dag, "test.txt", al);
+	sc_dag_load_file (dag, "lang/pl/dictionary.txt", al);
 	double t1 = foo_microtime ();
+
+	test_word (dag, al, "alfabet");
+	test_word (dag, al, "asdaf");
+	test_dictionary (dag, al, "lang/pl/dictionary.txt");
+
 	sc_dag_print_stats (dag);
 	g_print ("Construction took %lf secs\n", t1 - t0);
+
+	test_word (dag, al, "alfabet");
+	test_word (dag, al, "asdaf");
+	test_dictionary (dag, al, "lang/pl/dictionary.txt");
+
 
 	return 0;
 	/*

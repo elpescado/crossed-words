@@ -7,9 +7,14 @@
 
 typedef struct ScDagNode {
 	char               lid;
+	guint8             flags;
 	guint16            hash_code;
 	struct ScDagNode  *children[35];
 } ScDagNode;
+
+typedef enum {
+	SC_DAG_NODE_FINAL = 1
+} ScDagNodeFlags;
 
 
 typedef struct {
@@ -31,6 +36,12 @@ sc_dag_free (ScDag *self);
 ScDagNode *
 sc_dag_alloc_node (ScDag *self);
 
+void
+sc_dag_add_word_translated (ScDag *self, LID *letters, glong len);
+
+gboolean
+sc_dag_test_word_translated (ScDag *self, LID *letters, glong len);
+
 
 void
 sc_dag_add_word (ScDag *self, const gchar *word, Alphabet *al);
@@ -38,6 +49,10 @@ sc_dag_add_word (ScDag *self, const gchar *word, Alphabet *al);
 
 gboolean
 sc_dag_load_file (ScDag *self, const gchar *file_name, Alphabet *al);
+
+
+gboolean
+sc_dag_test_word (ScDag *self, const gchar *word, Alphabet *al);
 
 
 void
