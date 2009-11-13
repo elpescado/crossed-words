@@ -19,7 +19,7 @@ typedef struct ScDag2Node {
 } ScDag2Node;
 
 typedef enum {
-	SC_DAG_NODE_FINAL = 1
+	SC_DAG2_NODE_FINAL = 1
 } ScDag2NodeFlags;
 
 
