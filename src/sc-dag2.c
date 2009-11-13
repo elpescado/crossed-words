@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "sc-dag2.h"
+#include "sc-dsf.h"
 
 /*
 #define sc_dag2_node_child(node,lid) (node->children[lid])
@@ -101,11 +102,13 @@ sc_dag2_node_hash (ScDag2Node *node)
 	guint32 h = 0x12345678 ^ node->lid ^ (node->flags << 8);
 	gint i = 0;
 	for (i = 0; i < node->n_children; i++) {
-		h ^= GPOINTER_TO_INT(sc_dag2_node_child(node, i));
+		ScDag2Node *child = node->children[i].node;
+		h ^= GPOINTER_TO_INT(child);
 	}
 
 	return ((guint16)h) ^ (h >> 16);
 }
+
 
 void
 sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
@@ -132,13 +135,6 @@ sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 			new_letters[j+1] = letters[j];
 		}
 
-		/*
-		for (j = 0; j <= len; j++) {
-			Letter *l = alphabet_lookup_letter (al, new_letters[j]);
-			g_print ("%s", l ? l->label : "_");
-		}
-		g_print ("\n");
-		*/
 		sc_dag2_add_word_translated (self, new_letters, len+1);
 	}
 }
@@ -237,8 +233,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al)
 
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
-		//sc_dag2_add_word (self, word, al);
-		sc_dag2_add_drowword (self, word, al);
+		sc_dag2_add_word (self, word, al);
+		//sc_dag2_add_drowword (self, word, al);
 	}
 
 	fclose (f);	
@@ -439,4 +435,63 @@ sc_dag2_print_stats (ScDag2 *self)
 
 	g_print ("DAG: n_nodes=%d, size=%d bytes, n_edges=%d\n",
 	         self->n_nodes, self->size, total_edges);
+
+	g_print ("Saving binary file...");
+	
+	ScDsfWriter *writer = sc_dsf_writer_open ("dictionary.dag", self->n_nodes, total_edges);
+	GHashTable *node_indices = g_hash_table_new (g_direct_hash, g_direct_equal);
+
+
+	/* Write verices */
+	gint arc_idx = 0;
+	gint vertex_idx = 0;
+	for (i = 0; i < 16; i++) {
+		int j;
+		for (j = 0; j < nodes_per_level[i]; j++) {
+			ScDag2Node *node = nodes_tmp[i][j];
+			if (node == NULL)
+				continue;
+
+			struct ScDsfVertex vertex;
+			vertex.n_arcs = node->n_children;
+			vertex.first_arc_idx = arc_idx;
+			sc_dsf_writer_write_vertex (writer, &vertex);
+
+			g_hash_table_replace (node_indices, node, GINT_TO_POINTER(vertex_idx++));
+			arc_idx += node->n_children;
+		} // for j
+	} // for i
+
+	/* Write arcs */
+	for (i = 0; i < 16; i++) {
+		int j;
+		for (j = 0; j < nodes_per_level[i]; j++) {
+			ScDag2Node *node = nodes_tmp[i][j];
+			if (node == NULL)
+				continue;
+
+			int k;
+			for (k = 0; k < node->n_children; k++) {
+				LID         lid   = node->children[k].lid;
+				ScDag2Node *child = node->children[k].node;
+
+				guint node_id;
+				if (g_hash_table_lookup_extended (node_indices, child, NULL, &node_id)) {
+					struct ScDsfArc arc;
+					arc.lid = lid;
+					arc.dest = node_id;
+
+					sc_dsf_writer_write_arc (writer, &arc);
+				} else {
+					g_printerr ("Node not found\n");
+				} // if
+			} // for k
+		} // for j
+	} // for i
+
+
+	g_hash_table_destroy (node_indices);
+	sc_dsf_writer_close (writer);
+
+	g_print (" ok\n");
 }
