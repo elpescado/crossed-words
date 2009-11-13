@@ -276,6 +276,8 @@ sc_dag_print_stats (ScDag *self)
 
 	g_print ("Total nodes = %d (%s)\n", total_nodes, total_nodes == self->n_nodes ? "ok" : "fail");
 
+	gint total_edges = total_nodes - 1;
+
 	g_print ("Sorting...\n");
 	for (i = 0; i < 16; i++) {
 		int j;
@@ -313,6 +315,14 @@ sc_dag_print_stats (ScDag *self)
 					parent->children[lid] = node1;
 					nodes_tmp[i][k] = NULL; //node2 = NULL;
 					n_duplicates++;
+
+					/* Count edges originating from node2 */
+					int l;
+					for (l = 1; l < 33; l++)
+						if (node2->children[l] != NULL)
+							total_edges--;
+
+
 					g_free (node2);
 					self->n_nodes--;
 					self->size -= sizeof (ScDagNode);
@@ -375,6 +385,6 @@ sc_dag_print_stats (ScDag *self)
 //	}
 	g_print ("After minimization:\n");
 
-	g_print ("DAG: n_nodes=%d, size=%d bytes\n",
-	         self->n_nodes, self->size);
+	g_print ("DAG: n_nodes=%d, size=%d bytes, n_edges=%d\n",
+	         self->n_nodes, self->size, total_edges);
 }
