@@ -24,6 +24,9 @@
 const char *dictionary_file = "lang/pl/dictionary.txt";
 
 
+/**
+ * Generate file with random words not belonging to dictionary
+ **/
 void
 generate_bad_words (ScDag *allowed_words, Alphabet *al, gint n_words, const gchar *file_name)
 {
