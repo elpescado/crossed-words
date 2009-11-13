@@ -42,7 +42,7 @@ sc_dag_alloc_node (ScDag *self)
 guint16
 sc_dag_node_hash (ScDagNode *node)
 {
-	return 0x1234;
+//	return 0x1234;
 	guint32 h = 0x12345678 ^ node->lid ^ (node->flags << 8);
 	gint i = 0;
 	for (i = 1; i < 33; i++) {

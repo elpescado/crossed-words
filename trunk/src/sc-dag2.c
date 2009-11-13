@@ -97,7 +97,7 @@ sc_dag2_alloc_node (ScDag2 *self)
 guint16
 sc_dag2_node_hash (ScDag2Node *node)
 {
-	return 0x1234;
+//	return 0x1234;
 	guint32 h = 0x12345678 ^ node->lid ^ (node->flags << 8);
 	gint i = 0;
 	for (i = 0; i < node->n_children; i++) {
@@ -184,7 +184,7 @@ sc_dag2_add_word_translated (ScDag2 *self, LID *letters, glong len)
 			node = sc_dag2_node_child (node, lid);
 		}
 	}
-	node->flags |= SC_DAG_NODE_FINAL;
+	node->flags |= SC_DAG2_NODE_FINAL;
 //	g_print ("\n");
 }
 
@@ -221,7 +221,7 @@ sc_dag2_test_word_translated (ScDag2 *self, LID *letters, glong len)
 		}
 	}
 
-	return node->flags & SC_DAG_NODE_FINAL;
+	return node->flags & SC_DAG2_NODE_FINAL;
 }
 
 
@@ -237,7 +237,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al)
 
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
-		sc_dag2_add_word (self, word, al);
+		//sc_dag2_add_word (self, word, al);
+		sc_dag2_add_drowword (self, word, al);
 	}
 
 	fclose (f);	
@@ -254,7 +255,7 @@ static int _max_arcs_per_node = 0;
 static guint64 total_arcs = 0;
 
 static gint
-_traverse_tree (ScDag2 *dag, ScDag2Node *node)
+_traverse_tree1 (ScDag2 *dag, ScDag2Node *node)
 {
 	gint depth = 0;
 	gint i;
@@ -267,7 +268,38 @@ _traverse_tree (ScDag2 *dag, ScDag2Node *node)
 		if (sc_dag2_node_child (node, i) != NULL) {
 			arcs++;
 			total_arcs++;
-			gint child_depth = _traverse_tree (dag, sc_dag2_node_child (node, i));
+			gint child_depth = _traverse_tree1 (dag, sc_dag2_node_child (node, i));
+			if (child_depth > depth) {
+				depth = child_depth;
+			}
+		}
+	}
+	
+	if (arcs > _max_arcs_per_node)
+		_max_arcs_per_node = arcs;
+
+	int idx = nodes_per_level[depth]++;
+	//nodes_tmp[depth][idx] = node;
+	
+	return depth+1;
+}
+
+
+static gint
+_traverse_tree2 (ScDag2 *dag, ScDag2Node *node)
+{
+	gint depth = 0;
+	gint i;
+
+	dag->size += sizeof (ScDag2Node);
+	dag->size += node->children_size * sizeof (struct ScDag2NodeChildEntry);
+
+	gint arcs = 0;
+	for (i = 1; i < 33; i++) {
+		if (sc_dag2_node_child (node, i) != NULL) {
+			arcs++;
+			total_arcs++;
+			gint child_depth = _traverse_tree2 (dag, sc_dag2_node_child (node, i));
 			if (child_depth > depth) {
 				depth = child_depth;
 			}
@@ -276,11 +308,11 @@ _traverse_tree (ScDag2 *dag, ScDag2Node *node)
 	if (arcs > _max_arcs_per_node)
 		_max_arcs_per_node = arcs;
 
-//	node->hash_code = sc_dag2_node_hash (node);
 	int idx = nodes_per_level[depth]++;
 	nodes_tmp[depth][idx] = node;
 	return depth+1;
 }
+
 
 
 static int
@@ -321,14 +353,17 @@ sc_dag2_print_stats (ScDag2 *self)
 	         self->n_nodes, self->size);
 
 
+	self->size = 0;
+	_traverse_tree1 (self, self->root);
+	g_print (" => computed DAG size: %d <= \n", self->size);
+
 	gint i;
 	for (i = 0; i < 16; i++) {
-		nodes_tmp[i] = g_malloc (sizeof (ScDag2Node *) * 8*1024*1024/*1948644*/);
+		nodes_tmp[i] = g_malloc (sizeof (ScDag2Node *) * nodes_per_level[i]);
 	}
 
-	self->size = 0;
-	_traverse_tree (self, self->root);
-	g_print (" => computed DAG size: %d <= \n", self->size);
+	memset (nodes_per_level, '\0', sizeof (nodes_per_level));
+	_traverse_tree2 (self, self->root);
 
 	g_print ("Total arcs %lld max per node %d avg arcs per node %lld\n",
 			total_arcs, _max_arcs_per_node, total_arcs / self->n_nodes);
