@@ -6,7 +6,7 @@
 #include "alphabet.h"
 #include "letter.h"
 #include "sc-board.h"
-#include "sc-dag.h"
+#include "sc-dag2.h"
 #include "sc-game.h"
 #include "sc-move.h"
 #include "sc-bag.h"
@@ -17,14 +17,14 @@
 #include "util.h"
 
 
-void test_word (ScDag *dag, Alphabet *al, const gchar *word)
+void test_word (ScDag2 *dag, Alphabet *al, const gchar *word)
 {
 	g_print (" -> testing '%s' -> %s\n", word,
-			sc_dag_test_word (dag, word, al) ? "true" : "false");
+			sc_dag2_test_word (dag, word, al) ? "true" : "false");
 }
 
 
-void test_dictionary (ScDag *dag, Alphabet *al, const gchar *file_name)
+void test_dictionary (ScDag2 *dag, Alphabet *al, const gchar *file_name)
 {
 	g_print ("test dictionary: ");	
 	FILE *f = fopen (file_name, "r");
@@ -49,8 +49,8 @@ void test_dictionary (ScDag *dag, Alphabet *al, const gchar *file_name)
 		glong len = g_utf8_strlen (word, -1);
 
 		n_words++;
-		if (!sc_dag_test_word_translated (dag, letters, len)) {
-			g_print ("    Word '%s' not present\n", word);
+		if (!sc_dag2_test_word_translated (dag, letters, len)) {
+		//	g_print ("    Word '%s' not present\n", word);
 			missed++;
 		}
 	}
@@ -61,7 +61,7 @@ void test_dictionary (ScDag *dag, Alphabet *al, const gchar *file_name)
 	g_print ("%d tested, %d missed, %lf seconds, %lf%% words lost\n", n_words, missed, t1 - t0, 100*(double)missed/(double)n_words);
 }
 
-void test_bad_dictionary (ScDag *dag, Alphabet *al, const gchar *file_name)
+void test_bad_dictionary (ScDag2 *dag, Alphabet *al, const gchar *file_name)
 {
 	g_print ("test dictionary: ");	
 	FILE *f = fopen (file_name, "r");
@@ -86,8 +86,8 @@ void test_bad_dictionary (ScDag *dag, Alphabet *al, const gchar *file_name)
 		glong len = g_utf8_strlen (word, -1);
 
 		n_words++;
-		if (sc_dag_test_word_translated (dag, letters, len)) {
-			g_print ("    Word '%s' present\n", word);
+		if (sc_dag2_test_word_translated (dag, letters, len)) {
+		//	g_print ("    Word '%s' present\n", word);
 			missed++;
 		}
 	}
@@ -119,7 +119,7 @@ int main (int argc, char *argv[])
 	ScPlayer  *p2;
 	*/
 	Alphabet  *al;
-	ScDag *dag;
+	ScDag2 *dag;
 
 	gtk_init (&argc, &argv);
 	srand (time (NULL));
@@ -127,20 +127,20 @@ int main (int argc, char *argv[])
 	al = alphabet_new ();
 	alphabet_load (al, "lang/pl/alphabet.txt");
 
-	dag = sc_dag_new ();
+	dag = sc_dag2_new ();
 	/*
-	sc_dag_add_drowword (dag, "COPY", al);
-	sc_dag_add_drowword (dag, "ATLAS", al);
-	sc_dag_add_drowword (dag, "ABCDEF", al);
-	sc_dag_add_drowword (dag, "WARYJAT", al);
-	sc_dag_add_drowword (dag, "KWIATOSTAN", al);
-	sc_dag_add_drowword (dag, "ABDOMINOPLASTYK", al);
+	sc_dag2_add_drowword (dag, "COPY", al);
+	sc_dag2_add_drowword (dag, "ATLAS", al);
+	sc_dag2_add_drowword (dag, "ABCDEF", al);
+	sc_dag2_add_drowword (dag, "WARYJAT", al);
+	sc_dag2_add_drowword (dag, "KWIATOSTAN", al);
+	sc_dag2_add_drowword (dag, "ABDOMINOPLASTYK", al);
 	return 0;
 	*/
 
 	double t0 = foo_microtime ();
-	//sc_dag_load_file (dag, "test.txt", al);
-	sc_dag_load_file (dag, "lang/pl/dictionary.txt", al);
+	//sc_dag2_load_file (dag, "test.txt", al);
+	sc_dag2_load_file (dag, "lang/pl/dictionary.txt", al);
 	double t1 = foo_microtime ();
 
 	test_word (dag, al, "alfabet");
@@ -148,7 +148,7 @@ int main (int argc, char *argv[])
 	test_dictionary (dag, al, "lang/pl/dictionary.txt");
 	test_bad_dictionary (dag, al, "bad-words.txt");
 
-	sc_dag_print_stats (dag);
+	sc_dag2_print_stats (dag);
 	g_print ("Construction took %lf secs\n", t1 - t0);
 
 	test_word (dag, al, "alfabet");
