@@ -56,10 +56,10 @@ void
 sc_dag_add_drowword (ScDag *self, const gchar *word, Alphabet *al)
 {
 	glong len = g_utf8_strlen (word, -1);
-	if (len > 10) {
+//	if (len > 10) {
 	//	g_print ("too long, discarding: '%s'\n", word);
-		return;
-	}
+//		return;
+//	}
 	
 	LID letters[15];
 	alphabet_translate (al, word, letters);
