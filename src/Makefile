@@ -10,7 +10,6 @@ VERSION=1.0
 PKG=$(PACKAGE)-$(VERSION)
 
 SOURCES=\
-	main.c \
 	alphabet.c \
 	compat.c \
 	letter.c \
@@ -61,15 +60,18 @@ EXTRA_DIST=\
 
 OBJS=$(SOURCES:.c=.o)
 
-all: scr
+all: scr gen-bad-words
 
 .c.o:
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(OBJS): $(HEADERS)
 
-scr: $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LIBS)
+scr: $(OBJS) main.o
+	$(CC) -o $@ $(OBJS) main.o $(LIBS)
+
+gen-bad-words: $(OBJS) gen-bad-words.o
+	$(CC) -o $@ $(OBJS) gen-bad-words.o $(LIBS)
 
 clean:
 	rm -rf $(OBJS) stm
