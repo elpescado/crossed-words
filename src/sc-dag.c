@@ -229,9 +229,13 @@ _sort_cmp_func (const void *pa, const void *pb)
 }
 
 
+static int n_comparisons = 0;
+
 gboolean
 sc_dag_node_equal (const ScDagNode *a, const ScDagNode *b)
 {
+	n_comparisons++;
+
 	if (a->lid != b->lid)
 		return FALSE;
 
@@ -284,6 +288,7 @@ sc_dag_print_stats (ScDag *self)
 		       _sort_cmp_func);
 
 		gint n_duplicates = 0;
+		n_comparisons = 0;
 
 		/* Remove duplicates */
 		for (j = 0; j < nodes_per_level[i]; j++) {
@@ -314,7 +319,10 @@ sc_dag_print_stats (ScDag *self)
 				} // if
 			} // for k
 		} // for j
-		g_print (" %2d: %d duplicates\n", i, n_duplicates);
+		g_print (" %2d: %8d duplicates, %8d unique, %8d total, %12d comparisons, ratio %lf\n", i, n_duplicates,
+				 nodes_per_level[i] - n_duplicates,
+				 nodes_per_level[i], n_comparisons,
+				(double)n_comparisons/(double)nodes_per_level[i] );
 	} // for i
 
 	//	do {
