@@ -18,6 +18,7 @@ SOURCES=\
 	sc-board.c \
 	sc-dag.c \
 	sc-dag2.c \
+	sc-dawg.c \
 	sc-dsf.c \
 	sc-dumb-player.c \
 	sc-game.c \
@@ -43,6 +44,7 @@ HEADERS=\
 	sc-board.h \
 	sc-dag.h \
 	sc-dag2.h \
+	sc-dawg.h \
 	sc-dsf.h \
 	sc-dumb-player.h \
 	sc-game.h \
