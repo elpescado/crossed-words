@@ -75,6 +75,7 @@ sc_dsf_writer_write_vertex (ScDsfWriter        *writer,
 	struct ScDsfVertex v;
 	v.n_arcs = GUINT32_TO_LE (vertex->n_arcs);
 	v.first_arc_idx = GUINT32_TO_LE (vertex->first_arc_idx);
+	v.flags = vertex->flags;
 
 	fwrite (&v, sizeof (v), 1, writer->fh);
 }
@@ -97,7 +98,7 @@ sc_dsf_writer_write_arc (ScDsfWriter        *writer,
 ScDsfReader *
 sc_dsf_reader_open (const gchar *file_name)
 {
-	FILE *f = fopen (file_name, "w");
+	FILE *f = fopen (file_name, "r");
 
 	if (f == NULL)
 		return NULL;

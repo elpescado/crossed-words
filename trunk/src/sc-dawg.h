@@ -32,6 +32,10 @@ struct ScDawg {
 
 	ScDawgArc    *arcs;
 	guint         n_arcs;
+
+	guint ai;
+	guint vi;
+	guint vai;
 };
 
 
@@ -61,6 +65,12 @@ gboolean
 sc_dawg_test_word_translated (ScDawg *self, LID *letters, glong len);
 
 		
+void
+sc_dawg_print (ScDawg *self, Alphabet *al);
+
+
+ScDawgVertex *
+sc_dawg_root (ScDawg *self);
 
 
 
