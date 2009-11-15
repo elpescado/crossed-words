@@ -454,6 +454,7 @@ sc_dag2_print_stats (ScDag2 *self)
 
 			struct ScDsfVertex vertex;
 			vertex.n_arcs = node->n_children;
+			vertex.flags = node->flags;
 			vertex.first_arc_idx = arc_idx;
 			sc_dsf_writer_write_vertex (writer, &vertex);
 
