@@ -66,7 +66,7 @@ EXTRA_DIST=\
 
 OBJS=$(SOURCES:.c=.o)
 
-all: scr gen-bad-words
+all: scr gen-bad-words dictc
 
 .c.o:
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -78,6 +78,9 @@ scr: $(OBJS) main.o
 
 gen-bad-words: $(OBJS) gen-bad-words.o
 	$(CC) -o $@ $(OBJS) gen-bad-words.o $(LIBS)
+
+dictc: $(OBJS) dictc.o
+	$(CC) -o $@ $(OBJS) dictc.o $(LIBS)
 
 clean:
 	rm -rf $(OBJS) stm
