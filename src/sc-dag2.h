@@ -25,7 +25,9 @@ typedef enum {
 
 typedef struct {
 	gint  n_nodes;
+	gint  n_edges;
 	gsize size;
+	gint  n_words;
 
 	ScDag2Node *root;
 } ScDag2;
@@ -54,7 +56,7 @@ sc_dag2_add_word (ScDag2 *self, const gchar *word, Alphabet *al);
 
 
 gboolean
-sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al);
+sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max);
 
 
 gboolean

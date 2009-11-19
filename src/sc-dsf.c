@@ -48,6 +48,7 @@ sc_dsf_writer_open (const gchar *file_name,
 	writer->fh = f;
 
 	struct ScDsfHeader header;
+	memset (&header, '\0', sizeof (header));
 	sc_dsf_writer_init_header (writer, &header, n_vertices, n_arcs);
 
 	fwrite (&header, sizeof (header), 1, writer->fh);
@@ -73,6 +74,7 @@ sc_dsf_writer_write_vertex (ScDsfWriter        *writer,
                             const struct ScDsfVertex *vertex)
 {
 	struct ScDsfVertex v;
+	memset (&v, '\0', sizeof (v));
 	v.n_arcs = GUINT32_TO_LE (vertex->n_arcs);
 	v.first_arc_idx = GUINT32_TO_LE (vertex->first_arc_idx);
 	v.flags = vertex->flags;
@@ -86,6 +88,7 @@ sc_dsf_writer_write_arc (ScDsfWriter        *writer,
                          const struct ScDsfArc    *arc)
 {
 	struct ScDsfArc a;
+	memset (&a, '\0', sizeof (a));
 	a.lid     = GUINT16_TO_LE (arc->lid);
 	a.dest    = GUINT32_TO_LE (arc->dest);
 

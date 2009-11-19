@@ -114,28 +114,41 @@ void
 sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 {
 	glong len = g_utf8_strlen (word, -1);
-	if (len > 10) {
-	//	g_print ("too long, discarding: '%s'\n", word);
+	if (len > 15) {
+	//	exit(0);
+		g_print ("too long, discarding: '%s'\n", word);
 		return;
 	}
 	
 	LID letters[15];
-	alphabet_translate (al, word, letters);
+	if (!alphabet_translate (al, word, letters)) {
+		//g_print ("Invalid word");
+		return;
+	}
 
 
 	int i, j;
-	for (i = 0; i < len; i++) {
+	for (i = 1; i <= len; i++) {
 		LID new_letters[17];
 		memset (new_letters, '\0', sizeof (new_letters));
-		for (j = 0; j <= i; j++) {
-			new_letters[i - j] = letters[j];
+		for (j = 0; j < i; j++) {
+			new_letters[j] = letters[i-j-1];
 		}
-		new_letters[i+1] = 0;
-		for (j = i+1; j <= len; j++) {
-			new_letters[j+1] = letters[j];
+		//new_letters[i/*+1*/] = 0;
+		for (j = i; j < len; j++) {
+			new_letters[j] = letters[j];
 		}
 
-		sc_dag2_add_word_translated (self, new_letters, len+1);
+		/*
+		g_print ("add_word(");
+		for (j = 0; j < len; j++) {
+			Letter *l = alphabet_lookup_letter (al, new_letters[j]);
+			g_print ("%s", l ? l->label : "_");
+		}
+		g_print (");\n");
+		*/
+
+		sc_dag2_add_word_translated (self, new_letters, len/*+1*/);
 	}
 }
 
@@ -163,6 +176,7 @@ sc_dag2_add_word_translated (ScDag2 *self, LID *letters, glong len)
 {
 	ScDag2Node *node = self->root;
 
+	self->n_words++;
 //	g_print ("%s", word);
 
 	gint i;
@@ -222,7 +236,7 @@ sc_dag2_test_word_translated (ScDag2 *self, LID *letters, glong len)
 
 
 gboolean
-sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al)
+sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max)
 {
 	FILE *f = fopen (file_name, "r");
 	if (f == NULL) {
@@ -235,6 +249,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al)
 		char *word = g_strstrip (buffer);
 		sc_dag2_add_word (self, word, al);
 		//sc_dag2_add_drowword (self, word, al);
+		if (--max == 0)
+			break;
 	}
 
 	fclose (f);	
@@ -260,15 +276,16 @@ _traverse_tree1 (ScDag2 *dag, ScDag2Node *node)
 	dag->size += node->children_size * sizeof (struct ScDag2NodeChildEntry);
 
 	gint arcs = 0;
-	for (i = 1; i < 33; i++) {
-		if (sc_dag2_node_child (node, i) != NULL) {
+	for (i = 0; i < node->n_children; i++) {
+		//	for (i = 1; i < 33; i++) {
+//		if (sc_dag2_node_child (node, i) != NULL) {
 			arcs++;
 			total_arcs++;
-			gint child_depth = _traverse_tree1 (dag, sc_dag2_node_child (node, i));
+			gint child_depth = _traverse_tree1 (dag, node->children[i].node);
 			if (child_depth > depth) {
 				depth = child_depth;
 			}
-		}
+//		}
 	}
 	
 	if (arcs > _max_arcs_per_node)
@@ -291,15 +308,17 @@ _traverse_tree2 (ScDag2 *dag, ScDag2Node *node)
 	dag->size += node->children_size * sizeof (struct ScDag2NodeChildEntry);
 
 	gint arcs = 0;
-	for (i = 1; i < 33; i++) {
-		if (sc_dag2_node_child (node, i) != NULL) {
+	for (i = 0; i < node->n_children; i++) {
+//	for (i = 1; i < 33; i++) {
+//		if (sc_dag2_node_child (node, i) != NULL) {
 			arcs++;
 			total_arcs++;
-			gint child_depth = _traverse_tree2 (dag, sc_dag2_node_child (node, i));
+			gint child_depth = _traverse_tree2 (dag, node->children[i].node);
+//			gint child_depth = _traverse_tree2 (dag, sc_dag2_node_child (node, i));
 			if (child_depth > depth) {
 				depth = child_depth;
 			}
-		}
+//		}
 	}
 	if (arcs > _max_arcs_per_node)
 		_max_arcs_per_node = arcs;
@@ -311,6 +330,11 @@ _traverse_tree2 (ScDag2 *dag, ScDag2Node *node)
 
 
 
+/**
+ * Sort comparison function
+ *
+ * Sorts nodes according to hash
+ **/
 static int
 _sort_cmp_func (const void *pa, const void *pb)
 {
@@ -322,6 +346,10 @@ _sort_cmp_func (const void *pa, const void *pb)
 
 static int n_comparisons = 0;
 
+
+/**
+ * Compare two nodes
+ **/
 gboolean
 sc_dag2_node_equal (const ScDag2Node *a, const ScDag2Node *b)
 {
@@ -345,13 +373,28 @@ sc_dag2_node_equal (const ScDag2Node *a, const ScDag2Node *b)
 void
 sc_dag2_print_stats (ScDag2 *self)
 {
-	g_print ("DAG: n_nodes=%d, size=%d bytes\n",
-	         self->n_nodes, self->size);
+	g_print ("DAG: n_nodes=%d, size=%u bytes, n_words=%d\n",
+	         self->n_nodes, self->size, self->n_words);
 
 
 	self->size = 0;
 	_traverse_tree1 (self, self->root);
-	g_print (" => computed DAG size: %d <= \n", self->size);
+	g_print (" => computed DAG size: %u <= \n", self->size);
+
+}
+
+
+void
+sc_dag2_minimize (ScDag2 *self)
+{
+	g_print ("DAG: n_nodes=%d, size=%u bytes, n_words=%d\n",
+	         self->n_nodes, self->size, self->n_words);
+
+
+	self->size = 0;
+	_traverse_tree1 (self, self->root);
+	g_print (" => computed DAG size: %u <= \n", self->size);
+
 
 	gint i;
 	for (i = 0; i < 16; i++) {
@@ -374,7 +417,6 @@ sc_dag2_print_stats (ScDag2 *self)
 
 	gint total_edges = total_nodes - 1;
 
-	g_print ("Sorting...\n");
 	for (i = 0; i < 16; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
@@ -406,21 +448,13 @@ sc_dag2_print_stats (ScDag2 *self)
 					/* Found duplicate */
 					ScDag2Node *parent = sc_dag2_node_child (node2, 0);
 					LID lid = node1->lid;
-				//	g_print ("node1 = %p, node2 = %p, parent = %p, lid = %d\n",
-				//	         node1, node2, parent, (int) lid);
 					sc_dag2_node_set_child (parent, lid, node1);
 					nodes_tmp[i][k] = NULL; //node2 = NULL;
 					n_duplicates++;
 
-					/* Count edges originating from node2 */
-					int l;
-					for (l = 1; l < 33; l++)
-						if (sc_dag2_node_child (node2, l) != NULL)
-							total_edges--;
-
-
 					g_free (node2);
 					self->n_nodes--;
+					total_edges -= node2->n_children;
 					self->size -= sizeof (ScDag2Node);
 				} // if
 			} // for k
@@ -430,21 +464,25 @@ sc_dag2_print_stats (ScDag2 *self)
 				 nodes_per_level[i], n_comparisons,
 				(double)n_comparisons/(double)nodes_per_level[i] );
 	} // for i
+	self->n_edges = total_edges;
+}
 
-	g_print ("After minimization:\n");
 
-	g_print ("DAG: n_nodes=%d, size=%d bytes, n_edges=%d\n",
-	         self->n_nodes, self->size, total_edges);
-
-	g_print ("Saving binary file...");
-	
-	ScDsfWriter *writer = sc_dsf_writer_open ("dictionary.dag", self->n_nodes, total_edges);
+gboolean 
+sc_dag2_save (ScDag2 *self, const gchar *file_name)
+{
+	ScDsfWriter *writer = sc_dsf_writer_open (file_name, self->n_nodes, self->n_edges);
+	if (writer == NULL) {
+		g_print ("Cannot open file\n");
+		return FALSE;
+	}
 	GHashTable *node_indices = g_hash_table_new (g_direct_hash, g_direct_equal);
 
 
 	/* Write verices */
 	gint arc_idx = 0;
 	gint vertex_idx = 0;
+	int i;
 	for (i = 0; i < 16; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
@@ -484,7 +522,9 @@ sc_dag2_print_stats (ScDag2 *self)
 
 					sc_dsf_writer_write_arc (writer, &arc);
 				} else {
-					g_printerr ("Node not found\n");
+					g_printerr ("Node %p not found, %d (%2x) 0x%x, parent=%p\n", child, child->lid, (int)child->flags, (int)child->hash_code, child->parent);
+					if (child->parent != node)
+						g_printerr (" -> To make matters worse, bad parent (should be %p)\n", node);
 				} // if
 			} // for k
 		} // for j
@@ -493,6 +533,4 @@ sc_dag2_print_stats (ScDag2 *self)
 
 	g_hash_table_destroy (node_indices);
 	sc_dsf_writer_close (writer);
-
-	g_print (" ok\n");
 }
