@@ -16,6 +16,7 @@ SOURCES=\
 	marshal.c \
 	sc-bag.c \
 	sc-board.c \
+	sc-computer-player.c \
 	sc-dag.c \
 	sc-dag2.c \
 	sc-dawg.c \
@@ -25,7 +26,7 @@ SOURCES=\
 	sc-human-player.c \
 	sc-move.c \
 	sc-player.c \
-	sc-rack.c \
+	sc-rack-model.c \
 	scx-alphabet-panel.c \
 	scx-board-view.c \
 	scx-console.c \
@@ -42,6 +43,7 @@ HEADERS=\
 	marshal.h \
 	sc-bag.h \
 	sc-board.h \
+	sc-computer-player.h \
 	sc-dag.h \
 	sc-dag2.h \
 	sc-dawg.h \
@@ -51,7 +53,7 @@ HEADERS=\
 	sc-human-player.h \
 	sc-move.h \
 	sc-player.h \
-	sc-rack.h \
+	sc-rack-model.h \
 	scx-alphabet-panel.h \
 	scx-board-view.h \
 	scx-console.h \

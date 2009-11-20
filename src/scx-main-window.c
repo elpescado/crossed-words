@@ -312,7 +312,7 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 	priv->current_player = player;
 	scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), NULL);
 
-	ScRack *rack = sc_game_get_players_rack (priv->game, player);
+	ScRackModel *rack = sc_game_get_players_rack (priv->game, player);
 	scx_rack_view_set_rack (SCX_RACK_VIEW(priv->rack_view), rack);
 	g_object_unref (rack);
 

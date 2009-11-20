@@ -16,7 +16,7 @@
 #include "alphabet.h"
 #include "sc-player.h"
 #include "sc-board.h"
-#include "sc-rack.h"
+#include "sc-rack-model.h"
 #include "sc-bag.h"
 
 G_BEGIN_DECLS
@@ -82,14 +82,14 @@ sc_game_start (ScGame *game);
 
 
 void
-sc_game_fill_rack (ScGame *game, ScRack *rack, ScBag *bag);
+sc_game_fill_rack (ScGame *game, ScRackModel *rack, ScBag *bag);
 
 
 gboolean
 sc_game_init_move (ScGame *game, ScMove *move, gint x, gint y, ScOrientation, const gchar *str);
 
 
-ScRack *
+ScRackModel *
 sc_game_get_players_rack (ScGame *self, ScPlayer *player);
 
 

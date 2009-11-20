@@ -113,10 +113,11 @@ sc_dag2_node_hash (ScDag2Node *node)
 void
 sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 {
+	//g_print ("adding (%s)\n", word);
 	glong len = g_utf8_strlen (word, -1);
-	if (len > 15) {
+	if (len > 10) {
 	//	exit(0);
-		g_print ("too long, discarding: '%s'\n", word);
+	//	g_print ("too long, discarding: '%s'\n", word);
 		return;
 	}
 	
@@ -134,9 +135,9 @@ sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 		for (j = 0; j < i; j++) {
 			new_letters[j] = letters[i-j-1];
 		}
-		//new_letters[i/*+1*/] = 0;
+		new_letters[i/*+1*/] = 0;
 		for (j = i; j < len; j++) {
-			new_letters[j] = letters[j];
+			new_letters[j+1] = letters[j];
 		}
 
 		/*
@@ -247,8 +248,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max)
 
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
-		sc_dag2_add_word (self, word, al);
-		//sc_dag2_add_drowword (self, word, al);
+		//sc_dag2_add_word (self, word, al);
+		sc_dag2_add_drowword (self, word, al);
 		if (--max == 0)
 			break;
 	}
