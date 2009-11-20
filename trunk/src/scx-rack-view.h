@@ -13,7 +13,7 @@
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkdrawingarea.h>
 
-#include "sc-rack.h"
+#include "sc-rack-model.h"
 
 G_BEGIN_DECLS
 
@@ -56,12 +56,12 @@ GtkWidget*
 scx_rack_view_new				(void);
 
 
-ScRack *
+ScRackModel *
 scx_rack_view_get_rack (ScxRackView *self);
 
 
 void
-scx_rack_view_set_rack (ScxRackView *self, ScRack *rack);
+scx_rack_view_set_rack (ScxRackView *self, ScRackModel *rack);
 
 
 G_END_DECLS

@@ -36,9 +36,9 @@ struct _ScGamePrivate
 
 
 struct _ScPlayerCtx {
-	ScPlayer *player;
-	gint      points;
-	ScRack   *rack;
+	ScPlayer    *player;
+	gint         points;
+	ScRackModel *rack;
 };
 
 static void
@@ -103,7 +103,7 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 	LID needed_tiles[BOARD_SIZE] = {0};
 	gint n_needed_tiles = 0;
 	sc_board_get_needed_tiles (priv->board, move, needed_tiles, &n_needed_tiles);
-	if (! sc_rack_has_tiles (ctx->rack, needed_tiles, n_needed_tiles)) {
+	if (! sc_rack_model_has_tiles (ctx->rack, needed_tiles, n_needed_tiles)) {
 		g_print ("You don't have needed tiles\n");
 		return FALSE;
 	}
@@ -121,7 +121,7 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 		}
 
 		/* Update players rack */
-		sc_rack_remove_tiles (ctx->rack, needed_tiles, n_needed_tiles);
+		sc_rack_model_remove_tiles (ctx->rack, needed_tiles, n_needed_tiles);
 		sc_game_fill_rack (game, ctx->rack, priv->bag);
 	}	
 
@@ -133,7 +133,7 @@ sc_game_do_exchange (ScPlayer *player, ScMove *move, ScGame *game)
 {
 	ScGamePrivate *priv = game->priv;
 	ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
-	sc_rack_remove_tiles (ctx->rack, move->letters, move->n_letters);
+	sc_rack_model_remove_tiles (ctx->rack, move->letters, move->n_letters);
 
 	int i;
 	for (i = 0; i < move->n_letters; i++) {
@@ -177,7 +177,7 @@ sc_game_set_player (ScGame *self, gint num, ScPlayer *player)
 
 	ScPlayerCtx *ctx = g_new0 (ScPlayerCtx, 1);
 	ctx->player = g_object_ref (player);
-	ctx->rack   = sc_rack_new (priv->al);
+	ctx->rack   = sc_rack_model_new (priv->al);
 
 	if (priv->players[num]) {
 		g_object_unref (priv->players[num]->player);
@@ -244,12 +244,12 @@ sc_game_request_move (ScGame *self)
  * Fill user's rack
  **/
 void
-sc_game_fill_rack (ScGame *game, ScRack *rack, ScBag *bag)
+sc_game_fill_rack (ScGame *game, ScRackModel *rack, ScBag *bag)
 {
 //	ScGamePrivate *priv = self->priv;
 
-	while (sc_rack_count_tiles (rack) < 7 && sc_bag_n_tiles (bag) > 0)
-		sc_rack_add_tile (rack, sc_bag_pop (bag));
+	while (sc_rack_model_count_tiles (rack) < 7 && sc_bag_n_tiles (bag) > 0)
+		sc_rack_model_add_tile (rack, sc_bag_pop (bag));
 }
 
 
@@ -300,7 +300,7 @@ sc_game_init_move (ScGame *game, ScMove *move, gint x, gint y, ScOrientation o, 
 }
 
 
-ScRack *
+ScRackModel *
 sc_game_get_players_rack (ScGame *self, ScPlayer *player)
 {
 	ScPlayerCtx *ctx = sc_game_get_ctx_by_player (self, player);

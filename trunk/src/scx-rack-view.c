@@ -18,8 +18,8 @@ G_DEFINE_TYPE (ScxRackView, scx_rack_view, GTK_TYPE_DRAWING_AREA);
 struct _ScxRackViewPrivate
 {
 	/* Private members go here */
-	ScRack     *rack;
-	ScxPainter *painter;
+	ScRackModel *rack;
+	ScxPainter  *painter;
 
 	gboolean disposed;
 };
@@ -59,7 +59,7 @@ scx_rack_view_init (ScxRackView *self)
 }
 
 
-ScRack *
+ScRackModel *
 scx_rack_view_get_rack (ScxRackView *self)
 {
 	ScxRackViewPrivate *priv = self->priv;
@@ -69,7 +69,7 @@ scx_rack_view_get_rack (ScxRackView *self)
 
 
 void
-scx_rack_view_set_rack (ScxRackView *self, ScRack *rack)
+scx_rack_view_set_rack (ScxRackView *self, ScRackModel *rack)
 {
 	ScxRackViewPrivate *priv = self->priv;
 
@@ -96,8 +96,8 @@ scx_rack_view_expose_event (GtkWidget          *widget,
 	int i;
 	int n_tiles;
 	LID tiles[7];
-	sc_rack_get_tiles (priv->rack, tiles, &n_tiles);
-	Alphabet *al = sc_rack_get_alphabet (priv->rack);
+	sc_rack_model_get_tiles (priv->rack, tiles, &n_tiles);
+	Alphabet *al = sc_rack_model_get_alphabet (priv->rack);
 
 	for (i = 0; i < n_tiles; i++) {
 		Letter *l = alphabet_lookup_letter (al, tiles[i]);

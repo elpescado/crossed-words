@@ -11,12 +11,12 @@
 
 #include "common.h"
 #include "letter.h"
-#include "sc-rack.h"
+#include "sc-rack-model.h"
 
 
-G_DEFINE_TYPE (ScRack, sc_rack, G_TYPE_OBJECT)
+G_DEFINE_TYPE (ScRackModel, sc_rack_model, G_TYPE_OBJECT)
 
-struct _ScRackPrivate
+struct _ScRackModelPrivate
 {
 	/* Private members go here */
 	LID      tiles[7];
@@ -28,16 +28,16 @@ struct _ScRackPrivate
 };
 
 
-#define SC_RACK_GET_PRIVATE(obj) \
+#define SC_RACK_MODEL_GET_PRIVATE(obj) \
 	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
-	SC_TYPE_RACK, ScRackPrivate))
+	SC_TYPE_RACK, ScRackModelPrivate))
 
 
-ScRack*
-sc_rack_new (Alphabet *al)
+ScRackModel*
+sc_rack_model_new (Alphabet *al)
 {
-	ScRack *self = g_object_new (SC_TYPE_RACK, NULL);
-	ScRackPrivate *priv = self->priv;
+	ScRackModel *self = g_object_new (SC_TYPE_RACK, NULL);
+	ScRackModelPrivate *priv = self->priv;
 	priv->al = al;
 
 	return self;
@@ -45,21 +45,21 @@ sc_rack_new (Alphabet *al)
 
 
 static void
-sc_rack_init (ScRack *self)
+sc_rack_model_init (ScRackModel *self)
 {
-	self->priv = SC_RACK_GET_PRIVATE (self);
-	ScRackPrivate *priv = self->priv;
+	self->priv = SC_RACK_MODEL_GET_PRIVATE (self);
+	ScRackModelPrivate *priv = self->priv;
 
 	priv->disposed = FALSE;
 }
 
 
 void
-sc_rack_get_tiles               (ScRack *rack,
+sc_rack_model_get_tiles               (ScRackModel *rack,
                                  LID    *tiles,
                                  gint   *n_tiles)
 {
-	ScRackPrivate *priv = rack->priv;
+	ScRackModelPrivate *priv = rack->priv;
 
 	if (n_tiles)
 		*n_tiles = priv->n_tiles;
@@ -69,11 +69,11 @@ sc_rack_get_tiles               (ScRack *rack,
 
 
 gboolean
-sc_rack_has_tiles (ScRack *self,
+sc_rack_model_has_tiles (ScRackModel *self,
                    LID    *tiles,
                    gint    n_tiles)
 {
-	ScRackPrivate *priv = self->priv;
+	ScRackModelPrivate *priv = self->priv;
 	Alphabet *al = priv->al;
 	gboolean ok = TRUE;
 	int i;
@@ -105,10 +105,10 @@ sc_rack_has_tiles (ScRack *self,
 
 
 gboolean
-sc_rack_add_tile                (ScRack *rack,
+sc_rack_model_add_tile                (ScRackModel *rack,
                                  LID     tile)
 {
-	ScRackPrivate *priv = rack->priv;
+	ScRackModelPrivate *priv = rack->priv;
 
 	if (priv->n_tiles >= 7) {
 		return FALSE;
@@ -120,10 +120,10 @@ sc_rack_add_tile                (ScRack *rack,
 
 
 void
-sc_rack_remove_tile (ScRack *rack,
+sc_rack_model_remove_tile (ScRackModel *rack,
                      LID     tile)
 {
-	ScRackPrivate *priv = rack->priv;
+	ScRackModelPrivate *priv = rack->priv;
 	int found_i = -1;
 	int i;
 
@@ -147,40 +147,40 @@ sc_rack_remove_tile (ScRack *rack,
  * Remove tiles from player's rack
  **/
 void
-sc_rack_remove_tiles (ScRack *rack,
+sc_rack_model_remove_tiles (ScRackModel *rack,
                       LID    *tiles,
                       gint    n_tiles)
 {
 	int i;
 	for (i = 0; i < n_tiles; i++) {
-		sc_rack_remove_tile (rack, tiles[i]);
+		sc_rack_model_remove_tile (rack, tiles[i]);
 	}
 }
 
 
 gint
-sc_rack_count_tiles             (ScRack *rack)
+sc_rack_model_count_tiles             (ScRackModel *rack)
 {
-	ScRackPrivate *priv = rack->priv;
+	ScRackModelPrivate *priv = rack->priv;
 
 	return priv->n_tiles;
 }
 
 
 Alphabet *
-sc_rack_get_alphabet            (ScRack *rack)
+sc_rack_model_get_alphabet            (ScRackModel *rack)
 {
-	ScRackPrivate *priv = rack->priv;
+	ScRackModelPrivate *priv = rack->priv;
 	
 	return priv->al;
 }
 
 
 static void
-sc_rack_dispose (GObject *object)
+sc_rack_model_dispose (GObject *object)
 {
-	ScRack *self = (ScRack*) object;
-	ScRackPrivate *priv = self->priv;
+	ScRackModel *self = (ScRackModel*) object;
+	ScRackModelPrivate *priv = self->priv;
 
 
 	/* Make sure dispose is called only once */
@@ -191,22 +191,22 @@ sc_rack_dispose (GObject *object)
 
 
 	/* Chain up to the parent class */
-	G_OBJECT_CLASS (sc_rack_parent_class)->dispose (object);
+	G_OBJECT_CLASS (sc_rack_model_parent_class)->dispose (object);
 }
 
 
 static void
-sc_rack_finalize (GObject *object)
+sc_rack_model_finalize (GObject *object)
 {
-	G_OBJECT_CLASS (sc_rack_parent_class)->finalize (object);
+	G_OBJECT_CLASS (sc_rack_model_parent_class)->finalize (object);
 }
 
 	
 static void
-sc_rack_get_property (GObject *object, guint property_id,
+sc_rack_model_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
-	ScRack* self = SC_RACK (object);
+	ScRackModel* self = SC_RACK_MODEL (object);
 	G_UNUSED (self);
 
 	switch (property_id) {
@@ -217,10 +217,10 @@ sc_rack_get_property (GObject *object, guint property_id,
 
 
 static void
-sc_rack_set_property (GObject *object, guint property_id,
+sc_rack_model_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
-	ScRack* self = SC_RACK (object);
+	ScRackModel* self = SC_RACK_MODEL (object);
 	G_UNUSED (self);
 
 	switch (property_id) {
@@ -231,15 +231,15 @@ sc_rack_set_property (GObject *object, guint property_id,
 
 
 static void
-sc_rack_class_init (ScRackClass *klass)
+sc_rack_model_class_init (ScRackModelClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
-	gobject_class->get_property = sc_rack_get_property;
-	gobject_class->set_property = sc_rack_set_property;
-	gobject_class->dispose = sc_rack_dispose;
-	gobject_class->finalize = sc_rack_finalize;
+	gobject_class->get_property = sc_rack_model_get_property;
+	gobject_class->set_property = sc_rack_model_set_property;
+	gobject_class->dispose = sc_rack_model_dispose;
+	gobject_class->finalize = sc_rack_model_finalize;
 
-	g_type_class_add_private (klass, sizeof (ScRackPrivate));
+	g_type_class_add_private (klass, sizeof (ScRackModelPrivate));
 }
 
