@@ -93,7 +93,15 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 {
 	ScGamePrivate *priv = game->priv;
 	ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
-	g_print ("Move done\n");
+	g_print ("Move done (");
+	{
+		int i;
+		for (i = 0; i < move->n_letters; i++) {
+			Letter *l = alphabet_lookup_letter (priv->al, move->letters[i]);
+			g_print ("%s", l->label);
+		}
+	}
+	g_print (")\n");
 
 	/* Can move be placed on board? */
 	if (! sc_board_validate_move (priv->board, move))

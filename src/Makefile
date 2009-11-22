@@ -3,7 +3,7 @@ REFERENCES=gtk+-2.0
 CFLAGS=-Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
 #STATIC_LIBS=`curl-config --static-libs`
-LIBS=-g -Wall `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS)
+LIBS=-g -Wall `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
 
 PACKAGE=scrabble
 VERSION=1.0
@@ -26,6 +26,7 @@ SOURCES=\
 	sc-human-player.c \
 	sc-move.c \
 	sc-player.c \
+	sc-rack.c \
 	sc-rack-model.c \
 	scx-alphabet-panel.c \
 	scx-board-view.c \
@@ -54,6 +55,7 @@ HEADERS=\
 	sc-move.h \
 	sc-player.h \
 	sc-rack-model.h \
+	sc-rack.h \
 	scx-alphabet-panel.h \
 	scx-board-view.h \
 	scx-console.h \

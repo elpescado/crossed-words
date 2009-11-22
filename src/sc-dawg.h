@@ -10,6 +10,7 @@ typedef struct ScDawgVertex ScDawgVertex;
 typedef struct ScDawgArc    ScDawgArc;
 
 
+#define sc_dawg_vertex_is_final(vert) (vert->flags & 1)
 
 
 struct ScDawgVertex {
@@ -71,6 +72,10 @@ sc_dawg_print (ScDawg *self, Alphabet *al);
 
 ScDawgVertex *
 sc_dawg_root (ScDawg *self);
+
+
+ScDawgVertex *
+sc_dawg_vertex_child (const ScDawgVertex *vertex, LID lid);
 
 
 

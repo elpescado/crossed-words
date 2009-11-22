@@ -16,6 +16,7 @@
 #include "alphabet.h"
 #include "sc-move.h"
 
+#define BOARD_SIZE 15
 
 G_BEGIN_DECLS
 
