@@ -10,6 +10,7 @@
 
 #include "common.h"
 #include "sc-player.h"
+#include "sc-game.h"
 
 #include "marshal.h"
 
@@ -72,6 +73,38 @@ _sc_player_do_move (ScPlayer *player, ScMove *move)
 	g_print ("_do_move = %d\n", (int) ret_val);
 	return ret_val;
 }
+
+
+/**
+ * Get current game handle
+ **/
+/*
+ScGame *
+sc_player_get_game (ScPlayer *player)
+{
+	return SC_GAME (player->game);	
+}
+*/
+
+ScBoard *
+sc_player_get_board (ScPlayer *player)
+{
+	ScGame *game = SC_GAME (player->game);
+	return sc_game_get_board (game);
+}
+
+
+void
+sc_player_get_rack (ScPlayer *player, ScRack *rack)
+{
+	ScGame *game = SC_GAME (player->game);
+	ScRackModel *rack_model = sc_game_get_players_rack (game, player);
+	LID letters[15];
+	gint n_letters;
+	sc_rack_model_get_tiles (rack_model, letters, &n_letters);
+	sc_rack_assign_letters (rack, letters, n_letters);
+}
+
 
 
 static void

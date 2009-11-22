@@ -12,6 +12,7 @@
 #include "common.h"
 #include "sc-game.h"
 #include "sc-dumb-player.h"
+#include "sc-computer-player.h"
 #include "sc-human-player.h"
 
 #include "scx-alphabet-panel.h"
@@ -328,7 +329,8 @@ scx_main_window_create_player (ScxMainWindow *self, int num)
 {
 	ScxMainWindowPrivate *priv = self->priv;
 
-	ScPlayer *p1 = num ? SC_PLAYER (sc_human_player_new ()) : SC_PLAYER (sc_dumb_player_new());
+	ScPlayer *p1 = !num ? SC_PLAYER (sc_human_player_new ()) : SC_PLAYER (sc_computer_player_new());
+	p1->game = priv->game;
 	sc_game_set_player (priv->game, num, SC_PLAYER (p1));
 
 	g_signal_connect (p1, "your-turn", G_CALLBACK (scx_main_window_players_turn_cb), self);

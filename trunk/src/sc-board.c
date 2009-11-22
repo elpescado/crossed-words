@@ -242,7 +242,7 @@ sc_board_rate_prefix (ScBoard *self, int i, int j, int di, int dj)
 	ScBoardPrivate *priv = self->priv;
 	gint rating = 0;
 
-	g_print ("Rate prefix (");
+//	g_print ("Rate prefix (");
 	for (i-=di, j-=dj; i >= 0 && j >= 0; i-=di, j-=dj) {
 //		g_print (" -> %d, %d\n", i, j); 
 		int pos = j * BOARD_SIZE + i;
@@ -252,10 +252,10 @@ sc_board_rate_prefix (ScBoard *self, int i, int j, int di, int dj)
 			break;
 
 		Letter *l = alphabet_lookup_letter (priv->al, lid);
-		g_print ("%s", l->label);
+//		g_print ("%s", l->label);
 		rating += l->value;
 	}
-	g_print (") = %d\n", rating);
+//	g_print (") = %d\n", rating);
 
 	return rating;
 }
@@ -268,7 +268,7 @@ sc_board_rate_suffix (ScBoard *self, int i, int j, int di, int dj)
 	ScBoardPrivate *priv = self->priv;
 	gint rating = 0;
 
-	g_print ("Rate suffix (");
+//	g_print ("Rate suffix (");
 	for (i+=di, j+=dj; i < BOARD_SIZE && j < BOARD_SIZE; i+=di, j+=dj) {
 //		g_print (" -> %d, %d\n", i, j); 
 		int pos = j * BOARD_SIZE + i;
@@ -278,10 +278,10 @@ sc_board_rate_suffix (ScBoard *self, int i, int j, int di, int dj)
 			break;
 
 		Letter *l = alphabet_lookup_letter (priv->al, lid);
-		g_print ("%s", l->label);
+//		g_print ("%s", l->label);
 		rating += l->value;
 	}
-	g_print (") = %d\n", rating);
+//	g_print (") = %d\n", rating);
 
 	return rating;
 }

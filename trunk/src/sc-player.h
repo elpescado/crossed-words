@@ -14,6 +14,8 @@
 #include <gtk/gtkwindow.h>
 
 #include "sc-move.h"
+#include "sc-board.h"
+#include "sc-rack.h"
 
 G_BEGIN_DECLS
 
@@ -37,6 +39,7 @@ typedef struct _ScPlayerClass		ScPlayerClass;
 
 struct _ScPlayer{
 	GObject		parent;
+	gpointer   *game;
 	ScPlayerPrivate	*priv;
 };
 
@@ -51,7 +54,6 @@ struct _ScPlayerClass
 };
 
 
-
 GType
 sc_player_get_type				(void);
 
@@ -63,6 +65,17 @@ sc_player_new				(void);
 gboolean
 sc_player_do_move (ScPlayer *plaver, ScMove *move);
 
+
+/*
+ScGame *
+sc_player_get_game (ScPlayer *player);
+*/
+
+ScBoard *
+sc_player_get_board (ScPlayer *player);
+
+void
+sc_player_get_rack (ScPlayer *player, ScRack *rack);
 
 G_END_DECLS
 

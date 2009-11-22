@@ -248,8 +248,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max)
 
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
-		//sc_dag2_add_word (self, word, al);
-		sc_dag2_add_drowword (self, word, al);
+		sc_dag2_add_word (self, word, al);
+		//sc_dag2_add_drowword (self, word, al);
 		if (--max == 0)
 			break;
 	}

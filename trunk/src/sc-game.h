@@ -52,7 +52,6 @@ struct _ScGameClass
 };
 
 
-
 GType
 sc_game_get_type				(void);
 

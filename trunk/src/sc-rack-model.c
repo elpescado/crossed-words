@@ -81,13 +81,16 @@ sc_rack_model_has_tiles (ScRackModel *self,
 	gint *tile_counts = g_new0 (gint, al->n_letters+2);
 
 	for (i = 0; i < n_tiles; i++) {
+		//g_print (" -> You need %d\n", tiles[i]);
 		tile_counts[tiles[i]]++;
 	}
 
 	for (i = 0; i < priv->n_tiles; i++) {
 		LID lid = priv->tiles[i];
-		if (tile_counts[lid] > 0)
+		if (tile_counts[lid] > 0) {
+			//g_print (" -> You have %d\n", priv->tiles[i]);
 			tile_counts[lid]--;
+		}
 	}
 
 	for (i = 0; i < al->n_letters; i++) {

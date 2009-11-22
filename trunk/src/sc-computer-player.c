@@ -8,16 +8,52 @@
 
 #include <gtk/gtk.h>
 #include "sc-computer-player.h"
-
+#include "sc-dawg.h"
+#include "sc-game.h"
+#include "sc-move.h"
 
 G_DEFINE_TYPE (ScComputerPlayer, sc_computer_player, SC_TYPE_PLAYER)
 
 struct _ScComputerPlayerPrivate
 {
 	/* Private members go here */
+	ScDawg *dawg;
+
+	gpointer *moves;
 
 	gboolean disposed;
 };
+
+
+
+typedef struct {
+	ScMove move;
+	gint   rating;
+} _MoveProposal;
+
+
+typedef struct {
+	GList *moves;
+} _MoveAcc;
+
+
+static _MoveAcc *
+_move_acc_new (void)
+{
+	return g_new0 (_MoveAcc, 1);
+}
+
+
+static void
+_move_acc_push (_MoveAcc *acc, ScMove *move, gint rating)
+{
+	_MoveProposal *mp = g_new(_MoveProposal, 1);
+	memcpy (&(mp->move), move, sizeof (ScMove));
+	mp->rating = rating;
+
+	acc->moves = g_list_prepend (acc->moves, mp);
+}
+
 
 
 #define SC_COMPUTER_PLAYER_GET_PRIVATE(obj) \
@@ -34,10 +70,201 @@ sc_computer_player_new (void)
 
 
 static void
+_print_word (ScPlayer *p, LID *letters, gint n_letters)
+{
+	Alphabet *al = sc_game_get_alphabet (SC_GAME (p->game));
+	int i;
+	for (i = 0; i < n_letters; i++) {
+		Letter *l = alphabet_lookup_letter (al, letters[i]);
+		g_print ("%s", l->label);
+	}
+//	g_print ("\n");
+}
+
+
+static void
+_found_word (ScComputerPlayer *self,
+             ScBoard          *board,
+             gint              si,
+			 gint              sj,
+			 LID              *letters,
+			 gint              n_letters)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	ScMove move;
+	move.type = SC_MOVE_TYPE_MOVE;
+	memcpy (move.letters, letters, sizeof(LID)*n_letters);
+	move.n_letters = n_letters;
+	move.x = si;
+	move.y = sj;
+	move.orientation = SC_HORIZONTAL;
+
+	if (! sc_board_validate_move (board, &move)) {
+		g_print ("Huh?");
+	} else {
+		gint rating = sc_board_rate_move (board, &move);
+		
+		g_print ("Found word ");
+		_print_word (self, letters, n_letters);
+		g_print (" (%d)\n", rating);
+
+		_move_acc_push (priv->moves, &move, rating);
+	}
+//	sc_game_init_move (SC_GAME (SC_PLAYER(self)->game), si, sj, SC_ORIENTATION_HORIZONTAL, 
+}
+
+
+static void
+_traverse_tree (ScComputerPlayer *self,
+                ScBoard          *board,
+				gint              si,
+				gint              sj,
+				LID              *letters,
+				gint              idx,
+				ScDawgVertex     *node,
+				ScRack           *rack)
+{
+	g_printerr (".");
+	Letter *l = sc_board_get_letter (board, si + idx, sj);
+	if (l) {
+		/* There is a tile on board in this place... */
+		LID lid = l->index;
+
+		ScDawgVertex *v2 = sc_dawg_vertex_child (node, lid);
+		if (v2) {
+			letters[idx] = lid;
+			if (sc_dawg_vertex_is_final (v2)) {
+				_found_word (self, board, si, sj, letters, idx+1);
+			}
+			_traverse_tree (self, board, si, sj, letters, idx+1, v2, rack);
+		}
+	} else {
+		gint i;
+		for (i = 0; i < node->n_arcs; i++) {
+			ScDawgArc *a = node->first_arc+i;
+			LID lid = a->lid;
+			if (sc_rack_contains (rack, lid)) {
+				ScDawgVertex *v2 = a->dest;
+				letters[idx] = lid;
+				if (sc_dawg_vertex_is_final (v2)) {
+					_found_word (self, board, si, sj, letters, idx+1);
+					//g_print ("Found word ");
+					//_print_word (self, letters, idx+1);
+					//g_print ("\n");
+				}
+
+				sc_rack_remove (rack, lid);
+				_traverse_tree (self, board, si, sj, letters, idx+1, v2, rack);
+				sc_rack_add (rack, lid);
+			}
+		}
+	}
+}
+
+
+static void
+sc_computer_player_explore_anchor_square (ScComputerPlayer *self,
+                                          ScBoard          *board,
+                                          gint              si,
+										  gint              sj)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	Letter *l =  sc_board_get_letter (board, si, sj);
+	ScDawgVertex *root = sc_dawg_root (priv->dawg);
+	ScDawgVertex *v = sc_dawg_vertex_child (root, l->index);
+	if (v == NULL)
+		return;
+
+	ScRack rack;
+	sc_player_get_rack (SC_PLAYER (self), &rack);
+	LID letters[15];
+
+	letters[0] = l->index;
+	_traverse_tree (self, board, si, sj, letters, 1, v, &rack);
+	
+}
+
+
+static ScMove *
+sc_computer_player_analyze_moves (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	gint max_score = 0;
+	ScMove *best_move = NULL;
+	GList *tmp;
+	for (tmp = ((_MoveAcc*)priv->moves)->moves; tmp; tmp = tmp->next) {
+		_MoveProposal *mp = tmp->data;
+		if (mp->rating > max_score) {
+			max_score = mp->rating;
+			best_move = &(mp->move);
+		}
+	}
+	return best_move;
+}
+
+
+static void
+sc_computer_player_your_turn (ScComputerPlayer *self)
+{
+
+	ScMove move;
+	ScBoard *board;
+	int i,j;
+
+	board = sc_player_get_board (SC_PLAYER (self));
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
+	ScRack rack;
+	sc_player_get_rack (SC_PLAYER (self), &rack);
+	g_print ("My rack: ");
+	sc_rack_print (&rack, al);
+	g_print ("\n");
+
+	priv->moves = _move_acc_new ();
+
+
+	g_printerr ("searching");
+	/* Scan for anchor squares */
+	for (i = 0; i < BOARD_SIZE; i++) {
+		for (j = 0; j < BOARD_SIZE; j++) {
+			Letter *l = sc_board_get_letter (board, i, j);
+
+			if (l != NULL) {
+				g_print ("Found anchor square '%s' @ %d, %d\n", l->label, i, j);
+				sc_computer_player_explore_anchor_square (self, board, i, j);
+			}
+		}
+	}
+	g_printerr ("\ndone\n");
+
+
+	ScMove *m_move = sc_computer_player_analyze_moves (self);
+	if (m_move && sc_player_do_move (SC_PLAYER (self), m_move)) {
+		g_print ("OK\n");
+	} else {
+		g_print ("Giving up\n");
+		move.type = SC_MOVE_TYPE_PASS;
+		sc_player_do_move (SC_PLAYER (self), &move);
+	}
+
+	/* Cleanup */
+}
+
+
+
+static void
 sc_computer_player_init (ScComputerPlayer *self)
 {
 	self->priv = SC_COMPUTER_PLAYER_GET_PRIVATE (self);
 	ScComputerPlayerPrivate *priv = self->priv;
+
+	g_signal_connect (self, "your-turn",
+	                  G_CALLBACK (sc_computer_player_your_turn), self);
+
+	priv->dawg = sc_dawg_load ("dictionary.dag");
 
 	priv->disposed = FALSE;
 }
