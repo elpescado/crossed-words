@@ -14,6 +14,7 @@
 #include <gtk/gtkwindow.h>
 
 #include "sc-player.h"
+#include "sc-move.h"
 
 
 G_BEGIN_DECLS
@@ -55,6 +56,14 @@ sc_computer_player_get_type				(void);
 
 ScComputerPlayer*
 sc_computer_player_new				(void);
+
+
+void
+sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating);
+
+
+void
+sc_computer_player_clear_moves (ScComputerPlayer *self);
 
 
 G_END_DECLS

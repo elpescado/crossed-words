@@ -175,7 +175,7 @@ sc_dawg_print (ScDawg *self, Alphabet *al)
 			ScDawgArc *a = v->first_arc + j;
 
 			Letter *l = alphabet_lookup_letter (al, a->lid);
-			g_print ("%s -> %d   ", l->label, a->dest - self->vertices);
+			g_print ("%s -> %d   ", l->label, (int)(a->dest - self->vertices));
 		}
 		g_print ("\n");
 
