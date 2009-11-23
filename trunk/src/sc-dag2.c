@@ -292,8 +292,7 @@ _traverse_tree1 (ScDag2 *dag, ScDag2Node *node)
 	if (arcs > _max_arcs_per_node)
 		_max_arcs_per_node = arcs;
 
-	int idx = nodes_per_level[depth]++;
-	//nodes_tmp[depth][idx] = node;
+	nodes_per_level[depth]++;
 	
 	return depth+1;
 }
@@ -375,12 +374,12 @@ void
 sc_dag2_print_stats (ScDag2 *self)
 {
 	g_print ("DAG: n_nodes=%d, size=%u bytes, n_words=%d\n",
-	         self->n_nodes, self->size, self->n_words);
+	         (int)self->n_nodes, (unsigned int)self->size, (int)self->n_words);
 
 
 	self->size = 0;
 	_traverse_tree1 (self, self->root);
-	g_print (" => computed DAG size: %u <= \n", self->size);
+	g_print (" => computed DAG size: %u <= \n", (unsigned int)self->size);
 
 }
 
@@ -389,12 +388,12 @@ void
 sc_dag2_minimize (ScDag2 *self)
 {
 	g_print ("DAG: n_nodes=%d, size=%u bytes, n_words=%d\n",
-	         self->n_nodes, self->size, self->n_words);
+	         (int)self->n_nodes, (unsigned int)self->size, (int)self->n_words);
 
 
 	self->size = 0;
 	_traverse_tree1 (self, self->root);
-	g_print (" => computed DAG size: %u <= \n", self->size);
+	g_print (" => computed DAG size: %u <= \n", (unsigned int)self->size);
 
 
 	gint i;
@@ -406,7 +405,7 @@ sc_dag2_minimize (ScDag2 *self)
 	_traverse_tree2 (self, self->root);
 
 	g_print ("Total arcs %lld max per node %d avg arcs per node %lld\n",
-			total_arcs, _max_arcs_per_node, total_arcs / self->n_nodes);
+			(long long int)total_arcs, (int)_max_arcs_per_node, (long long int)total_arcs / self->n_nodes);
 
 	gint total_nodes = 0;
 	for (i = 0; i < 16; i++) {
@@ -516,7 +515,7 @@ sc_dag2_save (ScDag2 *self, const gchar *file_name)
 				ScDag2Node *child = node->children[k].node;
 
 				guint node_id;
-				if (g_hash_table_lookup_extended (node_indices, child, NULL, &node_id)) {
+				if (g_hash_table_lookup_extended (node_indices, child, NULL, (void**)&node_id)) {
 					struct ScDsfArc arc;
 					arc.lid = lid;
 					arc.dest = node_id;
@@ -534,4 +533,6 @@ sc_dag2_save (ScDag2 *self, const gchar *file_name)
 
 	g_hash_table_destroy (node_indices);
 	sc_dsf_writer_close (writer);
+
+	return TRUE;
 }

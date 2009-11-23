@@ -260,7 +260,7 @@ void
 sc_dag_print_stats (ScDag *self)
 {
 	g_print ("DAG: n_nodes=%d, size=%d bytes\n",
-	         self->n_nodes, self->size);
+	         (int)self->n_nodes, (int)self->size);
 
 
 	gint i;
@@ -271,7 +271,7 @@ sc_dag_print_stats (ScDag *self)
 	_traverse_tree (self, self->root);
 
 	g_print ("Total arcs %lld max per node %d avg arcs per node %lld\n",
-			total_arcs, _max_arcs_per_node, total_arcs / self->n_nodes);
+			(long long int)total_arcs,(int) _max_arcs_per_node, (long long int)total_arcs / self->n_nodes);
 
 	gint total_nodes = 0;
 	for (i = 0; i < 16; i++) {
@@ -391,5 +391,5 @@ sc_dag_print_stats (ScDag *self)
 	g_print ("After minimization:\n");
 
 	g_print ("DAG: n_nodes=%d, size=%d bytes, n_edges=%d\n",
-	         self->n_nodes, self->size, total_edges);
+	         (int)self->n_nodes, (int)self->size, (int)total_edges);
 }

@@ -5,8 +5,10 @@
  * Copyright (C) 2009 Przemysław Sitek
  * 
  */
+#include <string.h>
 
 #include <gtk/gtk.h>
+
 #include "sc-computer-player.h"
 #include "sc-dawg.h"
 #include "sc-game.h"
@@ -19,7 +21,7 @@ struct _ScComputerPlayerPrivate
 	/* Private members go here */
 	ScDawg *dawg;
 
-	gpointer *moves;
+	GList *moves;
 
 	gboolean disposed;
 };
@@ -32,27 +34,6 @@ typedef struct {
 } _MoveProposal;
 
 
-typedef struct {
-	GList *moves;
-} _MoveAcc;
-
-
-static _MoveAcc *
-_move_acc_new (void)
-{
-	return g_new0 (_MoveAcc, 1);
-}
-
-
-static void
-_move_acc_push (_MoveAcc *acc, ScMove *move, gint rating)
-{
-	_MoveProposal *mp = g_new(_MoveProposal, 1);
-	memcpy (&(mp->move), move, sizeof (ScMove));
-	mp->rating = rating;
-
-	acc->moves = g_list_prepend (acc->moves, mp);
-}
 
 
 
@@ -82,6 +63,30 @@ _print_word (ScPlayer *p, LID *letters, gint n_letters)
 }
 
 
+
+void
+sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	_MoveProposal *mp = g_new(_MoveProposal, 1);
+	memcpy (&(mp->move), move, sizeof (ScMove));
+	mp->rating = rating;
+
+	priv->moves = g_list_prepend (priv->moves, mp);
+}
+
+
+void
+sc_computer_player_clear_moves (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	g_list_foreach (priv->moves, (GFunc)g_free, NULL);
+	g_list_free (priv->moves);
+	priv->moves = NULL;
+}
+
+
 static void
 _found_word (ScComputerPlayer *self,
              ScBoard          *board,
@@ -90,7 +95,7 @@ _found_word (ScComputerPlayer *self,
 			 LID              *letters,
 			 gint              n_letters)
 {
-	ScComputerPlayerPrivate *priv = self->priv;
+	//ScComputerPlayerPrivate *priv = self->priv;
 	ScMove move;
 	move.type = SC_MOVE_TYPE_MOVE;
 	memcpy (move.letters, letters, sizeof(LID)*n_letters);
@@ -105,10 +110,11 @@ _found_word (ScComputerPlayer *self,
 		gint rating = sc_board_rate_move (board, &move);
 		
 		g_print ("Found word ");
-		_print_word (self, letters, n_letters);
+		_print_word (SC_PLAYER (self), letters, n_letters);
 		g_print (" (%d)\n", rating);
 
-		_move_acc_push (priv->moves, &move, rating);
+		sc_computer_player_save_move (self, &move, rating);
+//		_move_acc_push (priv->moves, &move, rating);
 	}
 //	sc_game_init_move (SC_GAME (SC_PLAYER(self)->game), si, sj, SC_ORIENTATION_HORIZONTAL, 
 }
@@ -194,7 +200,7 @@ sc_computer_player_analyze_moves (ScComputerPlayer *self)
 	gint max_score = 0;
 	ScMove *best_move = NULL;
 	GList *tmp;
-	for (tmp = ((_MoveAcc*)priv->moves)->moves; tmp; tmp = tmp->next) {
+	for (tmp = priv->moves; tmp; tmp = tmp->next) {
 		_MoveProposal *mp = tmp->data;
 		if (mp->rating > max_score) {
 			max_score = mp->rating;
@@ -214,7 +220,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	int i,j;
 
 	board = sc_player_get_board (SC_PLAYER (self));
-	ScComputerPlayerPrivate *priv = self->priv;
+	//ScComputerPlayerPrivate *priv = self->priv;
 
 	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 	ScRack rack;
@@ -222,8 +228,6 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	g_print ("My rack: ");
 	sc_rack_print (&rack, al);
 	g_print ("\n");
-
-	priv->moves = _move_acc_new ();
 
 
 	g_printerr ("searching");
@@ -300,8 +304,8 @@ static void
 sc_computer_player_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
 {
-	ScComputerPlayer* self = SC_COMPUTER_PLAYER (object);
-	ScComputerPlayerPrivate* priv = self->priv;
+	//ScComputerPlayer* self = SC_COMPUTER_PLAYER (object);
+	//ScComputerPlayerPrivate* priv = self->priv;
 
 	switch (property_id) {
 		default:
@@ -314,8 +318,8 @@ static void
 sc_computer_player_set_property (GObject *object, guint property_id,
                               const GValue *value, GParamSpec *pspec)
 {
-	ScComputerPlayer* self = SC_COMPUTER_PLAYER (object);
-	ScComputerPlayerPrivate* priv = self->priv;
+	//ScComputerPlayer* self = SC_COMPUTER_PLAYER (object);
+	//ScComputerPlayerPrivate* priv = self->priv;
 
 	switch (property_id) {
 		default:
