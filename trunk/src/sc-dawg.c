@@ -78,6 +78,9 @@ sc_dawg_load (const gchar *file_name)
 {
 	g_print ("load(%s)\n", file_name);
 	ScDsfReader *reader = sc_dsf_reader_open (file_name);
+	if (reader == NULL) {
+		return NULL;
+	}
 
 	ScDawg *dawg = g_new0 (ScDawg, 1);
 	struct ScDsfReaderCtx ctx = {
@@ -93,7 +96,9 @@ sc_dawg_load (const gchar *file_name)
 		return NULL;
 	}
 	sc_dsf_reader_close (reader);
-	
+
+	g_print (" -> vertices = %d, arcs = %d, ai = %d, vi = %d\n", dawg->n_vertices, dawg->n_arcs, dawg->ai, dawg->vi);
+
 	return dawg;
 }
 

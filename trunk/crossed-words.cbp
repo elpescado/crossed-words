@@ -8,6 +8,7 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="bin\Debug\crossed-words" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin\Debug\" />
 				<Option object_output="obj\Debug\" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -29,8 +30,8 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-mms-bitfields" />
 			<Add option="-Wall" />
+			<Add option="-mms-bitfields" />
 			<Add directory="C:\gtk\include" />
 			<Add directory="C:\gtk\include\gtk-2.0" />
 			<Add directory="C:\gtk\include\cairo" />
@@ -45,6 +46,9 @@
 			<Add library="gtk-win32-2.0" />
 			<Add library="gobject-2.0" />
 			<Add library="glib-2.0" />
+			<Add library="intl" />
+			<Add library="gdk-win32-2.0" />
+			<Add library="pango-1.0" />
 			<Add directory="C:\gtk\lib" />
 		</Linker>
 		<Unit filename="src\alphabet.c">
@@ -135,6 +139,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\scx-console.h" />
+		<Unit filename="src\scx-game-panel.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\scx-game-panel.h" />
 		<Unit filename="src\scx-main-window.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -147,6 +155,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\scx-painter.h" />
+		<Unit filename="src\scx-player-view.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src\scx-player-view.h" />
 		<Unit filename="src\scx-rack-view.c">
 			<Option compilerVar="CC" />
 		</Unit>
