@@ -3,7 +3,7 @@
  * -------------
  *
  * Copyright (C) 2009 Przemysław Sitek
- * 
+ *
  */
 #include <string.h>
 
@@ -168,7 +168,7 @@ _found_word (ScComputerPlayer *self,
 	} else {
 		gint rating = sc_board_rate_move (ctx->board, &move);
 		gboolean ok = sc_dawg_test_word_translated (priv->vdawg, move.letters, n_letters);
-		
+
 		g_print ("Found word ");
 		//_print_word (SC_PLAYER (self), letters, n_letters);
 		//g_print (" = ");
@@ -181,7 +181,7 @@ _found_word (ScComputerPlayer *self,
 		sc_computer_player_save_move (self, &move, rating);
 //		_move_acc_push (priv->moves, &move, rating);
 	}
-//	sc_game_init_move (SC_GAME (SC_PLAYER(self)->game), si, sj, SC_ORIENTATION_HORIZONTAL, 
+//	sc_game_init_move (SC_GAME (SC_PLAYER(self)->game), si, sj, SC_ORIENTATION_HORIZONTAL,
 }
 
 
@@ -210,7 +210,7 @@ __check_crosswords (ScComputerPlayer *self,
 
 	if (v == NULL)
 		return FALSE;
-	
+
 	gint di, dj;
 	sc_move_vector (or, &di, &dj);
 
@@ -239,7 +239,7 @@ __check_crosswords (ScComputerPlayer *self,
 	if (v == NULL)
 		return FALSE;
 	i = si, j = sj;
-	
+
 	/* suffix */
 	while (i < BOARD_SIZE-1 && j < BOARD_SIZE-1) {
 		//g_printerr (" * inspecting %d, %d\n", i, j);
@@ -258,7 +258,7 @@ __check_crosswords (ScComputerPlayer *self,
 		return FALSE;
 
 	//g_print ("crossword_len = %d\n", crossword_len);
-	
+
 	return crossword_len == 0 || sc_dawg_vertex_is_final (v);
 }
 
@@ -370,7 +370,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 			LID lid = a->lid;
 			if (lid == 0) {
 				/* Flip marker */
-				
+
 				/*
 				g_print ("Traversing right @%d,%d (%d), so far: ", x, y, idx);
 				_print_word (SC_PLAYER(self), ctx->letters, idx);
@@ -431,7 +431,7 @@ sc_computer_player_explore_anchor_square (ScComputerPlayer *self,
 	letters[0] = l->index;
 	_TraverseCtx ctx_v = {board, si, sj, letters, SC_VERTICAL, 0};
 	_traverse_tree_left (self, &ctx_v, 1, v, &rack);
-	
+
 }
 
 
@@ -471,7 +471,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	g_print ("My rack: ");
 	sc_rack_print (&rack, al);
 	g_print ("\n");
-	
+
 	gint anchor_squares = 0;
 
 	g_printerr ("searching");
@@ -526,7 +526,12 @@ sc_computer_player_init (ScComputerPlayer *self)
 	                  G_CALLBACK (sc_computer_player_your_turn), self);
 
 	priv->dawg = sc_dawg_load ("gaddag.dag");
+	if (priv->dawg == NULL)
+		g_print ("Cannot load GADDAG\n");
+
 	priv->vdawg = sc_dawg_load ("dawg.dag");
+	if (priv->vdawg == NULL)
+		g_print ("Cannot load DAWG\n");
 
 	priv->disposed = FALSE;
 }
@@ -557,7 +562,7 @@ sc_computer_player_finalize (GObject *object)
 	G_OBJECT_CLASS (sc_computer_player_parent_class)->finalize (object);
 }
 
-	
+
 static void
 sc_computer_player_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
