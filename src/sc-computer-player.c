@@ -101,37 +101,42 @@ sc_computer_player_clear_moves (ScComputerPlayer *self)
 
 static void
 _found_word (ScComputerPlayer *self,
+            _TraverseCtx      *ctx,
+			/*
              ScBoard          *board,
              gint              si,
 			 gint              sj,
 			 LID              *letters,
+			 */
 			 gint              left_letters,
 			 gint              n_letters)
 {
-	int i;
 	ScComputerPlayerPrivate *priv = self->priv;
+	int i;
+	gint di, dj;
+	sc_move_vector (ctx->orient, &di, &dj);
 	ScMove move;
 	move.type = SC_MOVE_TYPE_MOVE;
 	move.n_letters = n_letters;
-	move.x = si - left_letters + 1;
-	move.y = sj;
-	move.orientation = SC_HORIZONTAL;
+	move.x = ctx->si - di * (left_letters - 1);
+	move.y = ctx->sj - dj * (left_letters - 1);
+	move.orientation = ctx->orient;//SC_HORIZONTAL;
 
 	/* Copy letters */
 	//memcpy (move.letters, letters, sizeof(LID)*n_letters);
 	for (i = 0; i < left_letters; i++) {
-		move.letters[i] = letters[left_letters-i-1];
+		move.letters[i] = ctx->letters[left_letters-i-1];
 	}
 	for (i = left_letters; i < n_letters; i++) {
-		move.letters[i] = letters[i];
+		move.letters[i] = ctx->letters[i];
 	}
 
 
 
-	if (! sc_board_validate_move (board, &move)) {
+	if (0&&! sc_board_validate_move (ctx->board, &move)) {
 		g_print ("Huh?\n");
 	} else {
-		gint rating = sc_board_rate_move (board, &move);
+		gint rating = sc_board_rate_move (ctx->board, &move);
 		gboolean ok = sc_dawg_test_word_translated (priv->vdawg, move.letters, n_letters);
 		
 		g_print ("Found word ");
@@ -174,7 +179,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 		if (v2) {
 			ctx->letters[l_idx+idx] = lid;
 			if (sc_dawg_vertex_is_final (v2)) {
-				_found_word (self, ctx->board, ctx->si, ctx->sj, ctx->letters, l_idx, idx+1+l_idx);
+				_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, l_idx, idx+1+l_idx);
 			}
 			_traverse_tree_right (self, ctx, l_idx, idx+1, v2, rack);
 		}
@@ -187,7 +192,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 				ScDawgVertex *v2 = a->dest;
 				ctx->letters[l_idx+idx] = lid;
 				if (sc_dawg_vertex_is_final (v2)) {
-					_found_word (self, ctx->board, ctx->si, ctx->sj, ctx->letters, l_idx, idx+1+l_idx);
+					_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, l_idx, idx+1+l_idx);
 				}
 
 				sc_rack_remove (rack, lid);
@@ -222,7 +227,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 		if (v2) {
 			ctx->letters[idx] = lid;
 			if (sc_dawg_vertex_is_final (v2)) {
-				_found_word (self, ctx->board, ctx->si, ctx->sj, ctx->letters, idx+1, idx+1);
+				_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, idx+1, idx+1);
 			}
 			_traverse_tree_left (self, ctx, idx+1, v2, rack);
 		}
@@ -247,7 +252,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 				ScDawgVertex *v2 = a->dest;
 				ctx->letters[idx] = lid;
 				if (sc_dawg_vertex_is_final (v2)) {
-					_found_word (self, ctx->board, ctx->si, ctx->sj, ctx->letters, idx+1, idx+1);
+					_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, idx+1, idx+1);
 				}
 
 				sc_rack_remove (rack, lid);
@@ -278,8 +283,12 @@ sc_computer_player_explore_anchor_square (ScComputerPlayer *self,
 	LID letters[15];
 
 	letters[0] = l->index;
-	_TraverseCtx ctx = {board, si, sj, letters, SC_HORIZONTAL};
-	_traverse_tree_left (self, &ctx, 1, v, &rack);
+	_TraverseCtx ctx_h = {board, si, sj, letters, SC_HORIZONTAL};
+	_traverse_tree_left (self, &ctx_h, 1, v, &rack);
+
+	letters[0] = l->index;
+	_TraverseCtx ctx_v = {board, si, sj, letters, SC_VERTICAL};
+	_traverse_tree_left (self, &ctx_v, 1, v, &rack);
 	
 }
 
