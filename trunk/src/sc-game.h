@@ -92,6 +92,19 @@ ScRackModel *
 sc_game_get_players_rack (ScGame *self, ScPlayer *player);
 
 
+gint
+sc_game_get_players_score (ScGame *self, ScPlayer *player);
+
+
+gint
+sc_game_get_n_players (ScGame *self);
+
+
+ScPlayer *
+sc_game_get_player (ScGame *game, gint n);
+
+
+
 G_END_DECLS
 
 #endif
