@@ -42,6 +42,7 @@ typedef struct {
 	gint          sj;
 	LID          *letters;
 	ScOrientation orient;
+	gint          needed_tiles;
 } _TraverseCtx;
 
 
@@ -111,6 +112,11 @@ _found_word (ScComputerPlayer *self,
 			 gint              left_letters,
 			 gint              n_letters)
 {
+	if (ctx->needed_tiles == 0) {
+		//g_printerr ("Hey! you have to use some tiles...\n");
+		return;
+	}
+
 	ScComputerPlayerPrivate *priv = self->priv;
 	int i;
 	gint di, dj;
@@ -133,7 +139,7 @@ _found_word (ScComputerPlayer *self,
 
 
 
-	if (0&&! sc_board_validate_move (ctx->board, &move)) {
+	if (! sc_board_validate_move (ctx->board, &move)) {
 		g_print ("Huh?\n");
 	} else {
 		gint rating = sc_board_rate_move (ctx->board, &move);
@@ -155,15 +161,96 @@ _found_word (ScComputerPlayer *self,
 }
 
 
+/**
+ * Check whether word forms valid crosswords
+ *
+ * @param self A computer player
+ * @param lid  A letter that should be placed
+ * @param si   X coordinate
+ * @param sj   Y coordinate
+ * @param or   Word orientation to check
+ **/
+static gboolean
+__check_crosswords (ScComputerPlayer *self,
+		            ScBoard          *board,
+                    LID               lid,
+                    gint              si,
+				    gint              sj,
+				    ScOrientation     or)
+{
+	//g_printerr ("_check_crosswords (%d, %d, %d, %d)\n", lid, si, sj, or);
+	ScComputerPlayerPrivate *priv = self->priv;
+	ScDawgVertex *root = sc_dawg_root (priv->dawg);
+	ScDawgVertex *v = sc_dawg_vertex_child (root, lid);
+	gint crossword_len = 0;
+
+	if (v == NULL)
+		return FALSE;
+	
+	gint di, dj;
+	sc_move_vector (or, &di, &dj);
+
+	gint i = si;
+	gint j = sj;
+
+	/* prefix */
+	while (i >= 0 && j >= 0) {
+		i -= di, j -= dj;
+		//g_printerr (" * inspecting %d, %d\n", i, j);
+		Letter *l = sc_board_get_letter (board, i, j);
+		if (l) {
+			crossword_len++;
+			v = sc_dawg_vertex_child (v, l->index);
+			if (v == NULL)
+				return FALSE;
+		} else {
+			break;
+		}
+	}
+	if (v == NULL)
+		return FALSE;
+
+	/* flip */
+	v = sc_dawg_vertex_child (v, 0);
+	if (v == NULL)
+		return FALSE;
+	i = si, j = sj;
+	
+	/* suffix */
+	while (i < BOARD_SIZE-1 && j < BOARD_SIZE-1) {
+		//g_printerr (" * inspecting %d, %d\n", i, j);
+		i += di, j += dj;
+		Letter *l = sc_board_get_letter (board, i, j);
+		if (l) {
+			crossword_len++;
+			v = sc_dawg_vertex_child (v, l->index);
+			if (v == NULL)
+				return FALSE;
+		} else {
+			break;
+		}
+	}
+	if (v == NULL)
+		return FALSE;
+
+	//g_print ("crossword_len = %d\n", crossword_len);
+	
+	return crossword_len == 0 || sc_dawg_vertex_is_final (v);
+}
+
+
 static gboolean
 _check_crosswords (ScComputerPlayer *self,
+		           ScBoard          *board,
+                   LID               lid,
                    gint              si,
 				   gint              sj,
 				   ScOrientation     or)
 {
-	return TRUE;
+	gboolean val = __check_crosswords (self, board, lid, si, sj, or);
+	//g_printerr (" -> %s\n", val ? "TRUE" : "FALSE");
+	return val;
 }
-
 
 static void
 _traverse_tree_right(ScComputerPlayer *self,
@@ -178,14 +265,14 @@ _traverse_tree_right(ScComputerPlayer *self,
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
 
-	gint i =  ctx->si + (idx+1)*di;
-	gint j =  ctx->sj + (idx+1)*dj;
+	gint x =  ctx->si + (idx+1)*di;
+	gint y =  ctx->sj + (idx+1)*dj;
 
-	if (i < 0 || i >= BOARD_SIZE || j < 0 || j >= BOARD_SIZE)
+	if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE)
 		return;
 
 //	g_print ("Exploring %d, %d\n",               ctx->si + (idx+1)*di, ctx->sj + (idx+1)*dj);
-	Letter *l = sc_board_get_letter (ctx->board, i, j);
+	Letter *l = sc_board_get_letter (ctx->board, x, y);
 	if (l) {
 		/* There is a tile on board in this place... */
 		LID lid = l->index;
@@ -204,7 +291,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 			ScDawgArc *a = node->first_arc+i;
 			LID lid = a->lid;
 			if (sc_rack_contains (rack, lid)
-				&& _check_crosswords (self, i, j, !ctx->orient)) {
+				&& _check_crosswords (self, ctx->board, lid, x, y, !ctx->orient)) {
 				ScDawgVertex *v2 = a->dest;
 				ctx->letters[l_idx+idx] = lid;
 				if (sc_dawg_vertex_is_final (v2)) {
@@ -212,7 +299,9 @@ _traverse_tree_right(ScComputerPlayer *self,
 				}
 
 				sc_rack_remove (rack, lid);
+				ctx->needed_tiles++;
 				_traverse_tree_right (self, ctx, l_idx, idx+1, v2, rack);
+				ctx->needed_tiles--;
 				sc_rack_add (rack, lid);
 			}
 		}
@@ -233,11 +322,11 @@ _traverse_tree_left (ScComputerPlayer *self,
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
 
-	gint i =  ctx->si-+ idx*di;
-	gint j =  ctx->sj - idx*dj;
+	gint x =  ctx->si-+ idx*di;
+	gint y =  ctx->sj - idx*dj;
 //	g_print ("Exploring %d, %d\n",               ctx->si-+ idx*di, ctx->sj - idx*dj);
 	Letter *l;
-	if ((i > 0) && (j > 0) && (l = sc_board_get_letter (ctx->board, i, j))) {
+	if ((x > 0) && (y > 0) && (l = sc_board_get_letter (ctx->board, x, y))) {
 		/* There is a tile on board in this place... */
 		LID lid = l->index;
 
@@ -266,9 +355,9 @@ _traverse_tree_left (ScComputerPlayer *self,
 
 				_traverse_tree_right (self, ctx, idx/*+1*/, 0, a->dest, rack);	
 
-			} else if (i > 0 && j > 0
+			} else if (x > 0 && y > 0
 				&& sc_rack_contains (rack, lid)
-				&& _check_crosswords (self, i, j, !ctx->orient)) {
+				&& _check_crosswords (self, ctx->board, lid, x, y, !ctx->orient)) {
 				ScDawgVertex *v2 = a->dest;
 				ctx->letters[idx] = lid;
 				if (sc_dawg_vertex_is_final (v2)) {
@@ -276,7 +365,9 @@ _traverse_tree_left (ScComputerPlayer *self,
 				}
 
 				sc_rack_remove (rack, lid);
+				ctx->needed_tiles++;
 				_traverse_tree_left (self, ctx, idx+1, v2, rack);
+				ctx->needed_tiles--;
 				sc_rack_add (rack, lid);
 			}
 		}
@@ -303,11 +394,11 @@ sc_computer_player_explore_anchor_square (ScComputerPlayer *self,
 	LID letters[15];
 
 	letters[0] = l->index;
-	_TraverseCtx ctx_h = {board, si, sj, letters, SC_HORIZONTAL};
+	_TraverseCtx ctx_h = {board, si, sj, letters, SC_HORIZONTAL, 0};
 	_traverse_tree_left (self, &ctx_h, 1, v, &rack);
 
 	letters[0] = l->index;
-	_TraverseCtx ctx_v = {board, si, sj, letters, SC_VERTICAL};
+	_TraverseCtx ctx_v = {board, si, sj, letters, SC_VERTICAL, 0};
 	_traverse_tree_left (self, &ctx_v, 1, v, &rack);
 	
 }
@@ -371,7 +462,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 		ScRack rack;
 		sc_player_get_rack (SC_PLAYER (self), &rack);
 		LID letters[15];
-		_TraverseCtx ctx_h = {board, 7, 7, letters, SC_HORIZONTAL};
+		_TraverseCtx ctx_h = {board, 7, 7, letters, SC_HORIZONTAL, 0};
 		_traverse_tree_left (self, &ctx_h, 0, root, &rack);
 
 	}
@@ -389,6 +480,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	}
 
 	/* Cleanup */
+	sc_computer_player_clear_moves (self);
 }
 
 
