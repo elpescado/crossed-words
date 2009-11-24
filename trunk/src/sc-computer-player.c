@@ -137,10 +137,34 @@ _found_word (ScComputerPlayer *self,
 		move.letters[i] = ctx->letters[i];
 	}
 
+	/* Field before first tile */
+	gint px = move.x - di;
+	gint py = move.y - dj;
+	if (px > 0 && py > 0 && sc_board_get_letter (ctx->board, px, py) != NULL) {
 
+		g_print ("Discard (prefix) ");
+		_print_word (SC_PLAYER (self), move.letters, n_letters);
+		g_print ("(%d, %d)\n", move.x, move.y);
+
+		return;
+	}
+
+	/* Field after last tile */
+	gint sx = move.x + n_letters*di;
+	gint sy = move.y + n_letters*dj;
+	if (sx <= BOARD_SIZE && sy <= BOARD_SIZE && sc_board_get_letter (ctx->board, sx, sy) != NULL) {
+
+		g_print ("Discard (suffix) ");
+		_print_word (SC_PLAYER (self), move.letters, n_letters);
+		g_print ("(%d, %d)", move.x, move.y);
+
+		return;
+	}
 
 	if (! sc_board_validate_move (ctx->board, &move)) {
-		g_print ("Huh?\n");
+		g_print ("Huh? ");
+		_print_word (SC_PLAYER (self), move.letters, n_letters);
+		g_print ("(%d, %d)\n", move.x, move.y);
 	} else {
 		gint rating = sc_board_rate_move (ctx->board, &move);
 		gboolean ok = sc_dawg_test_word_translated (priv->vdawg, move.letters, n_letters);
@@ -324,7 +348,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 
 	gint x =  ctx->si-+ idx*di;
 	gint y =  ctx->sj - idx*dj;
-//	g_print ("Exploring %d, %d\n",               ctx->si-+ idx*di, ctx->sj - idx*dj);
+	//g_print ("Exploring %d, %d\n",               ctx->si-+ idx*di, ctx->sj - idx*dj);
 	Letter *l;
 	if ((x > 0) && (y > 0) && (l = sc_board_get_letter (ctx->board, x, y))) {
 		/* There is a tile on board in this place... */
@@ -339,6 +363,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 			_traverse_tree_left (self, ctx, idx+1, v2, rack);
 		}
 	} else {
+		/* This place is empty */
 		gint i;
 		for (i = 0; i < node->n_arcs; i++) {
 			ScDawgArc *a = node->first_arc+i;
@@ -347,13 +372,19 @@ _traverse_tree_left (ScComputerPlayer *self,
 				/* Flip marker */
 				
 				/*
-				g_print ("Traversing right @%d, so far: ", idx);
+				g_print ("Traversing right @%d,%d (%d), so far: ", x, y, idx);
 				_print_word (SC_PLAYER(self), ctx->letters, idx);
 				g_print ("\n");
 				*/
-				
-
-				_traverse_tree_right (self, ctx, idx/*+1*/, 0, a->dest, rack);	
+				/*
+				gint xx = x-di;
+				gint yy = y-dj;
+				if (xx < 0 || yy < 0 || sc_board_get_letter (ctx->board, xx, yy) == NULL)
+					_traverse_tree_right (self, ctx, idx, 0, a->dest, rack);
+				else
+					g_print ("Discarding L\n");
+				*/
+				_traverse_tree_right (self, ctx, idx, 0, a->dest, rack);
 
 			} else if (x > 0 && y > 0
 				&& sc_rack_contains (rack, lid)
