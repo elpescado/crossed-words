@@ -20,6 +20,7 @@ G_DEFINE_TYPE (ScPlayer, sc_player, G_TYPE_OBJECT)
 struct _ScPlayerPrivate
 {
 	/* Private members go here */
+	gchar *name;
 
 	gboolean disposed;
 };
@@ -105,6 +106,21 @@ sc_player_get_rack (ScPlayer *player, ScRack *rack)
 	sc_rack_assign_letters (rack, letters, n_letters);
 }
 
+const gchar *
+sc_player_get_name (ScPlayer *player)
+{
+	ScPlayerPrivate *priv = player->priv;
+	return priv->name;
+}
+
+
+void
+sc_player_set_name (ScPlayer *player, const gchar *name)
+{
+	ScPlayerPrivate *priv = player->priv;
+	g_free (priv->name);
+	priv->name = g_strdup (name);
+}
 
 
 static void

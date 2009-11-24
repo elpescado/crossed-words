@@ -21,6 +21,7 @@
 #include "scx-main-window.h"
 #include "scx-move-entry.h"
 #include "scx-rack-view.h"
+#include "scx-game-panel.h"
 
 
 G_DEFINE_TYPE (ScxMainWindow, scx_main_window, GTK_TYPE_WINDOW)
@@ -45,6 +46,7 @@ struct _ScxMainWindowPrivate
 	GtkWidget *statusbar;
 
 	/* Panel */
+	GtkWidget *game_panel;
 	GtkWidget *alphabet_panel;
 
 	ScGame    *game;
@@ -182,8 +184,13 @@ scx_main_window_init_sidebar (ScxMainWindow *self)
 	ScxMainWindowPrivate *priv = self->priv;
 	GtkWidget *sample;
 
+	sample = scx_game_panel_new ();
+	scx_main_window_add_sidebar_panel (self, sample, _("Game"));
+	gtk_widget_show (sample);
+	priv->game_panel = sample;
+
 	sample = scx_alphabet_panel_new ();
-	scx_main_window_add_sidebar_panel (self, sample, _("Scrabble"));
+	scx_main_window_add_sidebar_panel (self, sample, _("Alphabet"));
 	gtk_widget_show (sample);
 	priv->alphabet_panel = sample;
 
@@ -195,7 +202,7 @@ scx_main_window_init_sidebar (ScxMainWindow *self)
 	scx_main_window_add_sidebar_panel (self, sample, _("Console"));
 	gtk_widget_show (sample);
 
-	gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 2);
+	gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 0);
 }
 
 
@@ -299,6 +306,8 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 {
 	ScxMainWindowPrivate *priv = self->priv;
 
+	scx_game_panel_update (SCX_GAME_PANEL (priv->game_panel), priv->game);
+
 	if (! SC_IS_HUMAN_PLAYER(player)) {
 		gtk_widget_set_sensitive (priv->bottom_hbox, FALSE);
 		return;
@@ -335,6 +344,10 @@ scx_main_window_create_player (ScxMainWindow *self, int num)
 	ScPlayer *p1 = !num ? SC_PLAYER (sc_human_player_new ()) : SC_PLAYER (sc_computer_player_new());
 	p1->game = (void*)priv->game;
 	sc_game_set_player (priv->game, num, SC_PLAYER (p1));
+
+	gchar name[32];
+	snprintf (name, 32, "%s %d", _("Player"), num+1);
+	sc_player_set_name (p1, name);
 
 	g_signal_connect (p1, "your-turn", G_CALLBACK (scx_main_window_players_turn_cb), self);
 }

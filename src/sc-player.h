@@ -62,6 +62,14 @@ ScPlayer*
 sc_player_new				(void);
 
 
+const gchar *
+sc_player_get_name (ScPlayer *player);
+
+
+void
+sc_player_set_name (ScPlayer *player, const gchar *name);
+
+
 gboolean
 sc_player_do_move (ScPlayer *plaver, ScMove *move);
 

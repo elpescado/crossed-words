@@ -31,9 +31,11 @@ SOURCES=\
 	scx-alphabet-panel.c \
 	scx-board-view.c \
 	scx-console.c \
+	scx-game-panel.c \
 	scx-main-window.c \
 	scx-move-entry.c \
 	scx-painter.c \
+	scx-player-view.c \
 	scx-rack-view.c \
 	util.c
 
@@ -59,9 +61,11 @@ HEADERS=\
 	scx-alphabet-panel.h \
 	scx-board-view.h \
 	scx-console.h \
+	scx-game-panel.h \
 	scx-main-window.h \
 	scx-move-entry.h \
 	scx-painter.h \
+	scx-player-view.h \
 	scx-rack-view.h \
 	util.h
 

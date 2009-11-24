@@ -319,6 +319,30 @@ sc_game_get_players_rack (ScGame *self, ScPlayer *player)
 }
 
 
+gint
+sc_game_get_players_score (ScGame *self, ScPlayer *player)
+{
+	ScPlayerCtx *ctx = sc_game_get_ctx_by_player (self, player);
+	return ctx->points;
+}
+
+
+gint
+sc_game_get_n_players (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+	return priv->n_players;
+}
+
+
+ScPlayer *
+sc_game_get_player (ScGame *self, gint n)
+{
+	ScGamePrivate *priv = self->priv;
+	return priv->players[n]->player;
+}
+
+
 Alphabet *
 sc_game_get_alphabet (ScGame *self)
 {
