@@ -3,7 +3,7 @@
  * --------
  *
  * Copyright (C) 2009 Przemysław Sitek
- * 
+ *
  */
 
 #include <gtk/gtk.h>
@@ -12,7 +12,11 @@
 #include "common.h"
 #include "scx-move-entry.h"
 
-#define PIXMAP_PATH "../pixmaps/"
+#ifdef __WIN32
+#  define PIXMAP_PATH "pixmaps\\"
+#else
+#  define PIXMAP_PATH "../pixmaps/"
+#endif
 
 
 G_DEFINE_TYPE (ScxMoveEntry, scx_move_entry, GTK_TYPE_VBOX)
@@ -86,7 +90,7 @@ scx_move_entry_init_gui (ScxMoveEntry *self)
 
 	GtkWidget *hbox = gtk_hbox_new (FALSE, 6);
 	gtk_box_pack_start (GTK_BOX (self), hbox, FALSE, FALSE, 0);
-	
+
 	priv->horizontal = gtk_toggle_button_new ();
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (priv->horizontal), TRUE);
 	gtk_box_pack_start (GTK_BOX (hbox), priv->horizontal, FALSE, FALSE, 0);
@@ -254,7 +258,7 @@ scx_move_entry_finalize (GObject *object)
 	G_OBJECT_CLASS (scx_move_entry_parent_class)->finalize (object);
 }
 
-	
+
 static void
 scx_move_entry_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
@@ -314,6 +318,6 @@ scx_move_entry_class_init (ScxMoveEntryClass *klass)
 			g_cclosure_marshal_VOID__INT,
 			G_TYPE_NONE, 1,
 			G_TYPE_INT);
-		
+
 }
 
