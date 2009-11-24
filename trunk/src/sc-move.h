@@ -33,4 +33,8 @@ typedef struct {
 	ScOrientation  orientation;
 } ScMove;
 
+
+void
+sc_move_vector (ScOrientation o, gint *dx, gint *dy);
+
 #endif /* __SC_MOVE_H__ */

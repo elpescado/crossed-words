@@ -10,11 +10,12 @@
 #define sc_dag2_node_set_child(node,lid,child) (node->children[lid] = child)
 */
 
+#define sc_dag2_node_parent(node) (node->parent)
 
 ScDag2Node *
 sc_dag2_node_child (const ScDag2Node *node, LID lid)
 {
-	if (lid == 0) return node->parent;
+//	if (lid == 0) return node->parent;
 	int i;
 	for (i = 0; i < node->n_children; i++)
 		if (node->children[i].lid == lid)
@@ -23,14 +24,21 @@ sc_dag2_node_child (const ScDag2Node *node, LID lid)
 	return NULL;
 }
 
+void
+sc_dag2_node_set_parent (ScDag2Node *node, ScDag2Node *parent)
+{
+	node->parent = parent;
+}
 
 void
 sc_dag2_node_set_child (ScDag2Node *node, LID lid, ScDag2Node *child)
 {
+	/*
 	if (lid == 0) {
 		node->parent = child;
 		return;
 	}
+	*/
 
 	int i;
 	for (i = 0; i < node->n_children; i++) {
@@ -115,7 +123,7 @@ sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 {
 	//g_print ("adding (%s)\n", word);
 	glong len = g_utf8_strlen (word, -1);
-	if (len > 10) {
+	if (len > 7) {
 	//	exit(0);
 	//	g_print ("too long, discarding: '%s'\n", word);
 		return;
@@ -140,16 +148,18 @@ sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 			new_letters[j+1] = letters[j];
 		}
 
+		gint word_len = (i == len) ? len : len+1;
+
 		/*
 		g_print ("add_word(");
-		for (j = 0; j < len; j++) {
+		for (j = 0; j < word_len; j++) {
 			Letter *l = alphabet_lookup_letter (al, new_letters[j]);
 			g_print ("%s", l ? l->label : "_");
 		}
 		g_print (");\n");
 		*/
 
-		sc_dag2_add_word_translated (self, new_letters, len/*+1*/);
+		sc_dag2_add_word_translated (self, new_letters, word_len);
 	}
 }
 
@@ -178,16 +188,17 @@ sc_dag2_add_word_translated (ScDag2 *self, LID *letters, glong len)
 	ScDag2Node *node = self->root;
 
 	self->n_words++;
-//	g_print ("%s", word);
+	//g_print ("%s", word);
+	//g_print ("aaa() ");
 
 	gint i;
 	for (i = 0; i < len; i++) {
 		LID lid = letters[i];
-//		g_print (" -> %d", lid);
+	//	g_print (" -> %2d", lid);
 		if (sc_dag2_node_child (node, lid) == NULL) {
 			ScDag2Node *tmp = sc_dag2_alloc_node (self);
 			tmp->lid = lid;
-			sc_dag2_node_set_child (tmp, 0, node);
+			sc_dag2_node_set_parent (tmp, node);
 			sc_dag2_node_set_child (node, lid, tmp);
 
 			node = tmp;
@@ -248,8 +259,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max)
 
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
-		sc_dag2_add_word (self, word, al);
-		//sc_dag2_add_drowword (self, word, al);
+		//sc_dag2_add_word (self, word, al);
+		sc_dag2_add_drowword (self, word, al);
 		if (--max == 0)
 			break;
 	}
@@ -362,7 +373,7 @@ sc_dag2_node_equal (const ScDag2Node *a, const ScDag2Node *b)
 		return FALSE;
 
 	int i;
-	for (i = 1; i < 33; i++) {
+	for (i = 0; i < 33; i++) {
 		if (sc_dag2_node_child (a, i) != sc_dag2_node_child (b, i))
 			return FALSE;
 	}
@@ -446,7 +457,7 @@ sc_dag2_minimize (ScDag2 *self)
 
 				if (sc_dag2_node_equal (node1, node2)) {
 					/* Found duplicate */
-					ScDag2Node *parent = sc_dag2_node_child (node2, 0);
+					ScDag2Node *parent = sc_dag2_node_parent (node2);
 					LID lid = node1->lid;
 					sc_dag2_node_set_child (parent, lid, node1);
 					nodes_tmp[i][k] = NULL; //node2 = NULL;

@@ -18,7 +18,8 @@
 #include "scx-main-window.h"
 #include "util.h"
 
-#define DICT_FILE "lang/pl/dictionary.txt"
+#define DICT_FILE "foo.txt"
+//"lang/pl/dictionary.txt"
 
 typedef gboolean (*DictionaryTestFunc) (void *, LID *, gint);
 
@@ -122,7 +123,7 @@ int main (int argc, char *argv[])
 		g_print ("dawg == NULL\n");
 		return EXIT_FAILURE;
 	}
-	//sc_dawg_print (dawg, al);
+	sc_dawg_print (dawg, al);
 	test_dictionary (dawg, al, DICT_FILE, sc_dawg_test_word_translated, TRUE);
 	test_dictionary (dawg, al, "bad-words.txt", sc_dawg_test_word_translated, FALSE);
 

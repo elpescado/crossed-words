@@ -194,6 +194,8 @@ scx_main_window_init_sidebar (ScxMainWindow *self)
 	sample = scx_console_new ();
 	scx_main_window_add_sidebar_panel (self, sample, _("Console"));
 	gtk_widget_show (sample);
+
+	gtk_notebook_set_current_page (GTK_NOTEBOOK (priv->notebook), 2);
 }
 
 
@@ -224,6 +226,7 @@ scx_main_window_init_gui (ScxMainWindow *self)
 
 	/* splitter */
 	priv->splitter = gtk_hpaned_new ();
+	gtk_paned_set_position (GTK_PANED (priv->splitter), 240);
 	gtk_box_pack_start (GTK_BOX (priv->vbox), priv->splitter, TRUE, TRUE, 0);
 	gtk_widget_show (priv->splitter);
 
