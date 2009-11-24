@@ -155,6 +155,15 @@ _found_word (ScComputerPlayer *self,
 }
 
 
+static gboolean
+_check_crosswords (ScComputerPlayer *self,
+                   gint              si,
+				   gint              sj,
+				   ScOrientation     or)
+{
+	return TRUE;
+}
+
 
 static void
 _traverse_tree_right(ScComputerPlayer *self,
@@ -169,8 +178,14 @@ _traverse_tree_right(ScComputerPlayer *self,
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
 
+	gint i =  ctx->si + (idx+1)*di;
+	gint j =  ctx->sj + (idx+1)*dj;
+
+	if (i < 0 || i >= BOARD_SIZE || j < 0 || j >= BOARD_SIZE)
+		return;
+
 //	g_print ("Exploring %d, %d\n",               ctx->si + (idx+1)*di, ctx->sj + (idx+1)*dj);
-	Letter *l = sc_board_get_letter (ctx->board, ctx->si + (idx+1)*di, ctx->sj + (idx+1)*dj);
+	Letter *l = sc_board_get_letter (ctx->board, i, j);
 	if (l) {
 		/* There is a tile on board in this place... */
 		LID lid = l->index;
@@ -188,7 +203,8 @@ _traverse_tree_right(ScComputerPlayer *self,
 		for (i = 0; i < node->n_arcs; i++) {
 			ScDawgArc *a = node->first_arc+i;
 			LID lid = a->lid;
-			if (sc_rack_contains (rack, lid)) {
+			if (sc_rack_contains (rack, lid)
+				&& _check_crosswords (self, i, j, !ctx->orient)) {
 				ScDawgVertex *v2 = a->dest;
 				ctx->letters[l_idx+idx] = lid;
 				if (sc_dawg_vertex_is_final (v2)) {
@@ -217,9 +233,11 @@ _traverse_tree_left (ScComputerPlayer *self,
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
 
+	gint i =  ctx->si-+ idx*di;
+	gint j =  ctx->sj - idx*dj;
 //	g_print ("Exploring %d, %d\n",               ctx->si-+ idx*di, ctx->sj - idx*dj);
-	Letter *l = sc_board_get_letter (ctx->board, ctx->si - idx*di, ctx->sj - idx*dj);
-	if (l) {
+	Letter *l;
+	if ((i > 0) && (j > 0) && (l = sc_board_get_letter (ctx->board, i, j))) {
 		/* There is a tile on board in this place... */
 		LID lid = l->index;
 
@@ -248,7 +266,9 @@ _traverse_tree_left (ScComputerPlayer *self,
 
 				_traverse_tree_right (self, ctx, idx/*+1*/, 0, a->dest, rack);	
 
-			} else if (sc_rack_contains (rack, lid)) {
+			} else if (i > 0 && j > 0
+				&& sc_rack_contains (rack, lid)
+				&& _check_crosswords (self, i, j, !ctx->orient)) {
 				ScDawgVertex *v2 = a->dest;
 				ctx->letters[idx] = lid;
 				if (sc_dawg_vertex_is_final (v2)) {
@@ -329,7 +349,8 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	g_print ("My rack: ");
 	sc_rack_print (&rack, al);
 	g_print ("\n");
-
+	
+	gint anchor_squares = 0;
 
 	g_printerr ("searching");
 	/* Scan for anchor squares */
@@ -340,8 +361,19 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 			if (l != NULL) {
 				g_print ("Found anchor square '%s' @ %d, %d\n", l->label, i, j);
 				sc_computer_player_explore_anchor_square (self, board, i, j);
+				anchor_squares++;
 			}
 		}
+	}
+	if (anchor_squares == 0) {
+		/* First move */
+		ScDawgVertex *root = sc_dawg_root (priv->dawg);
+		ScRack rack;
+		sc_player_get_rack (SC_PLAYER (self), &rack);
+		LID letters[15];
+		_TraverseCtx ctx_h = {board, 7, 7, letters, SC_HORIZONTAL};
+		_traverse_tree_left (self, &ctx_h, 0, root, &rack);
+
 	}
 	g_printerr ("\ndone\n");
 	g_print ("%d moves found\n", priv->n_moves);
