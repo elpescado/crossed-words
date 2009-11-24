@@ -347,6 +347,9 @@ scx_main_window_update_move (ScxMainWindow *self)
 	ScMove move;
 	gint x, y;
 
+	if (priv->game == NULL)
+		return;
+
 	const gchar *word = scx_move_entry_get_text (SCX_MOVE_ENTRY (priv->move_entry));
 	ScOrientation o = scx_move_entry_get_orientation (SCX_MOVE_ENTRY (priv->move_entry));
 	scx_board_view_get_selection (SCX_BOARD_VIEW (priv->board_view), &x, &y);
@@ -364,6 +367,9 @@ scx_main_window_move_activated (ScxMoveEntry  *entry,
                                 ScxMainWindow *self)
 {
 	ScxMainWindowPrivate *priv = self->priv;
+
+	if (priv->game == NULL)
+		return;
 
 //	if (move_type == SC_MOVE_TYPE_MOVE) { // this is now handled by ScGame itself
 		g_print ("Move was done!!!\n");
