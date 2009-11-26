@@ -30,6 +30,7 @@ struct _ScGamePrivate
 	ScBoard     *board;
 	gint         n_players;
 	ScPlayerCtx *players[2];
+	gint         pass_counter;
 
 	gboolean disposed;
 };
@@ -131,6 +132,8 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 		/* Update players rack */
 		sc_rack_model_remove_tiles (ctx->rack, needed_tiles, n_needed_tiles);
 		sc_game_fill_rack (game, ctx->rack, priv->bag);
+
+
 	}	
 
 	return TRUE;
@@ -157,10 +160,11 @@ sc_game_do_exchange (ScPlayer *player, ScMove *move, ScGame *game)
 static gboolean
 sc_game_move_perform (ScPlayer *player, ScMove *move, ScGame *game)
 {
+	ScGamePrivate *priv = game->priv;
 	switch (move->type) {
-		case SC_MOVE_TYPE_MOVE: return sc_game_do_move (player, move, game);
-		case SC_MOVE_TYPE_EXCHANGE: return sc_game_do_exchange (player, move, game);
-		case SC_MOVE_TYPE_PASS: return TRUE;
+		case SC_MOVE_TYPE_MOVE:     priv->pass_counter=0; return sc_game_do_move (player, move, game);
+		case SC_MOVE_TYPE_EXCHANGE: priv->pass_counter=0; return sc_game_do_exchange (player, move, game);
+		case SC_MOVE_TYPE_PASS:     priv->pass_counter++; return TRUE;
 		default: return FALSE;
 	}
 }
@@ -169,9 +173,16 @@ sc_game_move_done (ScPlayer *player, ScMove *move, ScGame *game)
 {
 	ScGamePrivate *priv = game->priv;
 	if (sc_game_move_perform (player, move, game)) {
-		/* next player */
-		priv->current_player = (priv->current_player+1) % priv->n_players;
-		g_timeout_add (1, (GSourceFunc)sc_game_timeout_cb, game);
+
+		/* End game? */
+		if (sc_game_check_end (game)) {
+			sc_game_end (game);
+		} else {
+			/* next player */
+			priv->current_player = (priv->current_player+1) % priv->n_players;
+			g_timeout_add (1, (GSourceFunc)sc_game_timeout_cb, game);
+		}
+
 		return TRUE;
 	} else {
 		return FALSE;
@@ -261,6 +272,29 @@ sc_game_fill_rack (ScGame *game, ScRackModel *rack, ScBag *bag)
 }
 
 
+gboolean
+sc_game_check_end (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+
+	if (priv->pass_counter == 2*priv->n_players)
+		return TRUE;
+
+	if (sc_bag_n_tiles (priv->bag) != 0)
+		return FALSE;
+
+	int i;
+	for (i = 0; i < priv->n_players; i++) {
+		ScRackModel *rack = priv->players[i]->rack;
+		if (sc_rack_model_count_tiles (rack) == 0) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+
 /**
  * Starts a game
  **/
@@ -278,6 +312,7 @@ sc_game_start (ScGame *self)
 	if (priv->board == NULL)
 		return;
 
+	priv->pass_counter = 0;
 	sc_board_clear (priv->board);
 	sc_bag_load (priv->bag, priv->al);
 
@@ -293,6 +328,48 @@ sc_game_start (ScGame *self)
 
 	sc_game_request_move (self);
 }
+
+
+/**
+ * End a game
+ **/
+void
+sc_game_end (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+
+	if (!priv->running)
+		return;
+
+	g_print ("End game\n");
+
+	int i;
+	gint t = 0;
+	for (i = 0; i < priv->n_players; i++) {
+		ScRackModel *rack = priv->players[i]->rack;
+		LID tiles[15];
+		gint n_tiles;
+		int j;
+
+		sc_rack_model_get_tiles (rack, tiles, &n_tiles);
+		for (j = 0; j < n_tiles; j++) {
+			Letter *l = alphabet_lookup_letter (priv->al, tiles[j]);
+			priv->players[i]->points -= l->value;
+			t += l->value;
+		}
+	}
+
+	for (i = 0; i < priv->n_players; i++) {
+		ScRackModel *rack = priv->players[i]->rack;
+		if (sc_rack_model_count_tiles (rack)) {
+			priv->players[i]->points += t;
+		}
+	}
+
+
+	priv->running = FALSE;
+}
+
 
 
 gboolean

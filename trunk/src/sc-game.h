@@ -81,6 +81,14 @@ sc_game_start (ScGame *game);
 
 
 void
+sc_game_end (ScGame *self);
+
+
+gboolean
+sc_game_check_end (ScGame *self);
+
+
+void
 sc_game_fill_rack (ScGame *game, ScRackModel *rack, ScBag *bag);
 
 
