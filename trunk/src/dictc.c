@@ -19,9 +19,6 @@
 #include "scx-main-window.h"
 #include "util.h"
 
-#define DICT_FILE "foo.txt"
-//"lang/pl/dictionary.txt"
-
 #define verbose(args...) {if(opt_verbose)g_print(args);}
 
 /* Command line options */
@@ -57,7 +54,7 @@ test_dictionary (void *dict, Alphabet *al, const gchar *file_name, DictionaryTes
 {
 	FILE *f = fopen (file_name, "r");
 	if (f == NULL) {
-		return;
+		return FALSE;
 	}
 
 	gchar buffer[128];
@@ -179,7 +176,7 @@ int main (int argc, char *argv[])
 
 	if (opt_verify) {
 		verbose ("Verifying loaded words... ");
-		if (!test_dictionary (dag, al, dict_file, sc_dag2_test_word_translated, TRUE)) {
+		if (!test_dictionary (dag, al, dict_file, (DictionaryTestFunc)sc_dag2_test_word_translated, TRUE)) {
 			g_printerr ("Verification failed\n");
 			return EXIT_FAILURE;
 		}
@@ -201,7 +198,7 @@ int main (int argc, char *argv[])
 
 	if (opt_verify) {
 		verbose ("Verifying minimized graph... ");
-		if (!test_dictionary (dag, al, dict_file, sc_dag2_test_word_translated, TRUE)) {
+		if (!test_dictionary (dag, al, dict_file, (DictionaryTestFunc)sc_dag2_test_word_translated, TRUE)) {
 			g_printerr ("Verification failed\n");
 			return EXIT_FAILURE;
 		}
@@ -228,7 +225,7 @@ int main (int argc, char *argv[])
 		g_printerr ("Cannot load output file '%s' for verification\n", out_file);
 		return EXIT_FAILURE;
 	}
-	if (!test_dictionary (dawg, al, dict_file, sc_dawg_test_word_translated, TRUE)) {
+	if (!test_dictionary (dawg, al, dict_file, (DictionaryTestFunc)sc_dawg_test_word_translated, TRUE)) {
 		verbose (" failed\n");
 		g_printerr ("Output file verification failed\n");
 		return EXIT_FAILURE;
@@ -239,28 +236,4 @@ int main (int argc, char *argv[])
 
 
 	return EXIT_SUCCESS;
-
-
-	g_print ("Construction took %lf secs\n", t1 - t0);
-
-	test_word (dag, al, "alfabet");
-	test_word (dag, al, "asdaf");
-	/*
-	test_dictionary (dag, al, DICT_FILE);
-	test_bad_dictionary (dag, al, "bad-words.txt");
-	*/
-	test_dictionary (dag, al, DICT_FILE, sc_dag2_test_word_translated, TRUE);
-	test_dictionary (dag, al, "bad-words.txt", sc_dag2_test_word_translated, FALSE);
-
-	g_print (" -- DAWG -- \n");
-	dawg = sc_dawg_load ("dictionary.dag");
-	if (dawg == NULL) {
-		g_print ("dawg == NULL\n");
-		return EXIT_FAILURE;
-	}
-	sc_dawg_print (dawg, al);
-	test_dictionary (dawg, al, DICT_FILE, sc_dawg_test_word_translated, TRUE);
-	test_dictionary (dawg, al, "bad-words.txt", sc_dawg_test_word_translated, FALSE);
-
-	return 0;
 }
