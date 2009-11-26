@@ -80,7 +80,8 @@ sc_rack_print (ScRack *rack, Alphabet *al)
 	for (i = 0; i < 34; i++) {
 		for (j = 0; j < rack->letters[i]; j++) {
 			Letter *l = alphabet_lookup_letter (al, i);
-			g_print ("%s ", l->label);
+			if (l)
+				g_print ("%s ", l->label);
 		}
 	}
 }
