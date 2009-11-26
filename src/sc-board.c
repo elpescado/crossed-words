@@ -303,6 +303,7 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 	int dj = (move->orientation == SC_HORIZONTAL) ? 0 : 1;
 	int k;
 
+	gint needed_tiles = 0;
 
 	/* Rate "main" word */
 
@@ -317,6 +318,7 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 
 		int letter_value = l->value;
 		if (priv->letters[pos] == 0) {
+			needed_tiles++;
 			if (fm == FIELD_MODIFIER_DOUBLE_LETTER) {
 				letter_value *= 2;
 			} else if (fm == FIELD_MODIFIER_TRIPLE_LETTER) {
@@ -331,6 +333,9 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 		}
 		rating += letter_value;
 	}
+
+	if (needed_tiles == 0)
+		return 0;
 
 	/* Prefix */
 	rating += sc_board_rate_prefix (self, move->x, move->y, di, dj);

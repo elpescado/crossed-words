@@ -152,7 +152,7 @@ int main (int argc, char *argv[])
 	const gchar *dict_file = argv[1];
 	const gchar *out_file = argv[2];
 
-
+	
 	/* Load alphabet */
 
 	al = alphabet_new ();
