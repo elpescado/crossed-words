@@ -315,21 +315,21 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 		FieldModifier fm = sc_board_get_field_modifier (self, i, j);
 
 
+		int letter_value = l->value;
 		if (priv->letters[pos] == 0) {
-			int letter_value = l->value;
 			if (fm == FIELD_MODIFIER_DOUBLE_LETTER) {
 				letter_value *= 2;
 			} else if (fm == FIELD_MODIFIER_TRIPLE_LETTER) {
 				letter_value *= 3;
 			}
-			rating += letter_value;
-		}
 
-		if (fm == FIELD_MODIFIER_DOUBLE_WORD) {
-			multiplier *= 2;
-		} else if (fm == FIELD_MODIFIER_TRIPLE_WORD) {
-			multiplier *= 3;
+			if (fm == FIELD_MODIFIER_DOUBLE_WORD) {
+				multiplier *= 2;
+			} else if (fm == FIELD_MODIFIER_TRIPLE_WORD) {
+				multiplier *= 3;
+			}
 		}
+		rating += letter_value;
 	}
 
 	/* Prefix */
