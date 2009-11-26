@@ -44,6 +44,7 @@ struct _ScxMainWindowPrivate
 	GtkWidget *rack_view;
 	GtkWidget *move_entry;
 	GtkWidget *statusbar;
+	GtkWidget *score_label;
 
 	/* Panel */
 	GtkWidget *game_panel;
@@ -270,6 +271,13 @@ scx_main_window_init_gui (ScxMainWindow *self)
 	gtk_box_pack_start (GTK_BOX (priv->bottom_hbox), priv->rack_view, TRUE, FALSE, 0);
 	gtk_widget_show (priv->rack_view);
 
+	/* Score label */
+	priv->score_label = gtk_label_new (" 0 ");
+	PangoFontDescription *font = pango_font_description_from_string ("bold 32");
+	gtk_widget_modify_font (priv->score_label, font);
+	gtk_box_pack_start (GTK_BOX (priv->bottom_hbox), priv->score_label, FALSE, FALSE, 0);
+	gtk_widget_show (priv->score_label);
+
 	/* Move entry */
 	priv->move_entry = scx_move_entry_new ();
 	g_signal_connect_swapped (priv->move_entry, "changed",
@@ -369,6 +377,13 @@ scx_main_window_update_move (ScxMainWindow *self)
 
 	sc_game_init_move (priv->game, &move, x, y, o, word);
 	scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), &move);
+
+	gchar rating_str[12];
+	gint move_rating = sc_board_rate_move (sc_game_get_board (priv->game), &move);
+	snprintf (rating_str, 12, " %d ", move_rating);
+	gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
+
+
 	
 	g_print ("Something changed\n");
 }
