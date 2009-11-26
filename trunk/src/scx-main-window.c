@@ -20,6 +20,7 @@
 #include "scx-board-view.h"
 #include "scx-main-window.h"
 #include "scx-move-entry.h"
+#include "scx-new-game-dialog.h"
 #include "scx-rack-view.h"
 #include "scx-game-panel.h"
 
@@ -54,6 +55,8 @@ struct _ScxMainWindowPrivate
 
 	ScPlayer  *current_player;
 
+	ScPlayerFactory *factory;
+
 	gboolean disposed;
 };
 
@@ -62,6 +65,9 @@ struct _ScxMainWindowPrivate
 	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
 	SCX_TYPE_MAIN_WINDOW, ScxMainWindowPrivate))
 
+static void
+scx_main_window_players_turn_cb (ScPlayer      *player,
+                                 ScxMainWindow *self);
 
 static void
 scx_main_window_create_player (ScxMainWindow *self, int num);
@@ -90,13 +96,29 @@ _action_game_new  (GtkAction     *action,
                    ScxMainWindow *self)
 {
 	ScxMainWindowPrivate *priv = self->priv;
-	//ScMove     move;
+
+	GtkWidget *win = scx_new_game_dialog_new ();
+	scx_new_game_dialog_set_factory (SCX_NEW_GAME_DIALOG (win), priv->factory);
+	gint response = gtk_dialog_run (GTK_DIALOG (win));
+	gtk_widget_hide (win);
+
+	if (response != GTK_RESPONSE_ACCEPT)
+		return;
 
 	priv->game = sc_game_new ();
 
 	scx_board_view_set_board (SCX_BOARD_VIEW (priv->board_view),
 	                          sc_game_get_board (priv->game));
 	
+	gint i;
+	for (i = 0; i < 2; i++) {
+		ScPlayer *player = scx_new_game_dialog_create_player (SCX_NEW_GAME_DIALOG (win), i);
+		sc_game_set_player (priv->game, i, player);
+		player->game = (void*)priv->game;
+		g_signal_connect (player, "your-turn", G_CALLBACK (scx_main_window_players_turn_cb), self);
+	}
+
+	gtk_widget_destroy (win);
 //	sc_game_init_move (priv->game, &move, 5, 4, SC_VERTICAL, "pescado");
 //	scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), &move);
 
@@ -108,8 +130,10 @@ _action_game_new  (GtkAction     *action,
 	sc_game_set_player (priv->game, 1, SC_PLAYER (p2));
 	*/
 
+	/*
 	scx_main_window_create_player (self, 0);
 	scx_main_window_create_player (self, 1);
+	*/
 
 	scx_board_view_enable_selection (SCX_BOARD_VIEW (priv->board_view));
 	scx_board_view_set_selection (SCX_BOARD_VIEW (priv->board_view), 3, 7);
@@ -195,7 +219,7 @@ scx_main_window_init_sidebar (ScxMainWindow *self)
 	gtk_widget_show (sample);
 	priv->alphabet_panel = sample;
 
-	sample = gtk_label_new ("Scrabble");
+	sample = gtk_label_new ("Crossed Words");
 	scx_main_window_add_sidebar_panel (self, sample, _("History"));
 	gtk_widget_show (sample);
 
@@ -213,7 +237,7 @@ scx_main_window_init_gui (ScxMainWindow *self)
 {
 	ScxMainWindowPrivate *priv = self->priv;
 
-	gtk_window_set_title (GTK_WINDOW (self), _("Scrabble"));
+	gtk_window_set_title (GTK_WINDOW (self), _("Crossed Words"));
 	gtk_window_set_default_size (GTK_WINDOW (self), 1024, 768);
 
 	/* Main vbox */
@@ -302,6 +326,11 @@ scx_main_window_init (ScxMainWindow *self)
 	ScxMainWindowPrivate *priv = self->priv;
 
 	priv->disposed = FALSE;
+
+	priv->factory = sc_player_factory_new ();
+	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_human_player_new,    "human", "Human");
+	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_dumb_player_new,     "dumb", "Dumb player");
+	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_computer_player_new, "computer", "Computer player");
 	
 	scx_main_window_init_actions (self);
 	scx_main_window_init_gui (self);

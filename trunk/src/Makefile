@@ -26,6 +26,7 @@ SOURCES=\
 	sc-human-player.c \
 	sc-move.c \
 	sc-player.c \
+	sc-player-factory.c \
 	sc-rack.c \
 	sc-rack-model.c \
 	scx-alphabet-panel.c \
@@ -34,7 +35,9 @@ SOURCES=\
 	scx-game-panel.c \
 	scx-main-window.c \
 	scx-move-entry.c \
+	scx-new-game-dialog.c \
 	scx-painter.c \
+	scx-player-selector.c \
 	scx-player-view.c \
 	scx-rack-view.c \
 	util.c
@@ -56,6 +59,7 @@ HEADERS=\
 	sc-human-player.h \
 	sc-move.h \
 	sc-player.h \
+	sc-player-factory.h \
 	sc-rack-model.h \
 	sc-rack.h \
 	scx-alphabet-panel.h \
@@ -64,7 +68,9 @@ HEADERS=\
 	scx-game-panel.h \
 	scx-main-window.h \
 	scx-move-entry.h \
+	scx-new-game-dialog.h \
 	scx-painter.h \
+	scx-player-selector.h \
 	scx-player-view.h \
 	scx-rack-view.h \
 	util.h
