@@ -123,12 +123,12 @@ sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 {
 	//g_print ("adding (%s)\n", word);
 	glong len = g_utf8_strlen (word, -1);
-	if (len > 7) {
+	if (len > 15) {
 	//	exit(0);
 	//	g_print ("too long, discarding: '%s'\n", word);
 		return;
 	}
-	
+
 	LID letters[15];
 	if (!alphabet_translate (al, word, letters)) {
 		//g_print ("Invalid word");
@@ -265,7 +265,7 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max)
 			break;
 	}
 
-	fclose (f);	
+	fclose (f);
 
 	return TRUE;
 }
@@ -299,12 +299,12 @@ _traverse_tree1 (ScDag2 *dag, ScDag2Node *node)
 			}
 //		}
 	}
-	
+
 	if (arcs > _max_arcs_per_node)
 		_max_arcs_per_node = arcs;
 
 	nodes_per_level[depth]++;
-	
+
 	return depth+1;
 }
 
@@ -479,7 +479,7 @@ sc_dag2_minimize (ScDag2 *self)
 }
 
 
-gboolean 
+gboolean
 sc_dag2_save (ScDag2 *self, const gchar *file_name)
 {
 	ScDsfWriter *writer = sc_dsf_writer_open (file_name, self->n_nodes, self->n_edges);

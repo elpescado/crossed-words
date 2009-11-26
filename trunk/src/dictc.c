@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include <gtk/gtk.h>
+#include <glib.h>
 
 #include "alphabet.h"
 #include "letter.h"
@@ -21,6 +22,27 @@
 #define DICT_FILE "foo.txt"
 //"lang/pl/dictionary.txt"
 
+#define verbose(args...) {if(opt_verbose)g_print(args);}
+
+/* Command line options */
+
+gchar   *opt_alphabet_file = NULL;
+gint     opt_max_length = 15;
+gboolean opt_gaddag = FALSE;
+gboolean opt_verify = FALSE;
+gboolean opt_verbose = FALSE;
+
+
+static GOptionEntry entries[] = {
+	{"alphabet",   'a', 0, G_OPTION_ARG_STRING, &opt_alphabet_file, "Alphabet file", "FILE"},
+	{"max-length", 'm', 0, G_OPTION_ARG_INT,    &opt_max_length,    "Max word length", "N"},
+	{"gaddag",     'g', 0, G_OPTION_ARG_NONE,   &opt_gaddag,        "Build graph as GADDAG", NULL},
+	{"verify",     'v', 0, G_OPTION_ARG_NONE,   &opt_verify,        "Verify results", NULL},
+	{"verbose",    'V', 0, G_OPTION_ARG_NONE,   &opt_verbose,       "Verbose output", NULL},
+	{NULL}
+};
+
+
 typedef gboolean (*DictionaryTestFunc) (void *, LID *, gint);
 
 void test_word (ScDag2 *dag, Alphabet *al, const gchar *word)
@@ -30,10 +52,9 @@ void test_word (ScDag2 *dag, Alphabet *al, const gchar *word)
 }
 
 
-void test_dictionary (void *dict, Alphabet *al, const gchar *file_name, DictionaryTestFunc func, gboolean expected_result)
+gboolean
+test_dictionary (void *dict, Alphabet *al, const gchar *file_name, DictionaryTestFunc func, gboolean expected_result)
 {
-	return;
-	g_print ("test dictionary: ");	
 	FILE *f = fopen (file_name, "r");
 	if (f == NULL) {
 		return;
@@ -54,6 +75,8 @@ void test_dictionary (void *dict, Alphabet *al, const gchar *file_name, Dictiona
 			continue;
 
 		glong len = g_utf8_strlen (word, -1);
+		if (len > opt_max_length)
+			continue;
 
 		n_words++;
 		if (func (dict, letters, len) != expected_result) {
@@ -63,15 +86,52 @@ void test_dictionary (void *dict, Alphabet *al, const gchar *file_name, Dictiona
 	}
 	double t1 = foo_microtime ();
 
-	fclose (f);	
+	fclose (f);
 
-	g_print ("%d tested, %d missed, %lf seconds, %lf%% words lost\n", n_words, missed, t1 - t0, 100*(double)missed/(double)n_words);
+	g_print ("%d of %d missed, %lf seconds, %d%% words lost\n", missed, n_words, t1 - t0, 100*missed/n_words);
+	if (expected_result == TRUE)
+		return missed == 0;
+	else
+		return missed == n_words;
 }
+
+gboolean
+load_file (ScDag2 *self, const gchar *file_name, Alphabet *al)
+{
+	FILE *f = fopen (file_name, "r");
+	if (f == NULL) {
+		return FALSE;
+	}
+
+	gchar buffer[128];
+
+	while (fgets (buffer, 128, f)) {
+		char *word = g_strstrip (buffer);
+		if (g_utf8_strlen (word, -1) > opt_max_length)
+			continue;
+
+		if (opt_gaddag)
+			sc_dag2_add_drowword (self, word, al);
+		else
+			sc_dag2_add_word (self, word, al);
+
+		//if (--max == 0)
+		//	break;
+	}
+
+	fclose (f);
+
+	return TRUE;
+}
+
 
 
 
 int main (int argc, char *argv[])
 {
+	GError *error = NULL;
+	GOptionContext *context;
+
 	Alphabet  *al;
 	ScDag2 *dag;
 	ScDawg *dawg;
@@ -79,33 +139,108 @@ int main (int argc, char *argv[])
 	gtk_init (&argc, &argv);
 	srand (time (NULL));
 
+	/* Parse command line options */
+	context = g_option_context_new ("- dictionary files compiler");
+	g_option_context_add_main_entries (context, entries, "dictc");
+	g_option_context_add_group (context, gtk_get_option_group (TRUE));
+	if (!g_option_context_parse (context, &argc, &argv, &error)) {
+		g_printerr ("option parsing failed: %s\n", error->message);
+		return EXIT_FAILURE;
+	}
+
+	if (opt_alphabet_file == NULL || argc < 3) {
+		g_printerr ("Bad arguments\n");
+		return EXIT_FAILURE;
+	}
+	const gchar *dict_file = argv[1];
+	const gchar *out_file = argv[2];
+
+
+	/* Load alphabet */
+
 	al = alphabet_new ();
-	alphabet_load (al, "lang/pl/alphabet.txt");
-#if 1
+	alphabet_load (al, opt_alphabet_file);
+
+
+	/* Load input file */
+
 	dag = sc_dag2_new ();
-	/*
-	sc_dag2_add_drowword (dag, "COPY", al);
-	sc_dag2_add_drowword (dag, "ATLAS", al);
-	sc_dag2_add_drowword (dag, "ABCDEF", al);
-	sc_dag2_add_drowword (dag, "WARYJAT", al);
-	sc_dag2_add_drowword (dag, "KWIATOSTAN", al);
-	sc_dag2_add_drowword (dag, "ABDOMINOPLASTYK", al);
-	return 0;
-	*/
 
+	verbose ("Loading dictionary file...");
 	double t0 = foo_microtime ();
-	//sc_dag2_load_file (dag, "test.txt", al);
-	sc_dag2_load_file (dag, DICT_FILE, al, atoi(argv[1]));
-	double t1 = foo_microtime ();
+	double t1;
+	if (load_file (dag, dict_file, al)) {
+		t1 = foo_microtime ();
+		verbose (" ok\n");
+	} else {
+		verbose (" failed\n");
+		return EXIT_FAILURE;
+	}
 
-	test_word (dag, al, "alfabet");
-	test_word (dag, al, "asdaf");
-	test_dictionary (dag, al, DICT_FILE, sc_dag2_test_word_translated, TRUE);
-	test_dictionary (dag, al, "bad-words.txt", sc_dag2_test_word_translated, FALSE);
+	if (opt_verify) {
+		verbose ("Verifying loaded words... ");
+		if (!test_dictionary (dag, al, dict_file, sc_dag2_test_word_translated, TRUE)) {
+			g_printerr ("Verification failed\n");
+			return EXIT_FAILURE;
+		}
+		//test_dictionary (dag, al, "bad-words.txt", sc_dag2_test_word_translated, FALSE);
+	}
 
-	sc_dag2_print_stats (dag);
+	if (opt_verbose) {
+		sc_dag2_print_stats (dag);
+	}
+
+	/* Minimize graph */
+
+	verbose ("Minimizing graph...");
 	sc_dag2_minimize (dag);
-	sc_dag2_save (dag, "dictionary.dag");
+	verbose (" ok\n");
+
+
+	/* Verify minimized graph */
+
+	if (opt_verify) {
+		verbose ("Verifying minimized graph... ");
+		if (!test_dictionary (dag, al, dict_file, sc_dag2_test_word_translated, TRUE)) {
+			g_printerr ("Verification failed\n");
+			return EXIT_FAILURE;
+		}
+		//test_dictionary (dag, al, "bad-words.txt", sc_dag2_test_word_translated, FALSE);
+	}
+
+
+	/* Save binary file */
+
+	verbose ("Saving output file...");
+	if (!sc_dag2_save (dag, out_file)) {
+		verbose (" failed\n");
+		g_printerr ("Cannot write output file\n");
+	}
+	verbose (" ok\n");
+
+
+	/* Verify written file */
+
+	verbose ("Verifying output file...");
+	dawg = sc_dawg_load (out_file);
+	if (dawg == NULL) {
+		verbose (" failed\n");
+		g_printerr ("Cannot load output file '%s' for verification\n", out_file);
+		return EXIT_FAILURE;
+	}
+	if (!test_dictionary (dawg, al, dict_file, sc_dawg_test_word_translated, TRUE)) {
+		verbose (" failed\n");
+		g_printerr ("Output file verification failed\n");
+		return EXIT_FAILURE;
+	}
+	//test_dictionary (dawg, al, "bad-words.txt", sc_dawg_test_word_translated, FALSE);
+
+	verbose (" ok\n");
+
+
+	return EXIT_SUCCESS;
+
+
 	g_print ("Construction took %lf secs\n", t1 - t0);
 
 	test_word (dag, al, "alfabet");
@@ -116,7 +251,7 @@ int main (int argc, char *argv[])
 	*/
 	test_dictionary (dag, al, DICT_FILE, sc_dag2_test_word_translated, TRUE);
 	test_dictionary (dag, al, "bad-words.txt", sc_dag2_test_word_translated, FALSE);
-#endif
+
 	g_print (" -- DAWG -- \n");
 	dawg = sc_dawg_load ("dictionary.dag");
 	if (dawg == NULL) {
