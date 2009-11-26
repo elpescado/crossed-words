@@ -112,6 +112,8 @@ scx_player_selector_set_types (ScxPlayerSelector  *self,
 
 		types+=2;
 	}
+
+	gtk_combo_box_set_active (GTK_COMBO_BOX (priv->type_combo), 0);
 }
 
 
