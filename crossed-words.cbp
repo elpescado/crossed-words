@@ -4,6 +4,7 @@
 	<Project>
 		<Option title="crossed-words" />
 		<Option pch_mode="2" />
+		<Option default_target="dictc" />
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
@@ -27,6 +28,17 @@
 				<Linker>
 					<Add option="-s" />
 				</Linker>
+			</Target>
+			<Target title="dictc">
+				<Option output="bin\Debug\dictc" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin\Debug\" />
+				<Option object_output="obj\dictc\" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="-a .\lang\pl\alphabet.txt -v -V .\lang\pl\dictionary.txt d.dag" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
 			</Target>
 		</Build>
 		<Compiler>
@@ -60,12 +72,18 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\compat.h" />
+		<Unit filename="src\dictc.c">
+			<Option compilerVar="CC" />
+			<Option target="dictc" />
+		</Unit>
 		<Unit filename="src\letter.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\letter.h" />
 		<Unit filename="src\main.c">
 			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
 		</Unit>
 		<Unit filename="src\marshal.c">
 			<Option compilerVar="CC" />
