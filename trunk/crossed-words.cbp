@@ -133,6 +133,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\sc-move.h" />
+		<Unit filename="src\sc-player-factory.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src\sc-player-factory.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src\sc-player.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -169,10 +178,28 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\scx-move-entry.h" />
+		<Unit filename="src\scx-new-game-dialog.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src\scx-new-game-dialog.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src\scx-painter.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\scx-painter.h" />
+		<Unit filename="src\scx-player-selector.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src\scx-player-selector.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src\scx-player-view.c">
 			<Option compilerVar="CC" />
 		</Unit>
