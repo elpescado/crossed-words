@@ -39,7 +39,7 @@ sc_dsf_writer_open (const gchar *file_name,
                     guint n_vertices,
                     guint n_arcs)
 {
-	FILE *f = fopen (file_name, "w");
+	FILE *f = fopen (file_name, "wb");
 
 	if (f == NULL)
 		return NULL;
@@ -81,7 +81,7 @@ sc_dsf_writer_write_vertex (ScDsfWriter        *writer,
 
 	fwrite (&v, sizeof (v), 1, writer->fh);
 }
- 
+
 
 void
 sc_dsf_writer_write_arc (ScDsfWriter        *writer,
@@ -101,7 +101,7 @@ sc_dsf_writer_write_arc (ScDsfWriter        *writer,
 ScDsfReader *
 sc_dsf_reader_open (const gchar *file_name)
 {
-	FILE *f = fopen (file_name, "r");
+	FILE *f = fopen (file_name, "rb");
 
 	if (f == NULL)
 		return NULL;

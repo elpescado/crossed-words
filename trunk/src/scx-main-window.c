@@ -3,7 +3,7 @@
  * --------
  *
  * Copyright (C) 2009 Przemysław Sitek
- * 
+ *
  */
 
 #include <gtk/gtk.h>
@@ -87,7 +87,7 @@ scx_main_window_new (void)
 	return GTK_WIDGET (self);
 }
 
-	
+
 /**
  * Start a new game
  **/
@@ -109,7 +109,7 @@ _action_game_new  (GtkAction     *action,
 
 	scx_board_view_set_board (SCX_BOARD_VIEW (priv->board_view),
 	                          sc_game_get_board (priv->game));
-	
+
 	gint i;
 	for (i = 0; i < 2; i++) {
 		ScPlayer *player = scx_new_game_dialog_create_player (SCX_NEW_GAME_DIALOG (win), i);
@@ -331,7 +331,7 @@ scx_main_window_init (ScxMainWindow *self)
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_human_player_new,    "human", "Human");
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_dumb_player_new,     "dumb", "Dumb player");
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_computer_player_new, "computer", "Computer player");
-	
+
 	scx_main_window_init_actions (self);
 	scx_main_window_init_gui (self);
 }
@@ -344,6 +344,7 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 	ScxMainWindowPrivate *priv = self->priv;
 
 	scx_game_panel_update (SCX_GAME_PANEL (priv->game_panel), priv->game);
+	gtk_widget_queue_draw (priv->board_view); // FIXME: use proper signals etc.
 
 	if (! SC_IS_HUMAN_PLAYER(player)) {
 		gtk_widget_set_sensitive (priv->bottom_hbox, FALSE);
@@ -413,7 +414,7 @@ scx_main_window_update_move (ScxMainWindow *self)
 	gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
 
 
-	
+
 	g_print ("Something changed\n");
 }
 
@@ -473,7 +474,7 @@ scx_main_window_finalize (GObject *object)
 	G_OBJECT_CLASS (scx_main_window_parent_class)->finalize (object);
 }
 
-	
+
 static void
 scx_main_window_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
