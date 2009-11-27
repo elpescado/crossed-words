@@ -80,14 +80,14 @@ EXTRA_DIST=\
 
 OBJS=$(SOURCES:.c=.o)
 
-all: scr gen-bad-words dictc
+all: crossed-words gen-bad-words dictc
 
 .c.o:
 	$(CC) -c $(CFLAGS) $< -o $@
 
 $(OBJS): $(HEADERS)
 
-scr: $(OBJS) main.o
+crossed-words: $(OBJS) main.o
 	$(CC) -o $@ $(OBJS) main.o $(LIBS)
 
 gen-bad-words: $(OBJS) gen-bad-words.o
