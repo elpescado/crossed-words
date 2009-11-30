@@ -71,7 +71,8 @@ scx_painter_draw_tile (ScxPainter  *self,
                        Letter      *l,
                        gint         x,
                        gint         y,
-                       gint         style_id)
+                       gint         style_id,
+                       gboolean     blank)
 {
 	ScxPainterPrivate *priv = self->priv;
 
@@ -81,7 +82,7 @@ scx_painter_draw_tile (ScxPainter  *self,
 	priv->tile_gc = gdk_gc_new (gtk_widget_get_window (GTK_WIDGET (priv->widget)));
 
 	PangoLayout *layout = gtk_widget_create_pango_layout (priv->widget, "");
-	PangoFontDescription *font = pango_font_description_from_string ("Euromode 32px");
+	PangoFontDescription *font = pango_font_description_from_string ("Arial bold 32px");
 	pango_layout_set_font_description (layout, font);
 	pango_layout_set_width (layout, (TILE_SIZE - 2) * PANGO_SCALE);
 	pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
@@ -101,18 +102,20 @@ scx_painter_draw_tile (ScxPainter  *self,
 						priv->tile_gc,
 						TRUE, x+1, y+1, TILE_SIZE-1, TILE_SIZE-1);
 
-	set_color (priv->tile_gc, "#000000");
-	pango_layout_set_text (layout, l->label, -1);
-	gdk_draw_layout (gtk_widget_get_window (priv->widget),
-	                 priv->tile_gc, x+1, 4 + y+1,
-					 layout);
+	set_color (priv->tile_gc, blank? "#666666" : "#000000");
+	if (l) {
+		pango_layout_set_text (layout, l->label, -1);
+		gdk_draw_layout (gtk_widget_get_window (priv->widget),
+		                 priv->tile_gc, x+1, 4 + y+1,
+		                 layout);
 
-	gchar points_text[4];
-	snprintf (points_text, 4, "%d", l->value);
-	pango_layout_set_text (layout2, points_text, -1);
-	gdk_draw_layout (gtk_widget_get_window (priv->widget),
-	                 priv->tile_gc, x+1, 32 + y+1,
-					 layout2);
+		gchar points_text[4];
+		snprintf (points_text, 4, "%d", l->value);
+		pango_layout_set_text (layout2, points_text, -1);
+		gdk_draw_layout (gtk_widget_get_window (priv->widget),
+		                 priv->tile_gc, x+1, 32 + y+1,
+		                 layout2);
+	}
 
 	gdk_draw_line (gtk_widget_get_window (priv->widget),
 	               priv->tile_gc, x + 1, y + TILE_SIZE + 1, x + TILE_SIZE + 1, y + TILE_SIZE + 1);

@@ -61,7 +61,8 @@ scx_painter_draw_tile (ScxPainter  *self,
                        Letter      *l,
                        gint         x,
                        gint         y,
-                       gint         style_id);
+                       gint         style_id,
+                       gboolean     blank);
 
 
 

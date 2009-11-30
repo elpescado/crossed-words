@@ -227,7 +227,8 @@ scx_board_view_draw_tile (ScxBoardView  *self,
                           Letter        *l,
 						  gint           i,
 						  gint           j,
-						  gint           style_id)
+						  gint           style_id,
+                          gboolean blank)
 {
 	ScxBoardViewPrivate *priv = self->priv;
 
@@ -237,7 +238,7 @@ scx_board_view_draw_tile (ScxBoardView  *self,
 	int x = ox + i * (TILE_SIZE + TILE_SPACING);
 	int y = oy + j * (TILE_SIZE + TILE_SPACING);
 
-	scx_painter_draw_tile (priv->painter, l, x, y, style_id);
+	scx_painter_draw_tile (priv->painter, l, x, y, style_id, blank);
 }
 
 
@@ -295,10 +296,11 @@ scx_board_view_expose_event (GtkWidget           *widget,
 			//int x = ox + i * (TILE_SIZE + TILE_SPACING);
 			//int y = oy + j * (TILE_SIZE + TILE_SPACING);
 
+			LID lid = sc_board_get_lid (priv->board, i, j);
 			Letter *l = sc_board_get_letter (priv->board, i, j);
 
 			if (l) {
-				scx_board_view_draw_tile (self, l, i, j, 0);
+				scx_board_view_draw_tile (self, l, i, j, 0,  sc_letter_is_blank (lid));
 			}
 		}
 	}
@@ -315,7 +317,7 @@ scx_board_view_expose_event (GtkWidget           *widget,
 
 			Letter *l = alphabet_lookup_letter (sc_board_get_alphabet (priv->board), priv->move.letters[k]);
 			if (l && sc_board_get_letter (priv->board, i, j) == NULL) {
-				scx_board_view_draw_tile (self, l, i, j, 1);
+				scx_board_view_draw_tile (self, l, i, j, 1, sc_letter_is_blank (priv->move.letters[k]));
 			}
 		}
 	}

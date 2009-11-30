@@ -75,6 +75,10 @@ FieldModifier
 sc_board_get_field_modifier (ScBoard *board, gint x, gint y);
 
 
+LID
+sc_board_get_lid (ScBoard *board, gint x, gint y);
+
+
 Letter *
 sc_board_get_letter (ScBoard *board, gint x, gint y);
 
