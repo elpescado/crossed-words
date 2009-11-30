@@ -81,6 +81,7 @@ alphabet_lookup_letter (Alphabet *al, LID index)
 	if (index == 0)
 		return NULL;
 
+	index =	sc_letter_value (index);
 	return &(al->letters[index - FIRST_LETTER_INDEX]);
 }
 

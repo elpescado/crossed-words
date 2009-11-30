@@ -44,7 +44,7 @@ board_modifiers[] = ""
 "....D.....D...."
 ".t...t...t...t."
 "..d...d.d...d.."
-"T..d...*...d..T"
+"T..d...D...d..T"
 "..d...d.d...d.."
 ".t...t...t...t."
 "....D.....D...."
@@ -112,13 +112,22 @@ sc_board_get_field_modifier (ScBoard *board, gint x, gint y)
 }
 
 
-Letter *
-sc_board_get_letter (ScBoard *board, gint x, gint y)
+LID
+sc_board_get_lid (ScBoard *board, gint x, gint y)
 {
 	ScBoardPrivate *priv = board->priv;
 	gint pos = y * BOARD_SIZE + x;
 
-	LID idx = priv->letters[pos];
+	return priv->letters[pos];
+}
+
+
+Letter *
+sc_board_get_letter (ScBoard *board, gint x, gint y)
+{
+	ScBoardPrivate *priv = board->priv;
+
+	LID idx = sc_board_get_lid (board, x, y);
 	return alphabet_lookup_letter (priv->al, idx);
 }
 

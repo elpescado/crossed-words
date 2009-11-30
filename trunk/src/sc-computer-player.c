@@ -140,7 +140,7 @@ _found_word (ScComputerPlayer *self,
 	/* Field before first tile */
 	gint px = move.x - di;
 	gint py = move.y - dj;
-	if (px > 0 && py > 0 && sc_board_get_letter (ctx->board, px, py) != NULL) {
+	if (px >= 0 && py >= 0 && sc_board_get_letter (ctx->board, px, py) != NULL) {
 
 		g_print ("Discard (prefix) ");
 		_print_word (SC_PLAYER (self), move.letters, n_letters);
