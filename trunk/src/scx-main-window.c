@@ -405,17 +405,14 @@ scx_main_window_update_move (ScxMainWindow *self)
 	ScOrientation o = scx_move_entry_get_orientation (SCX_MOVE_ENTRY (priv->move_entry));
 	scx_board_view_get_selection (SCX_BOARD_VIEW (priv->board_view), &x, &y);
 
-	sc_game_init_move (priv->game, &move, x, y, o, word);
-	scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), &move);
+	if (sc_game_init_move (priv->game, &move, x, y, o, word)) {
+		scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), &move);
 
-	gchar rating_str[12];
-	gint move_rating = sc_board_rate_move (sc_game_get_board (priv->game), &move);
-	snprintf (rating_str, 12, " %d ", move_rating);
-	gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
-
-
-
-	g_print ("Something changed\n");
+		gchar rating_str[12];
+		gint move_rating = sc_board_rate_move (sc_game_get_board (priv->game), &move);
+		snprintf (rating_str, 12, " %d ", move_rating);
+		gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
+	}
 }
 
 
@@ -439,10 +436,11 @@ scx_main_window_move_activated (ScxMoveEntry  *entry,
 		ScOrientation o = scx_move_entry_get_orientation (SCX_MOVE_ENTRY (priv->move_entry));
 		scx_board_view_get_selection (SCX_BOARD_VIEW (priv->board_view), &x, &y);
 
-		sc_game_init_move (priv->game, &move, x, y, o, word);
-		move.type = move_type;
+		if (sc_game_init_move (priv->game, &move, x, y, o, word)) {
+			move.type = move_type;
 
-		sc_player_do_move (priv->current_player, &move);
+			sc_player_do_move (priv->current_player, &move);
+		}
 
 //		scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), &move);
 //	}
