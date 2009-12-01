@@ -113,7 +113,6 @@ _found_word (ScComputerPlayer *self,
 			 gint              n_letters)
 {
 	if (ctx->needed_tiles == 0) {
-		//g_printerr ("Hey! you have to use some tiles...\n");
 		return;
 	}
 
@@ -284,7 +283,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 				     ScDawgVertex     *node,
 				     ScRack           *rack)
 {
-	g_printerr (".");
+	//g_printerr (".");
 
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
@@ -341,7 +340,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 				     ScDawgVertex     *node,
 				     ScRack           *rack)
 {
-	g_printerr (".");
+	//g_printerr (".");
 
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
@@ -474,7 +473,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 
 	gint anchor_squares = 0;
 
-	g_printerr ("searching");
+	//g_printerr ("searching");
 	/* Scan for anchor squares */
 	for (i = 0; i < BOARD_SIZE; i++) {
 		for (j = 0; j < BOARD_SIZE; j++) {
@@ -497,7 +496,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 		_traverse_tree_left (self, &ctx_h, 0, root, &rack);
 
 	}
-	g_printerr ("\ndone\n");
+	//g_printerr ("\ndone\n");
 	g_print ("%d moves found\n", priv->n_moves);
 
 
