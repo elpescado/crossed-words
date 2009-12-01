@@ -23,6 +23,7 @@ sc_dawg_new (gint n_vertices,
              gint n_arcs)
 {
 	ScDawg *dawg = g_new0 (ScDawg, 1);
+	dawg->ref_count = 1;
 
 	sc_dawg_init (dawg, n_vertices, n_arcs);
 
@@ -37,6 +38,23 @@ sc_dawg_free (ScDawg *dawg)
 	g_free (dawg->arcs);
 	g_free (dawg);
 }
+
+
+ScDawg *
+sc_dawg_ref (ScDawg *dawg)
+{
+	dawg->ref_count++;
+	return dawg;
+}
+
+
+void
+sc_dawg_unref (ScDawg *dawg)
+{
+	if (--dawg->ref_count)
+		sc_dawg_free (dawg);
+}
+
 
 
 static void

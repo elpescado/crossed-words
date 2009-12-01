@@ -37,6 +37,8 @@ struct ScDawg {
 	guint ai;
 	guint vi;
 	guint vai;
+
+	guint ref_count;
 };
 
 
@@ -48,6 +50,13 @@ sc_dawg_new (gint n_verices,
 
 void
 sc_dawg_free (ScDawg *dawg);
+
+
+ScDawg *
+sc_dawg_ref (ScDawg *dawg);
+
+void
+sc_dawg_unref (ScDawg *dawg);
 
 
 ScDawg *
