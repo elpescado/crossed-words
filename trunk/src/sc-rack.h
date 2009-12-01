@@ -39,6 +39,9 @@ sc_rack_remove (ScRack *rack, LID lid);
 void
 sc_rack_assign_letters (ScRack *rack, LID *letters, int n_letters);
 
+void
+sc_rack_to_letters (ScRack *rack, LID *letters, int *n_letters);
+
 
 void
 sc_rack_print (ScRack *rack, Alphabet *al);

@@ -25,6 +25,10 @@ struct _ScComputerPlayerPrivate
 	GList *moves;
 	gint   n_moves;
 
+	/* Exchange */
+	gboolean enable_exchange;
+	gint     exchange_threshold;
+
 	gboolean disposed;
 };
 
@@ -453,6 +457,26 @@ sc_computer_player_analyze_moves (ScComputerPlayer *self)
 }
 
 
+
+void
+sc_computer_player_enable_exchange (ScComputerPlayer *self,
+                                    gboolean          enabled)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	priv->enable_exchange = enabled;
+}
+
+
+gboolean
+sc_computer_player_exchange_enabled (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	return priv->enable_exchange;
+}
+
+
+
+
 static void
 sc_computer_player_your_turn (ScComputerPlayer *self)
 {
@@ -506,7 +530,25 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 		g_print ("OK\n");
 	} else {
 		g_print ("Giving up\n");
-		move.type = SC_MOVE_TYPE_PASS;
+		if (priv->enable_exchange) {
+			//g_printerr ("Exchange: ");
+			move.type = SC_MOVE_TYPE_EXCHANGE;
+
+			sc_rack_to_letters (&rack, move.letters, &(move.n_letters));
+			
+			if (sc_game_get_remaining_tiles (SC_GAME (SC_PLAYER(self)->game)) < 8)
+				move.type = SC_MOVE_TYPE_PASS;
+
+			/*
+			int i;
+			for (i = 0; i < move.n_letters; i++) {
+				g_printerr ("%d ", move.letters[i]);
+			}
+			g_printerr ("\n");
+			*/
+		} else {
+			move.type = SC_MOVE_TYPE_PASS;
+		}
 		sc_player_do_move (SC_PLAYER (self), &move);
 	}
 

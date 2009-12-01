@@ -8,7 +8,7 @@
 #include "sc-computer-player.h"
 
 
-#define N_SIMULATIONS 100
+#define N_SIMULATIONS 1000
 #define N_PLAYERS 2
 
 int scores[N_SIMULATIONS][N_PLAYERS] = {0};
@@ -81,6 +81,7 @@ setup_game (void)
 
 	ScPlayer *p1 = sc_computer_player_new ();
 	p1->game = game;
+	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
 	sc_game_set_player (game, 0, p1);
 
 	ScPlayer *p2 = sc_computer_player_new ();

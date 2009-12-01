@@ -491,6 +491,14 @@ sc_game_get_dictionary (ScGame *game)
 }
 
 
+gint
+sc_game_get_remaining_tiles (ScGame *game)
+{
+	ScGamePrivate *priv = game->priv;
+	return sc_bag_n_tiles (priv->bag);
+}
+
+
 static void
 sc_game_dispose (GObject *object)
 {

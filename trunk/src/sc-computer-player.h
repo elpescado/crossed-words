@@ -66,6 +66,14 @@ void
 sc_computer_player_clear_moves (ScComputerPlayer *self);
 
 
+void
+sc_computer_player_enable_exchange (ScComputerPlayer *self,
+                                    gboolean          enabled);
+
+gboolean
+sc_computer_player_exchange_enabled (ScComputerPlayer *self);
+
+
 G_END_DECLS
 
 #endif
