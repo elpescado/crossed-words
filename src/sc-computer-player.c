@@ -166,7 +166,7 @@ _found_word (ScComputerPlayer *self,
 		g_print ("(%d, %d)\n", move.x, move.y);
 	} else {
 		gint rating = sc_board_rate_move (ctx->board, &move);
-		gboolean ok = sc_dawg_test_word_translated (priv->vdawg, move.letters, n_letters);
+		gboolean ok = TRUE;/*sc_dawg_test_word_translated (priv->vdawg, move.letters, n_letters);*/
 
 		g_print ("Found word ");
 		//_print_word (SC_PLAYER (self), letters, n_letters);
@@ -463,6 +463,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 
 	board = sc_player_get_board (SC_PLAYER (self));
 	ScComputerPlayerPrivate *priv = self->priv;
+	priv->dawg = sc_game_get_dictionary (SC_GAME (SC_PLAYER(self)->game));
 
 	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 	ScRack rack;
@@ -524,6 +525,7 @@ sc_computer_player_init (ScComputerPlayer *self)
 	g_signal_connect (self, "your-turn",
 	                  G_CALLBACK (sc_computer_player_your_turn), self);
 
+	/*
 	priv->dawg = sc_dawg_load ("gaddag.dag");
 	if (priv->dawg == NULL)
 		g_print ("Cannot load GADDAG\n");
@@ -531,6 +533,7 @@ sc_computer_player_init (ScComputerPlayer *self)
 	priv->vdawg = sc_dawg_load ("dawg.dag");
 	if (priv->vdawg == NULL)
 		g_print ("Cannot load DAWG\n");
+	*/
 
 	priv->disposed = FALSE;
 }

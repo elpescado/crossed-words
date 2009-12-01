@@ -60,6 +60,33 @@ sc_player_init (ScPlayer *self)
 }
 
 
+static void
+_sc_player_enter_game (ScPlayer *player, ScGame *game)
+{
+}
+
+
+static void
+_sc_player_leave_game (ScPlayer *player, ScGame *game)
+{
+}
+
+
+
+void
+sc_player_enter_game (ScPlayer *player, ScGame *game)
+{
+	return SC_PLAYER_GET_CLASS(player)->enter_game (player, game);
+}
+
+
+void
+sc_player_leave_game (ScPlayer *player, ScGame *game)
+{
+	return SC_PLAYER_GET_CLASS(player)->leave_game (player, game);
+}
+
+
 gboolean
 sc_player_do_move (ScPlayer *player, ScMove *move)
 {
@@ -188,6 +215,8 @@ sc_player_class_init (ScPlayerClass *klass)
 	gobject_class->finalize = sc_player_finalize;
 
 	klass->do_move = _sc_player_do_move;
+	klass->enter_game = _sc_player_enter_game;
+	klass->leave_game = _sc_player_leave_game;
 
 	g_type_class_add_private (klass, sizeof (ScPlayerPrivate));
 

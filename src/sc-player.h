@@ -32,6 +32,7 @@ G_BEGIN_DECLS
 #define SC_PLAYER_GET_CLASS(obj) \
 	(G_TYPE_INSTANCE_GET_CLASS ((obj), SC_TYPE_PLAYER, ScPlayerClass))
 
+struct _ScGame;
 
 typedef struct _ScPlayer		ScPlayer;
 typedef struct _ScPlayerPrivate		ScPlayerPrivate;
@@ -48,7 +49,9 @@ struct _ScPlayerClass
 	GObjectClass		parent;
 
 	/* Virtual methods */
-	gboolean (*do_move) (ScPlayer *, ScMove *move);
+	gboolean (*do_move)    (ScPlayer *, ScMove *move);
+	void     (*enter_game) (ScPlayer *, struct _ScGame *game);
+	void     (*leave_game) (ScPlayer *, struct _ScGame *game);
 
 	/* Signals */
 };
@@ -84,6 +87,16 @@ sc_player_get_board (ScPlayer *player);
 
 void
 sc_player_get_rack (ScPlayer *player, ScRack *rack);
+
+
+void
+sc_player_enter_game (ScPlayer *player, struct _ScGame *game);
+
+
+void
+sc_player_leave_game (ScPlayer *player, struct _ScGame *game);
+
+
 
 G_END_DECLS
 

@@ -18,6 +18,7 @@
 #include "sc-board.h"
 #include "sc-rack-model.h"
 #include "sc-bag.h"
+#include "sc-dawg.h"
 
 G_BEGIN_DECLS
 
@@ -111,6 +112,9 @@ sc_game_get_n_players (ScGame *self);
 ScPlayer *
 sc_game_get_player (ScGame *game, gint n);
 
+
+ScDawg *
+sc_game_get_dictionary (ScGame *game);
 
 
 G_END_DECLS

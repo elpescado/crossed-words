@@ -12,6 +12,7 @@
 #include "sc-bag.h"
 #include "sc-board.h"
 #include "sc-game.h"
+#include "sc-dawg.h"
 
 #define BINGO_BONUS 50
 
@@ -31,6 +32,8 @@ struct _ScGamePrivate
 	gint         n_players;
 	ScPlayerCtx *players[2];
 	gint         pass_counter;
+
+	ScDawg      *dictionary;
 
 	gboolean disposed;
 };
@@ -62,6 +65,16 @@ static ScPlayerCtx *
 sc_game_get_ctx_by_player (ScGame *self, ScPlayer *player);
 
 
+static void
+sc_game_load_dictionary (ScGame *self);
+
+
+static void
+sc_game_unload_dictionary (ScGame *self);
+
+
+
+
 #define SC_GAME_GET_PRIVATE(obj) \
 	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
 	SC_TYPE_GAME, ScGamePrivate))
@@ -89,6 +102,8 @@ sc_game_init (ScGame *self)
 	priv->board = sc_board_new (priv->al);
 
 	priv->n_players = 2;
+
+	sc_game_load_dictionary (self);
 
 	priv->bag = sc_bag_new ();
 }
@@ -447,6 +462,36 @@ sc_game_get_alphabet (ScGame *self)
 
 
 static void
+sc_game_load_dictionary (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+
+	if (priv->dictionary)
+		sc_game_unload_dictionary (self);
+
+	priv->dictionary = sc_dawg_load ("gaddag.dag");
+}
+
+
+static void
+sc_game_unload_dictionary (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+	if (priv->dictionary) {
+		sc_dawg_unref (priv->dictionary);
+	}
+}
+
+
+ScDawg *
+sc_game_get_dictionary (ScGame *game)
+{
+	ScGamePrivate *priv = game->priv;
+	return sc_dawg_ref (priv->dictionary);
+}
+
+
+static void
 sc_game_dispose (GObject *object)
 {
 	ScGame *self = (ScGame*) object;
@@ -457,8 +502,11 @@ sc_game_dispose (GObject *object)
 	if (priv->disposed) {
 		return;
 	}
-	priv->disposed = TRUE;
+	//g_printerr ("sc_game_dispose()\n");
 
+	sc_game_unload_dictionary (self);
+
+	priv->disposed = TRUE;
 
 	/* Chain up to the parent class */
 	G_OBJECT_CLASS (sc_game_parent_class)->dispose (object);
@@ -468,6 +516,7 @@ sc_game_dispose (GObject *object)
 static void
 sc_game_finalize (GObject *object)
 {
+	//g_printerr ("sc_game_finalize()\n");
 	G_OBJECT_CLASS (sc_game_parent_class)->finalize (object);
 }
 
