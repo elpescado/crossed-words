@@ -72,6 +72,19 @@ sc_rack_assign_letters (ScRack *rack, LID *letters, int n_letters)
 }
 
 
+void
+sc_rack_to_letters (ScRack *rack, LID *letters, int *n_letters)
+{
+	int i, j;
+	int n = 0;
+	for (i = 0; i < 34; i++) {
+		for (j = 0; j < rack->letters[i]; j++) {
+			letters[n++] = i;
+		}
+	}
+	*n_letters = n;
+}
+
 
 void
 sc_rack_print (ScRack *rack, Alphabet *al)

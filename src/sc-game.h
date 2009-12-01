@@ -117,6 +117,10 @@ ScDawg *
 sc_game_get_dictionary (ScGame *game);
 
 
+gint
+sc_game_get_remaining_tiles (ScGame *game);
+
+
 G_END_DECLS
 
 #endif

@@ -139,7 +139,7 @@ sc_bag_load (ScBag *self, Alphabet *al)
 	}
 
 	if (n != 100) {
-		g_printerr ("Expected 100 tiles, got %d\n", n);
+//		g_printerr ("Expected 100 tiles, got %d\n", n);
 	}
 
 	priv->n_tiles = n;
