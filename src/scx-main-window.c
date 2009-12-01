@@ -80,6 +80,15 @@ scx_main_window_move_activated (ScxMoveEntry  *entry,
                                 ScMoveType     move_type,
                                 ScxMainWindow *self);
 
+static void
+scx_main_window_game_begin (ScxMainWindow *self,
+                            ScGame        *game);
+
+static void
+scx_main_window_game_end (ScxMainWindow *self,
+                            ScGame        *game);
+
+
 GtkWidget*
 scx_main_window_new (void)
 {
@@ -134,6 +143,8 @@ _action_game_new  (GtkAction     *action,
 	scx_main_window_create_player (self, 0);
 	scx_main_window_create_player (self, 1);
 	*/
+	g_signal_connect_swapped (priv->game, "begin", G_CALLBACK (scx_main_window_game_begin), self);
+	g_signal_connect_swapped (priv->game, "end", G_CALLBACK (scx_main_window_game_end), self);
 
 	scx_board_view_enable_selection (SCX_BOARD_VIEW (priv->board_view));
 	scx_board_view_set_selection (SCX_BOARD_VIEW (priv->board_view), 3, 7);
@@ -334,6 +345,37 @@ scx_main_window_init (ScxMainWindow *self)
 
 	scx_main_window_init_actions (self);
 	scx_main_window_init_gui (self);
+}
+
+
+
+static void
+scx_main_window_game_begin (ScxMainWindow *self,
+                            ScGame        *game)
+{
+	/*
+	GtkWidget *win = gtk_message_dialog_new (GTK_WINDOW (self),
+	                                         0,
+	                                         GTK_MESSAGE_INFO,
+	                                         GTK_BUTTONS_OK,
+	                                         "Game started");
+	gtk_dialog_run (GTK_DIALOG (win));
+	gtk_widget_destroy (win);
+	*/
+}
+
+
+static void
+scx_main_window_game_end (ScxMainWindow *self,
+                          ScGame        *game)
+{
+	GtkWidget *win = gtk_message_dialog_new (GTK_WINDOW (self),
+	                                         0,
+	                                         GTK_MESSAGE_INFO,
+	                                         GTK_BUTTONS_OK,
+	                                         "Game over");
+	gtk_dialog_run (GTK_DIALOG (win));
+	gtk_widget_destroy (win);
 }
 
 

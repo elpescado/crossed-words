@@ -42,6 +42,19 @@ struct _ScPlayerCtx {
 	ScRackModel *rack;
 };
 
+
+
+enum {
+	BEGIN,
+	END,
+
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL];
+
+
+
 static void
 sc_game_request_move (ScGame *self);
 
@@ -326,6 +339,8 @@ sc_game_start (ScGame *self)
 		sc_game_fill_rack (self, ctx->rack, priv->bag);
 	}
 
+	g_signal_emit (self, signals[BEGIN], 0);
+
 	sc_game_request_move (self);
 }
 
@@ -368,6 +383,8 @@ sc_game_end (ScGame *self)
 
 
 	priv->running = FALSE;
+
+	g_signal_emit (self, signals[END], 0);
 }
 
 
@@ -494,5 +511,25 @@ sc_game_class_init (ScGameClass *klass)
 	gobject_class->finalize = sc_game_finalize;
 
 	g_type_class_add_private (klass, sizeof (ScGamePrivate));
+
+	signals[BEGIN] = g_signal_new ("begin",
+			G_TYPE_FROM_CLASS (klass),
+			(GSignalFlags)(G_SIGNAL_RUN_LAST),
+			0,
+			NULL,
+			NULL,
+			g_cclosure_marshal_VOID__VOID,
+			G_TYPE_NONE, 0,
+			NULL);
+
+	signals[END] = g_signal_new ("end",
+			G_TYPE_FROM_CLASS (klass),
+			(GSignalFlags)(G_SIGNAL_RUN_LAST),
+			0,
+			NULL,
+			NULL,
+			g_cclosure_marshal_VOID__VOID,
+			G_TYPE_NONE, 0,
+			NULL);
 }
 
