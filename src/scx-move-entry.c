@@ -84,6 +84,7 @@ scx_move_entry_init_gui (ScxMoveEntry *self)
 	gtk_box_set_spacing (GTK_BOX (self), 6);
 
 	priv->entry = gtk_entry_new ();
+	gtk_widget_set_tooltip_text (priv->entry, _("To use a blank, append a '?' character after character it should be used for, eg. type 'CA?T' to use blank for A and tiles C and T"));
 	gtk_entry_set_max_length (GTK_ENTRY (priv->entry), 15);
 	g_signal_connect (priv->entry, "changed", G_CALLBACK (scx_move_entry_text_changed), self);
 	gtk_box_pack_start (GTK_BOX (self), priv->entry, FALSE, FALSE, 0);

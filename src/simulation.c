@@ -46,6 +46,9 @@ summarize (void)
 		gint avg = sum/n;
 		g_printerr ("Player %d: avg %3d max %3d min %3d points\n", i+1, avg, max, min);
 	}
+
+	extern gint n_bingos;
+	g_printerr ("total bingos = %d\n", n_bingos);
 }
 
 
@@ -81,12 +84,12 @@ setup_game (void)
 
 	ScPlayer *p1 = sc_computer_player_new ();
 	p1->game = game;
-	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
+	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
 	sc_game_set_player (game, 0, p1);
 
 	ScPlayer *p2 = sc_computer_player_new ();
 	p2->game = game;
-	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p2), TRUE);
+	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p2), TRUE);
 	sc_game_set_player (game, 1, p2);
 
 

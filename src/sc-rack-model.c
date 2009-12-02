@@ -82,11 +82,13 @@ sc_rack_model_has_tiles (ScRackModel *self,
 
 	for (i = 0; i < n_tiles; i++) {
 		//g_print (" -> You need %d\n", tiles[i]);
-		tile_counts[tiles[i]]++;
+		LID lid = sc_letter_is_blank(tiles[i]) ? 0 : sc_letter_value (tiles[i]);
+		tile_counts[lid]++;
 	}
 
 	for (i = 0; i < priv->n_tiles; i++) {
-		LID lid = sc_letter_value (priv->tiles[i]);
+		LID lid = sc_letter_is_blank(priv->tiles[i]) ? 0 : sc_letter_value (priv->tiles[i]);
+		//LID lid = sc_letter_value (priv->tiles[i]);
 		if (tile_counts[lid] > 0) {
 			//g_print (" -> You have %d\n", priv->tiles[i]);
 			tile_counts[lid]--;
@@ -122,6 +124,19 @@ sc_rack_model_add_tile                (ScRackModel *rack,
 }
 
 
+static void
+_print_tiles (LID *tiles, gint n_tiles)
+{
+	int i;
+
+	g_printerr ("( ");
+	for (i = 0; i < n_tiles; i++)
+		g_printerr ("%d%s ", sc_letter_value (tiles[i]), sc_letter_is_blank(tiles[i])?"*":"");
+	g_printerr (")");
+
+}
+
+
 void
 sc_rack_model_remove_tile (ScRackModel *rack,
                      LID     tile)
@@ -130,8 +145,9 @@ sc_rack_model_remove_tile (ScRackModel *rack,
 	int found_i = -1;
 	int i;
 
+	tile = sc_letter_is_blank(tile) ? 0 : sc_letter_value (tile);
 	for (i = 0; i < priv->n_tiles; i++) {
-		if (priv->tiles[i] == tile) {
+		if (sc_letter_value (priv->tiles[i]) == tile) {
 			found_i = i;
 			break;
 		}
@@ -154,10 +170,18 @@ sc_rack_model_remove_tiles (ScRackModel *rack,
                       LID    *tiles,
                       gint    n_tiles)
 {
+	ScRackModelPrivate *priv = rack->priv;
+	//g_printerr ("sc_rack_model_remove_tiles: ");
+	//_print_tiles (priv->tiles, priv->n_tiles);
+	//g_printerr (" - ");
+	//_print_tiles (tiles, n_tiles);
 	int i;
 	for (i = 0; i < n_tiles; i++) {
 		sc_rack_model_remove_tile (rack, tiles[i]);
 	}
+	//g_printerr (" = ");
+	//_print_tiles (priv->tiles, priv->n_tiles);
+	//g_printerr ("\n");
 }
 
 
