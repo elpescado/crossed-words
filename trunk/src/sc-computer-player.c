@@ -317,19 +317,38 @@ _traverse_tree_right(ScComputerPlayer *self,
 		for (i = 0; i < node->n_arcs; i++) {
 			ScDawgArc *a = node->first_arc+i;
 			LID lid = a->lid;
-			if (sc_rack_contains (rack, lid)
+			gboolean has_blank = sc_rack_contains (rack, 0);
+			gboolean has_lid = sc_rack_contains (rack, lid);
+				
+
+			if ((has_blank || has_lid)
 				&& _check_crosswords (self, ctx->board, lid, x, y, !ctx->orient)) {
 				ScDawgVertex *v2 = a->dest;
-				ctx->letters[l_idx+idx] = lid;
-				if (sc_dawg_vertex_is_final (v2)) {
-					_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, l_idx, idx+1+l_idx);
-				}
 
-				sc_rack_remove (rack, lid);
-				ctx->needed_tiles++;
-				_traverse_tree_right (self, ctx, l_idx, idx+1, v2, rack);
-				ctx->needed_tiles--;
-				sc_rack_add (rack, lid);
+				if (has_lid) {
+					ctx->letters[l_idx+idx] = lid;
+					if (sc_dawg_vertex_is_final (v2)) {
+						_found_word (self, ctx, l_idx, idx+1+l_idx);
+					}
+
+					sc_rack_remove (rack, lid);
+					ctx->needed_tiles++;
+					_traverse_tree_right (self, ctx, l_idx, idx+1, v2, rack);
+					ctx->needed_tiles--;
+					sc_rack_add (rack, lid);
+				}
+				if (has_blank) {
+					ctx->letters[l_idx+idx] = lid | BLANK;
+					if (sc_dawg_vertex_is_final (v2)) {
+						_found_word (self, ctx, l_idx, idx+1+l_idx);
+					}
+
+					sc_rack_remove (rack, 0);
+					ctx->needed_tiles++;
+					_traverse_tree_right (self, ctx, l_idx, idx+1, v2, rack);
+					ctx->needed_tiles--;
+					sc_rack_add (rack, 0);
+				}
 			}
 		}
 	}
