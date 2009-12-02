@@ -86,7 +86,7 @@ sc_rack_model_has_tiles (ScRackModel *self,
 	}
 
 	for (i = 0; i < priv->n_tiles; i++) {
-		LID lid = priv->tiles[i];
+		LID lid = sc_letter_value (priv->tiles[i]);
 		if (tile_counts[lid] > 0) {
 			//g_print (" -> You have %d\n", priv->tiles[i]);
 			tile_counts[lid]--;

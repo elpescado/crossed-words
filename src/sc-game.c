@@ -384,8 +384,10 @@ sc_game_end (ScGame *self)
 		sc_rack_model_get_tiles (rack, tiles, &n_tiles);
 		for (j = 0; j < n_tiles; j++) {
 			Letter *l = alphabet_lookup_letter (priv->al, tiles[j]);
-			priv->players[i]->points -= l->value;
-			t += l->value;
+			if (l) { // unused blanks have no Letter*
+				priv->players[i]->points -= l->value;
+				t += l->value;
+			}
 		}
 	}
 

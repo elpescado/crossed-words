@@ -367,8 +367,7 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 			int r1 = sc_board_rate_prefix (self, i, j, di2, dj2, &has_prefix);
 			int r2 = sc_board_rate_suffix (self, i, j, di2, dj2, &has_suffix);
 			int r0 = sc_letter_is_blank (move->letters[k]) ? 0 : l->value;
-			if (has_prefix) g_printerr ("has prefix\n");
-			if (has_suffix) g_printerr ("has suffix\n");
+
 			if (has_prefix || has_suffix) {
 				int r = r1 + r2 + r0;
 				rating += r;
