@@ -67,7 +67,7 @@ sc_rack_assign_letters (ScRack *rack, LID *letters, int n_letters)
 {
 	memset (rack, '\0', sizeof (ScRack));
 	do {
-		rack->letters[letters[--n_letters]]++;
+		rack->letters[sc_letter_value(letters[--n_letters])]++;
 	} while (n_letters > 0);
 }
 
