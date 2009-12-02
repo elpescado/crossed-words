@@ -42,6 +42,7 @@ sc_rack_assign (ScRack *lhs, ScRack *rhs)
 gboolean
 sc_rack_contains (ScRack *rack, LID lid)
 {
+	lid = sc_letter_is_blank (lid) ? 0 : sc_letter_value (lid);
 	return rack->letters[lid] > 0;
 }
 
@@ -49,6 +50,7 @@ sc_rack_contains (ScRack *rack, LID lid)
 void
 sc_rack_add (ScRack *rack, LID lid)
 {
+	lid = sc_letter_is_blank (lid) ? 0 : sc_letter_value (lid);
 	rack->letters[lid]++;
 }
 
@@ -56,6 +58,7 @@ sc_rack_add (ScRack *rack, LID lid)
 void
 sc_rack_remove (ScRack *rack, LID lid)
 {
+	lid = sc_letter_is_blank (lid) ? 0 : sc_letter_value (lid);
 	if (rack->letters[lid] > 0)
 		rack->letters[lid]--;
 }
@@ -95,6 +98,8 @@ sc_rack_print (ScRack *rack, Alphabet *al)
 			Letter *l = alphabet_lookup_letter (al, i);
 			if (l)
 				g_print ("%s ", l->label);
+			else
+				g_print ("? ");
 		}
 	}
 }

@@ -381,6 +381,8 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 	rating *= multiplier;
 	
 
+	if (needed_tiles == 7)
+		rating += 50; // bingo bonus
 
 
 	return rating;

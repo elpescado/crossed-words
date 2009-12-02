@@ -20,6 +20,8 @@ G_DEFINE_TYPE (ScGame, sc_game, G_TYPE_OBJECT)
 
 typedef struct _ScPlayerCtx ScPlayerCtx;
 
+gint n_bingos = 0;
+
 
 struct _ScGamePrivate
 {
@@ -153,8 +155,10 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 		g_print ("move ok\n");
 
 		ctx->points += points;
+		/* sc_board_rate_move handles this */
 		if (n_needed_tiles == 7) {
-			ctx->points += BINGO_BONUS;
+			n_bingos++;
+//			ctx->points += BINGO_BONUS;
 		}
 
 		/* Update players rack */
