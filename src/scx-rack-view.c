@@ -101,6 +101,7 @@ scx_rack_view_expose_event (GtkWidget          *widget,
 
 	for (i = 0; i < n_tiles; i++) {
 		Letter *l = alphabet_lookup_letter (al, tiles[i]);
+		g_printerr ("scx_rack_view_expose_event (%d, %p)\n", tiles[i], l);
 		scx_painter_draw_tile (priv->painter, l, PADDING + i * (TILE_SIZE + TILE_SPACING), PADDING, 0, sc_letter_is_blank(tiles[i]));
 	}
 

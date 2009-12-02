@@ -82,7 +82,9 @@ alphabet_lookup_letter (Alphabet *al, LID index)
 		return NULL;
 
 	index =	sc_letter_value (index);
-	return &(al->letters[index - FIRST_LETTER_INDEX]);
+	return index == 0
+		? NULL
+		: &(al->letters[index - FIRST_LETTER_INDEX]);
 }
 
 
@@ -99,7 +101,7 @@ alphabet_translate_char (Alphabet *al, const gchar *utf8)
 
 
 gboolean
-alphabet_translate (Alphabet *al, const gchar *word, LID *out)
+alphabet_translate (Alphabet *al, const gchar *word, LID *out, gint *out_len)
 {
 	gchar *tmp = g_utf8_strup (word, -1);
 	const gchar *c = tmp;
@@ -107,13 +109,18 @@ alphabet_translate (Alphabet *al, const gchar *word, LID *out)
 	while (c && *c) {
 		gchar cbuf[4] = {0};
 		g_utf8_strncpy(cbuf, c, 1);
-		LID lid = alphabet_translate_char (al, cbuf);
-		if (lid == 0)
-			return FALSE;
-		out[i++] = lid;
-		//g_print ("alphabet_translate %s -> %d\n", cbuf, lid);
+		if (strcmp (cbuf, "?") == 0) {
+			out[i-1] |= BLANK;
+		} else {
+			LID lid = alphabet_translate_char (al, cbuf);
+			if (lid == 0)
+				return FALSE;
+			out[i++] = lid;
+			//g_print ("alphabet_translate %s -> %d\n", cbuf, lid);
+		}
 		c = g_utf8_find_next_char (c, NULL);
 	}
+	*out_len = i;
 	g_free (tmp);
 	return TRUE;
 }

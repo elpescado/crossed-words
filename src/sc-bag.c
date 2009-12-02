@@ -111,6 +111,7 @@ sc_bag_shuffle (ScBag *self)
 			priv->tiles[k] = tmp;
 		}
 	}
+	//priv->tiles[98] = BLANK;
 }
 
 
@@ -123,10 +124,10 @@ sc_bag_load (ScBag *self, Alphabet *al)
 	ScBagPrivate *priv = self->priv;
 
 	/* Insert blanks */
-	//priv->tiles[0] = priv->tiles[1] = BLANK;
-	//int n = 2;
+	priv->tiles[0] = priv->tiles[1] = BLANK;
+	int n = 2;
 
-	int n = 0;
+	//int n = 0;
 	
 	int i;
 	for (i = 0; i < al->n_letters; i++) {

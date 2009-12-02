@@ -246,25 +246,24 @@ sc_board_get_tile (ScBoard *self, ScMove *move, int i, int j)
 */
 
 static gint
-sc_board_rate_prefix (ScBoard *self, int i, int j, int di, int dj)
+sc_board_rate_prefix (ScBoard *self, int i, int j, int di, int dj, gboolean *has)
 {
 	ScBoardPrivate *priv = self->priv;
 	gint rating = 0;
 
-//	g_print ("Rate prefix (");
 	for (i-=di, j-=dj; i >= 0 && j >= 0; i-=di, j-=dj) {
-//		g_print (" -> %d, %d\n", i, j); 
 		int pos = j * BOARD_SIZE + i;
 	
 		LID lid = priv->letters[pos];
 		if (lid == 0)
 			break;
 
-		Letter *l = alphabet_lookup_letter (priv->al, lid);
-//		g_print ("%s", l->label);
-		rating += l->value;
+		if (! sc_letter_is_blank (lid)) {
+			Letter *l = alphabet_lookup_letter (priv->al, lid);
+			rating += l->value;
+		}
+		if (has) *has = TRUE;
 	}
-//	g_print (") = %d\n", rating);
 
 	return rating;
 }
@@ -272,25 +271,24 @@ sc_board_rate_prefix (ScBoard *self, int i, int j, int di, int dj)
 
 
 static gint
-sc_board_rate_suffix (ScBoard *self, int i, int j, int di, int dj)
+sc_board_rate_suffix (ScBoard *self, int i, int j, int di, int dj, gboolean *has)
 {
 	ScBoardPrivate *priv = self->priv;
 	gint rating = 0;
 
-//	g_print ("Rate suffix (");
 	for (i+=di, j+=dj; i < BOARD_SIZE && j < BOARD_SIZE; i+=di, j+=dj) {
-//		g_print (" -> %d, %d\n", i, j); 
 		int pos = j * BOARD_SIZE + i;
 	
 		LID lid = priv->letters[pos];
 		if (lid == 0)
 			break;
 
-		Letter *l = alphabet_lookup_letter (priv->al, lid);
-//		g_print ("%s", l->label);
-		rating += l->value;
+		if (! sc_letter_is_blank (lid)) {
+			Letter *l = alphabet_lookup_letter (priv->al, lid);
+			rating += l->value;
+		}
+		if (has) *has = TRUE;
 	}
-//	g_print (") = %d\n", rating);
 
 	return rating;
 }
@@ -323,9 +321,14 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 		int pos = j * BOARD_SIZE + i;
 		Letter *l = alphabet_lookup_letter (priv->al, move->letters[k]);
 		FieldModifier fm = sc_board_get_field_modifier (self, i, j);
+		//g_printerr ("rate_move (%d -> %p)\n", move->letters[k], l);
 
+		gboolean is_blank =
+			(priv->letters[pos] == 0) 
+			 ? sc_letter_is_blank(move->letters[k])
+			 : sc_letter_is_blank(priv->letters[pos]);
 
-		int letter_value = l->value;
+		int letter_value = is_blank ? 0 : l->value;
 		if (priv->letters[pos] == 0) {
 			needed_tiles++;
 			if (fm == FIELD_MODIFIER_DOUBLE_LETTER) {
@@ -347,8 +350,8 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 		return 0;
 
 	/* Prefix */
-	rating += sc_board_rate_prefix (self, move->x, move->y, di, dj);
-	rating += sc_board_rate_suffix (self, move->x + di*(move->n_letters-1), move->y + dj*(move->n_letters-1), di, dj);
+	rating += sc_board_rate_prefix (self, move->x, move->y, di, dj, NULL);
+	rating += sc_board_rate_suffix (self, move->x + di*(move->n_letters-1), move->y + dj*(move->n_letters-1), di, dj, NULL);
 
 	/* Crosswords */
 	int di2 = (move->orientation == SC_HORIZONTAL) ? 0 : 1;
@@ -359,13 +362,17 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 		int pos = j * BOARD_SIZE + i;
 		Letter *l = alphabet_lookup_letter (priv->al, move->letters[k]);
 		if (priv->letters[pos] == 0) {
-
-			int r1 = sc_board_rate_prefix (self, i, j, di2, dj2);
-			int r2 = sc_board_rate_suffix (self, i, j, di2, dj2);
-			if (r1+r2 != 0) {
-				int r = r1 + r2 + l->value;
+			gboolean has_prefix = FALSE;
+			gboolean has_suffix = FALSE;
+			int r1 = sc_board_rate_prefix (self, i, j, di2, dj2, &has_prefix);
+			int r2 = sc_board_rate_suffix (self, i, j, di2, dj2, &has_suffix);
+			int r0 = sc_letter_is_blank (move->letters[k]) ? 0 : l->value;
+			if (has_prefix) g_printerr ("has prefix\n");
+			if (has_suffix) g_printerr ("has suffix\n");
+			if (has_prefix || has_suffix) {
+				int r = r1 + r2 + r0;
 				rating += r;
-				g_print ("Crossword: %d", r);
+				//g_print ("Crossword: %d", r);
 			}
 		}
 	}

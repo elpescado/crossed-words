@@ -55,14 +55,15 @@ sc_dag_node_hash (ScDagNode *node)
 void
 sc_dag_add_drowword (ScDag *self, const gchar *word, Alphabet *al)
 {
-	glong len = g_utf8_strlen (word, -1);
+	//glong len = g_utf8_strlen (word, -1);
+	gint len;
 //	if (len > 10) {
 	//	g_print ("too long, discarding: '%s'\n", word);
 //		return;
 //	}
 	
 	LID letters[15];
-	alphabet_translate (al, word, letters);
+	alphabet_translate (al, word, letters, &len);
 
 
 	int i, j;
@@ -92,15 +93,22 @@ sc_dag_add_drowword (ScDag *self, const gchar *word, Alphabet *al)
 void
 sc_dag_add_word (ScDag *self, const gchar *word, Alphabet *al)
 {
+	/*
 	glong len = g_utf8_strlen (word, -1);
 	if (len > 15) {
 		g_print ("too long, discarding: '%s'\n", word);
 		return;
 	}
+	*/
 
+	gint len;
 	LID letters[15];
-	if (! alphabet_translate (al, word, letters)) {
+	if (! alphabet_translate (al, word, letters, &len)) {
 		//g_print ("sc_dag_add_word: Invalid word '%s', discarding\n", word);
+		return;
+	}
+	if (len > 15) {
+		g_print ("too long, discarding: '%s'\n", word);
 		return;
 	}
 
@@ -137,15 +145,23 @@ sc_dag_add_word_translated (ScDag *self, LID *letters, glong len)
 gboolean
 sc_dag_test_word (ScDag *self, const gchar *word, Alphabet *al)
 {
+	/*
 	glong len = g_utf8_strlen (word, -1);
 	if (len > 15) {
 		g_print ("too long, discarding: '%s'\n", word);
 		return FALSE;
 	}
+	*/
 
+	gint len;
 	LID letters[15];
-	if (! alphabet_translate (al, word, letters))
+	if (! alphabet_translate (al, word, letters, &len))
 		return FALSE;
+
+	if (len > 15) {
+		g_print ("too long, discarding: '%s'\n", word);
+		return FALSE;
+	}
 
 	return sc_dag_test_word_translated (self, letters, len);
 }

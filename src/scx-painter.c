@@ -109,14 +109,18 @@ scx_painter_draw_tile (ScxPainter  *self,
 		                 priv->tile_gc, x+1, 4 + y+1,
 		                 layout);
 
-		gchar points_text[4];
-		snprintf (points_text, 4, "%d", l->value);
-		pango_layout_set_text (layout2, points_text, -1);
-		gdk_draw_layout (gtk_widget_get_window (priv->widget),
-		                 priv->tile_gc, x+1, 32 + y+1,
-		                 layout2);
+		if (!blank) {
+			/* Do not draw points on blanks */
+			gchar points_text[4];
+			snprintf (points_text, 4, "%d", l->value);
+			pango_layout_set_text (layout2, points_text, -1);
+			gdk_draw_layout (gtk_widget_get_window (priv->widget),
+			                 priv->tile_gc, x+1, 32 + y+1,
+			                 layout2);
+		}
 	}
 
+	set_color (priv->tile_gc, "#000000");
 	gdk_draw_line (gtk_widget_get_window (priv->widget),
 	               priv->tile_gc, x + 1, y + TILE_SIZE + 1, x + TILE_SIZE + 1, y + TILE_SIZE + 1);
 	gdk_draw_line (gtk_widget_get_window (priv->widget),
