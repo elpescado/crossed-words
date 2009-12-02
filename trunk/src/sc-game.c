@@ -412,8 +412,8 @@ sc_game_init_move (ScGame *game, ScMove *move, gint x, gint y, ScOrientation o, 
 	move->x = x;
 	move->y = y;
 	move->orientation = o;
-	move->n_letters = g_utf8_strlen (str, -1);
-	return alphabet_translate (sc_board_get_alphabet (priv->board), str, move->letters);
+	//move->n_letters = g_utf8_strlen (str, -1);
+	gboolean ok = alphabet_translate (sc_board_get_alphabet (priv->board), str, move->letters, &(move->n_letters));
 }
 
 

@@ -33,7 +33,7 @@ alphabet_lookup_letter (Alphabet *al, LID index);
 
 
 gboolean
-alphabet_translate (Alphabet *al, const gchar *word, LID *out);
+alphabet_translate (Alphabet *al, const gchar *word, LID *out, gint *out_len);
 
 
 #endif /* __ALHPABET_H__ */

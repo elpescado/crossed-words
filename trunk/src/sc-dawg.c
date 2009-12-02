@@ -132,14 +132,17 @@ sc_dawg_save (ScDawg *dawg, const gchar *file_name)
 gboolean
 sc_dawg_test_word (ScDawg *self, const gchar *word, Alphabet *al)
 {
+	/*
 	glong len = g_utf8_strlen (word, -1);
 	if (len > 15) {
 		g_print ("too long, discarding: '%s'\n", word);
 		return FALSE;
 	}
+	*/
 
+	gint len;
 	LID letters[15];
-	if (! alphabet_translate (al, word, letters))
+	if (! alphabet_translate (al, word, letters, &len))
 		return FALSE;
 
 	return sc_dawg_test_word_translated (self, letters, len);
