@@ -155,7 +155,7 @@ _found_word (ScComputerPlayer *self,
 	/* Field after last tile */
 	gint sx = move.x + n_letters*di;
 	gint sy = move.y + n_letters*dj;
-	if (sx <= BOARD_SIZE && sy <= BOARD_SIZE && sc_board_get_letter (ctx->board, sx, sy) != NULL) {
+	if (sx < BOARD_SIZE && sy < BOARD_SIZE && sc_board_get_letter (ctx->board, sx, sy) != NULL) {
 
 		g_print ("Discard (suffix) ");
 		_print_word (SC_PLAYER (self), move.letters, n_letters);
@@ -409,7 +409,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 				*/
 				_traverse_tree_right (self, ctx, idx, 0, a->dest, rack);
 
-			} else if (x > 0 && y > 0) {
+			} else if (x >= 0 && y >= 0) {
 				gboolean has_blank = sc_rack_contains (rack, 0);
 				gboolean has_lid = sc_rack_contains (rack, lid);
 				
