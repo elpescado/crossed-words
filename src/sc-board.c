@@ -227,8 +227,6 @@ sc_board_place_move (ScBoard *self, ScMove *move)
 		int j = move->y + k*dj;
 		int pos = j * BOARD_SIZE + i;
 
-		g_print ("Placing %d @ %d, %d (%d), right now %d\n", move->letters[k], i, j, pos, priv->letters[pos]);
-
 		if (priv->letters[pos] == 0)
 			priv->letters[pos] = move->letters[k];
 	}

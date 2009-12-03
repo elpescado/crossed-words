@@ -34,11 +34,6 @@ struct _ScComputerPlayerPrivate
 
 
 
-typedef struct {
-	ScMove move;
-	gint   rating;
-} _MoveProposal;
-
 
 typedef struct {
 	ScBoard      *board;
@@ -104,6 +99,14 @@ sc_computer_player_clear_moves (ScComputerPlayer *self)
 }
 
 
+GList *
+sc_computer_player_get_stored_moves (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	return priv->moves;
+}
+
+
 static void
 _found_word (ScComputerPlayer *self,
             _TraverseCtx      *ctx,
@@ -144,11 +147,11 @@ _found_word (ScComputerPlayer *self,
 	gint px = move.x - di;
 	gint py = move.y - dj;
 	if (px >= 0 && py >= 0 && sc_board_get_letter (ctx->board, px, py) != NULL) {
-
+		/*
 		g_print ("Discard (prefix) ");
 		_print_word (SC_PLAYER (self), move.letters, n_letters);
 		g_print ("(%d, %d)\n", move.x, move.y);
-
+		*/
 		return;
 	}
 
@@ -156,11 +159,11 @@ _found_word (ScComputerPlayer *self,
 	gint sx = move.x + n_letters*di;
 	gint sy = move.y + n_letters*dj;
 	if (sx < BOARD_SIZE && sy < BOARD_SIZE && sc_board_get_letter (ctx->board, sx, sy) != NULL) {
-
+		/*
 		g_print ("Discard (suffix) ");
 		_print_word (SC_PLAYER (self), move.letters, n_letters);
 		g_print ("(%d, %d)", move.x, move.y);
-
+		*/
 		return;
 	}
 
@@ -480,7 +483,7 @@ sc_computer_player_explore_anchor_square (ScComputerPlayer *self,
 
 
 static ScMove *
-sc_computer_player_analyze_moves (ScComputerPlayer *self)
+_sc_computer_player_analyze_moves (ScComputerPlayer *self)
 {
 	ScComputerPlayerPrivate *priv = self->priv;
 
@@ -497,6 +500,11 @@ sc_computer_player_analyze_moves (ScComputerPlayer *self)
 	return best_move;
 }
 
+static ScMove *
+sc_computer_player_analyze_moves (ScComputerPlayer *self)
+{
+	return SC_COMPUTER_PLAYER_GET_CLASS(self)->analyze_moves (self);
+}
 
 
 void
@@ -533,7 +541,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 	ScRack rack;
 	sc_player_get_rack (SC_PLAYER (self), &rack);
-	g_print ("My rack: ");
+	g_print ("\nMy rack: ");
 	sc_rack_print (&rack, al);
 	g_print ("\n");
 
@@ -546,7 +554,6 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 			Letter *l = sc_board_get_letter (board, i, j);
 
 			if (l != NULL) {
-				g_print ("Found anchor square '%s' @ %d, %d\n", l->label, i, j);
 				sc_computer_player_explore_anchor_square (self, board, i, j);
 				anchor_squares++;
 			}
@@ -685,6 +692,8 @@ sc_computer_player_class_init (ScComputerPlayerClass *klass)
 	gobject_class->set_property = sc_computer_player_set_property;
 	gobject_class->dispose = sc_computer_player_dispose;
 	gobject_class->finalize = sc_computer_player_finalize;
+
+	klass->analyze_moves = _sc_computer_player_analyze_moves;
 
 	g_type_class_add_private (klass, sizeof (ScComputerPlayerPrivate));
 }

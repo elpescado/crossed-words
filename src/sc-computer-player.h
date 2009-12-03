@@ -47,7 +47,15 @@ struct _ScComputerPlayerClass
 	ScPlayerClass		parent;
 
 	/* Signals */
+
+	/* Virtual methods */
+	ScMove * (*analyze_moves) (struct _ScComputerPlayer *self);
 };
+
+typedef struct {
+	ScMove move;
+	gint   rating;
+} _MoveProposal;
 
 
 
@@ -64,6 +72,10 @@ sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating)
 
 void
 sc_computer_player_clear_moves (ScComputerPlayer *self);
+
+
+GList *
+sc_computer_player_get_stored_moves (ScComputerPlayer *self);
 
 
 void

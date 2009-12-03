@@ -25,6 +25,7 @@ SOURCES=\
 	sc-game.c \
 	sc-human-player.c \
 	sc-move.c \
+	sc-noob-player.c \
 	sc-player.c \
 	sc-player-factory.c \
 	sc-rack.c \
@@ -58,6 +59,7 @@ HEADERS=\
 	sc-game.h \
 	sc-human-player.h \
 	sc-move.h \
+	sc-noob-player.h \
 	sc-player.h \
 	sc-player-factory.h \
 	sc-rack-model.h \
