@@ -14,6 +14,7 @@
 #include "sc-dumb-player.h"
 #include "sc-computer-player.h"
 #include "sc-human-player.h"
+#include "sc-noob-player.h"
 
 #include "scx-alphabet-panel.h"
 #include "scx-console.h"
@@ -341,6 +342,7 @@ scx_main_window_init (ScxMainWindow *self)
 	priv->factory = sc_player_factory_new ();
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_human_player_new,    "human", "Human");
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_dumb_player_new,     "dumb", "Dumb player");
+	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_noob_player_new,     "noob", "Noob computer");
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_computer_player_new, "computer", "Computer player");
 
 	scx_main_window_init_actions (self);

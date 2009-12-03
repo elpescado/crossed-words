@@ -147,6 +147,11 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 		return FALSE;
 	}
 
+	/* You have to use at least one tile */
+	if (n_needed_tiles == 0)
+		return FALSE;
+
+
 	/* Rate move */
 	int points = sc_board_rate_move (priv->board, move);
 	g_print ("Rating: %d points\n", points);
@@ -168,6 +173,7 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 
 	}	
 
+	priv->pass_counter=0;
 	return TRUE;
 }
 
@@ -186,6 +192,7 @@ sc_game_do_exchange (ScPlayer *player, ScMove *move, ScGame *game)
 
 	sc_game_fill_rack (game, ctx->rack, priv->bag);
 
+	priv->pass_counter=0;
 	return TRUE;
 }
 
@@ -194,8 +201,8 @@ sc_game_move_perform (ScPlayer *player, ScMove *move, ScGame *game)
 {
 	ScGamePrivate *priv = game->priv;
 	switch (move->type) {
-		case SC_MOVE_TYPE_MOVE:     priv->pass_counter=0; return sc_game_do_move (player, move, game);
-		case SC_MOVE_TYPE_EXCHANGE: priv->pass_counter=0; return sc_game_do_exchange (player, move, game);
+		case SC_MOVE_TYPE_MOVE:     /*priv->pass_counter=0;*/ return sc_game_do_move (player, move, game);
+		case SC_MOVE_TYPE_EXCHANGE: /*priv->pass_counter=0;*/ return sc_game_do_exchange (player, move, game);
 		case SC_MOVE_TYPE_PASS:     priv->pass_counter++; return TRUE;
 		default: return FALSE;
 	}
