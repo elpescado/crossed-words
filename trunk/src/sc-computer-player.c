@@ -205,7 +205,7 @@ _found_word (ScComputerPlayer *self,
 		gint rating = sc_board_rate_move (ctx->board, &move);
 		gboolean ok = TRUE;/*sc_dawg_test_word_translated (priv->vdawg, move.letters, n_letters);*/
 
-		g_print ("Found word ");
+		g_print ("Found word ");	// TODO: valgrind
 		//_print_word (SC_PLAYER (self), letters, n_letters);
 		//g_print (" = ");
 		_print_word (SC_PLAYER (self), move.letters, n_letters);
@@ -254,13 +254,14 @@ __check_crosswords (ScComputerPlayer *self,
 	gint j = sj;
 
 	/* prefix */
-	while (i >= 0 && j >= 0) {
+	while (i > 0 && j > 0) {
 		i -= di, j -= dj;
 		//g_printerr (" * inspecting %d, %d\n", i, j);
 		Letter *l = sc_board_get_letter (board, i, j);
 		if (l) {
 			crossword_len++;
-			v = sc_dawg_vertex_child (v, l->index);
+			l->index;
+			v = sc_dawg_vertex_child (v, l->index);	// TODO: valgrind
 			if (v == NULL)
 				return FALSE;
 		} else {
@@ -651,8 +652,8 @@ sc_computer_player_init (ScComputerPlayer *self)
 	self->priv = SC_COMPUTER_PLAYER_GET_PRIVATE (self);
 	ScComputerPlayerPrivate *priv = self->priv;
 
-	g_signal_connect (self, "your-turn",
-	                  G_CALLBACK (sc_computer_player_your_turn), self);
+//	g_signal_connect (self, "your-turn",
+//	                  G_CALLBACK (sc_computer_player_your_turn), self);
 
 	/*
 	priv->dawg = sc_dawg_load ("gaddag.dag");
@@ -733,6 +734,7 @@ sc_computer_player_class_init (ScComputerPlayerClass *klass)
 	gobject_class->finalize = sc_computer_player_finalize;
 
 	klass->analyze_moves = _sc_computer_player_analyze_moves;
+	SC_PLAYER_CLASS (klass)->your_turn = sc_computer_player_your_turn;
 
 	g_type_class_add_private (klass, sizeof (ScComputerPlayerPrivate));
 }

@@ -7,12 +7,15 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 
 #include <gtk/gtk.h>
 #include "sc-board.h"
 
 #include "letter.h"
 #include "common.h"
+
+#define VALIDATE_COORDS(i,j) {if(i<0 || j<0 || i>=BOARD_SIZE || j>=BOARD_SIZE) {g_printerr("Invalid coords (%d, %d)\n", i, j); abort();}}
 
 
 
@@ -111,6 +114,7 @@ sc_board_copy (ScBoard *board)
 FieldModifier
 sc_board_get_field_modifier (ScBoard *board, gint x, gint y)
 {
+	VALIDATE_COORDS(x,y);
 	gint pos = y * BOARD_SIZE + x;
 
 	switch (board_modifiers[pos]) {
@@ -126,6 +130,7 @@ sc_board_get_field_modifier (ScBoard *board, gint x, gint y)
 LID
 sc_board_get_lid (ScBoard *board, gint x, gint y)
 {
+	VALIDATE_COORDS(x,y);
 	ScBoardPrivate *priv = board->priv;
 	gint pos = y * BOARD_SIZE + x;
 
@@ -136,6 +141,7 @@ sc_board_get_lid (ScBoard *board, gint x, gint y)
 Letter *
 sc_board_get_letter (ScBoard *board, gint x, gint y)
 {
+	VALIDATE_COORDS(x,y);
 	ScBoardPrivate *priv = board->priv;
 
 	LID idx = sc_board_get_lid (board, x, y);

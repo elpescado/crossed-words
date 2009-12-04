@@ -5,8 +5,10 @@
 
 #include "alphabet.h"
 
+#define SC_RACK_SIZE 64
+
 typedef struct {
-	gint letters[36];
+	gint letters[SC_RACK_SIZE];
 } ScRack;
 
 

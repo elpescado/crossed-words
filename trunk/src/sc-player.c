@@ -205,6 +205,13 @@ sc_player_set_property (GObject *object, guint property_id,
 
 
 static void
+_sc_player_your_turn (ScPlayer* self)
+{
+	g_printerr ("YOUR TURN\n");
+}
+
+
+static void
 sc_player_class_init (ScPlayerClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
@@ -214,6 +221,7 @@ sc_player_class_init (ScPlayerClass *klass)
 	gobject_class->dispose = sc_player_dispose;
 	gobject_class->finalize = sc_player_finalize;
 
+	klass->your_turn = _sc_player_your_turn;
 	klass->do_move = _sc_player_do_move;
 	klass->enter_game = _sc_player_enter_game;
 	klass->leave_game = _sc_player_leave_game;
@@ -225,10 +233,10 @@ sc_player_class_init (ScPlayerClass *klass)
 	 * 
 	 * Emitted when player has to make a move
 	 **/
-	signals[YOUR_TURN] = g_signal_newv ("your-turn",
+	signals[YOUR_TURN] = g_signal_new ("your-turn",
 			G_TYPE_FROM_CLASS (klass),
 			(GSignalFlags)(G_SIGNAL_RUN_LAST),
-			0,
+			G_STRUCT_OFFSET(struct _ScPlayerClass, your_turn),
 			NULL,
 			NULL,
 			g_cclosure_marshal_VOID__VOID,
