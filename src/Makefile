@@ -1,6 +1,6 @@
 CC=colorgcc
 REFERENCES=gtk+-2.0
-CFLAGS=-Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
+CFLAGS=-O0 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
 #STATIC_LIBS=`curl-config --static-libs`
 LIBS=-g -Wall `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread

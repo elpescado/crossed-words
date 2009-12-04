@@ -40,7 +40,7 @@ typedef struct _ScPlayerClass		ScPlayerClass;
 
 struct _ScPlayer{
 	GObject		parent;
-	gpointer   *game;
+	gpointer    game;
 	ScPlayerPrivate	*priv;
 };
 
@@ -54,6 +54,7 @@ struct _ScPlayerClass
 	void     (*leave_game) (ScPlayer *, struct _ScGame *game);
 
 	/* Signals */
+	void     (*your_turn)  (ScPlayer *);
 };
 
 

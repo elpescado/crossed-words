@@ -9,12 +9,13 @@
 #include "sc-game.h"
 #include "sc-computer-player.h"
 #include "sc-noob-player.h"
+#include "sc-pro-player.h"
 
 
-#define N_SIMULATIONS 100
+#define N_SIMULATIONS 1000
 #define N_PLAYERS 2
 
-int scores[N_SIMULATIONS][N_PLAYERS] = {0};
+int scores[N_SIMULATIONS][N_PLAYERS] = {{0}};
 int current_sim = 0;
 GMainLoop *loop = NULL;
 gboolean silent = TRUE;
@@ -24,7 +25,7 @@ setup_game (void);
 
 
 static void
-toggle_silence (void)
+toggle_silence (int num)
 {
 	silent = !silent;
 }
@@ -96,7 +97,7 @@ setup_game (void)
 {
 	ScGame *game = sc_game_new ();
 
-	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
+	ScPlayer *p1 = SC_PLAYER (sc_pro_player_new ());
 	p1->game = game;
 	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
 	sc_game_set_player (game, 0, p1);
