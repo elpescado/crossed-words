@@ -107,6 +107,36 @@ sc_computer_player_get_stored_moves (ScComputerPlayer *self)
 }
 
 
+GList *
+sc_computer_player_steal_stored_moves (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	GList *moves = priv->moves;
+	priv->moves = NULL;
+	return moves;
+}
+
+
+
+/**
+ * Function to compare moves
+ **/
+static gint
+_sort_compare (gconstpointer a, gconstpointer b)
+{
+	return ((const _MoveProposal*)a)->rating - ((const _MoveProposal*)b)->rating;
+}
+
+
+
+void
+sc_computer_player_sort_moves (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	priv->moves = g_list_sort (priv->moves, _sort_compare);
+}
+
+
 static void
 _found_word (ScComputerPlayer *self,
             _TraverseCtx      *ctx,
@@ -524,26 +554,14 @@ sc_computer_player_exchange_enabled (ScComputerPlayer *self)
 }
 
 
-
-
-static void
-sc_computer_player_your_turn (ScComputerPlayer *self)
+void
+sc_computer_player_generate_moves (ScComputerPlayer *self, ScBoard *board, ScRack *rack)
 {
-
-	ScMove move;
-	ScBoard *board;
 	int i,j;
 
-	board = sc_player_get_board (SC_PLAYER (self));
 	ScComputerPlayerPrivate *priv = self->priv;
 	priv->dawg = sc_game_get_dictionary (SC_GAME (SC_PLAYER(self)->game));
-
 	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
-	ScRack rack;
-	sc_player_get_rack (SC_PLAYER (self), &rack);
-	g_print ("\nMy rack: ");
-	sc_rack_print (&rack, al);
-	g_print ("\n");
 
 	gint anchor_squares = 0;
 
@@ -562,15 +580,34 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 	if (anchor_squares == 0) {
 		/* First move */
 		ScDawgVertex *root = sc_dawg_root (priv->dawg);
-		ScRack rack;
-		sc_player_get_rack (SC_PLAYER (self), &rack);
+		//ScRack rack;
+		//sc_player_get_rack (SC_PLAYER (self), &rack);
 		LID letters[15];
 		_TraverseCtx ctx_h = {board, 7, 7, letters, SC_HORIZONTAL, 0};
-		_traverse_tree_left (self, &ctx_h, 0, root, &rack);
+		_traverse_tree_left (self, &ctx_h, 0, root, rack);
 
 	}
 	//g_printerr ("\ndone\n");
 	g_print ("%d moves found\n", priv->n_moves);
+}
+
+
+static void
+sc_computer_player_your_turn (ScComputerPlayer *self)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+	ScBoard *board;
+	ScMove move;
+	ScRack rack;
+	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
+
+	sc_player_get_rack (SC_PLAYER (self), &rack);
+	g_print ("\nMy rack: ");
+	sc_rack_print (&rack, al);
+	g_print ("\n");
+
+	board = sc_player_get_board (SC_PLAYER (self));
+	sc_computer_player_generate_moves (self, board, &rack);
 
 
 	ScMove *m_move = sc_computer_player_analyze_moves (self);
@@ -582,6 +619,8 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 			//g_printerr ("Exchange: ");
 			move.type = SC_MOVE_TYPE_EXCHANGE;
 
+			ScRack rack;
+			sc_player_get_rack (SC_PLAYER (self), &rack);
 			sc_rack_to_letters (&rack, move.letters, &(move.n_letters));
 			
 			if (sc_game_get_remaining_tiles (SC_GAME (SC_PLAYER(self)->game)) < 8)

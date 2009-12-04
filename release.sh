@@ -18,8 +18,8 @@ cp ../pixmaps/horizontal.png $PACKAGE/pixmaps
 cp ../pixmaps/vertical.png   $PACKAGE/pixmaps
 
 cp ../src/crossed-words      $PACKAGE
-cp ../src/gaddag.dag         $PACKAGE
-cp ../src/dawg.dag           $PACKAGE
+cp -L ../src/gaddag.dag         $PACKAGE
+cp -L ../src/dawg.dag           $PACKAGE
 
 mkdir -p $PACKAGE/lang/pl
 cp ../src/lang/pl/alphabet.txt $PACKAGE/lang/pl

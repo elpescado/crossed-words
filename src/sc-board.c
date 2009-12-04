@@ -97,6 +97,17 @@ sc_board_clear (ScBoard *self)
 }
 
 
+ScBoard *
+sc_board_copy (ScBoard *board)
+{
+	ScBoard *self = sc_board_new (board->priv->al);
+	ScBoardPrivate *priv = self->priv;
+	sc_board_clear (self);
+	memcpy (priv->letters, board->priv->letters, BOARD_SIZE*BOARD_SIZE * sizeof(LID));
+	return self;
+}
+
+
 FieldModifier
 sc_board_get_field_modifier (ScBoard *board, gint x, gint y)
 {

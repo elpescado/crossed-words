@@ -106,6 +106,10 @@ sc_game_get_players_score (ScGame *self, ScPlayer *player);
 
 
 gint
+sc_game_get_players_bingos (ScGame *self, ScPlayer *player);
+
+
+gint
 sc_game_get_n_players (ScGame *self);
 
 
