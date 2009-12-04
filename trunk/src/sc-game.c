@@ -44,6 +44,7 @@ struct _ScGamePrivate
 struct _ScPlayerCtx {
 	ScPlayer    *player;
 	gint         points;
+	gint         bingos;
 	ScRackModel *rack;
 };
 
@@ -163,6 +164,7 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 		/* sc_board_rate_move handles this */
 		if (n_needed_tiles == 7) {
 			n_bingos++;
+			ctx->bingos++;
 //			ctx->points += BINGO_BONUS;
 		}
 
@@ -447,6 +449,15 @@ sc_game_get_players_score (ScGame *self, ScPlayer *player)
 	ScPlayerCtx *ctx = sc_game_get_ctx_by_player (self, player);
 	return ctx->points;
 }
+
+
+gint
+sc_game_get_players_bingos (ScGame *self, ScPlayer *player)
+{
+	ScPlayerCtx *ctx = sc_game_get_ctx_by_player (self, player);
+	return ctx->bingos;
+}
+
 
 
 gint

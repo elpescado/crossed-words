@@ -67,6 +67,10 @@ ScBoard*
 sc_board_new				(Alphabet *al);
 
 
+ScBoard *
+sc_board_copy (ScBoard *self);
+
+
 void
 sc_board_clear (ScBoard *self);
 

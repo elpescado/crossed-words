@@ -79,6 +79,18 @@ sc_computer_player_get_stored_moves (ScComputerPlayer *self);
 
 
 void
+sc_computer_player_sort_moves (ScComputerPlayer *self);
+
+
+void
+sc_computer_player_generate_moves (ScComputerPlayer *self, ScBoard *board, ScRack *rack);
+
+
+GList *
+sc_computer_player_steal_stored_moves (ScComputerPlayer *self);
+
+
+void
 sc_computer_player_enable_exchange (ScComputerPlayer *self,
                                     gboolean          enabled);
 

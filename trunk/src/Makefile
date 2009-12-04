@@ -28,6 +28,7 @@ SOURCES=\
 	sc-noob-player.c \
 	sc-player.c \
 	sc-player-factory.c \
+	sc-pro-player.c \
 	sc-rack.c \
 	sc-rack-model.c \
 	scx-alphabet-panel.c \
@@ -62,6 +63,7 @@ HEADERS=\
 	sc-noob-player.h \
 	sc-player.h \
 	sc-player-factory.h \
+	sc-pro-player.h \
 	sc-rack-model.h \
 	sc-rack.h \
 	scx-alphabet-panel.h \

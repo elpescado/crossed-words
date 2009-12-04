@@ -20,6 +20,7 @@ struct _ScxPlayerViewPrivate
 	/* Private members go here */
 	GtkWidget *title_label;
 	GtkWidget *score_label;
+	GtkWidget *bingos_label;
 
 	gboolean disposed;
 };
@@ -58,6 +59,14 @@ scx_player_view_init_gui (ScxPlayerView *self)
 	gtk_table_attach (table, priv->score_label, 1, 2, 1, 2, GTK_FILL, GTK_FILL, 0, 0);
 	gtk_widget_show (priv->score_label);
 
+	GtkWidget *label2 = gtk_label_new (_("Bingos:"));
+	gtk_table_attach (table, label2, 0, 1, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_widget_show (label2);
+
+	priv->bingos_label = gtk_label_new ("");
+	gtk_table_attach (table, priv->bingos_label, 1, 2, 2, 3, GTK_FILL, GTK_FILL, 0, 0);
+	gtk_widget_show (priv->bingos_label);
+
 }
 
 
@@ -80,10 +89,14 @@ scx_player_view_set_player (ScxPlayerView *self,
 {
 	ScxPlayerViewPrivate *priv = self->priv;
 	gint score = sc_game_get_players_score (game, player);
+	gint bingos = sc_game_get_players_bingos (game, player);
 
 	gchar buf[32];
 	snprintf (buf, 32, "%d", score);
 	gtk_label_set_text (GTK_LABEL (priv->score_label), buf);
+
+	snprintf (buf, 32, "%d", bingos);
+	gtk_label_set_text (GTK_LABEL (priv->bingos_label), buf);
 
 	gtk_label_set_text (GTK_LABEL (priv->title_label),
 			sc_player_get_name (player));
