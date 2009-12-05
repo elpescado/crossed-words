@@ -97,9 +97,9 @@ setup_game (void)
 {
 	ScGame *game = sc_game_new ();
 
-	ScPlayer *p1 = SC_PLAYER (sc_pro_player_new ());
+	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
 	p1->game = game;
-	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
+	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
 	sc_game_set_player (game, 0, p1);
 
 	//ScPlayer *p2 = sc_computer_player_new ();

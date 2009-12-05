@@ -79,6 +79,9 @@ sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating)
 {
 	ScComputerPlayerPrivate *priv = self->priv;
 
+	if (rating == 0)
+		return;
+
 	_MoveProposal *mp = g_new(_MoveProposal, 1);
 	memcpy (&(mp->move), move, sizeof (ScMove));
 	mp->rating = rating;
@@ -278,9 +281,11 @@ __check_crosswords (ScComputerPlayer *self,
 	i = si, j = sj;
 
 	/* suffix */
-	while (i < BOARD_SIZE-1 && j < BOARD_SIZE-1) {
+	while (/*i < BOARD_SIZE-1 && j < BOARD_SIZE-1*/1) {
 		//g_printerr (" * inspecting %d, %d\n", i, j);
 		i += di, j += dj;
+		if (i >= BOARD_SIZE || j >= BOARD_SIZE)
+			break;
 		Letter *l = sc_board_get_letter (board, i, j);
 		if (l) {
 			crossword_len++;

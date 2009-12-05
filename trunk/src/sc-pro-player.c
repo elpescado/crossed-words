@@ -99,7 +99,6 @@ sc_pro_player_endgame (ScProPlayer *self,
                        _Player     *opponent,
                        gboolean     my_turn)
 {
-	g_printerr (".");
 	GList *moves;
 	GList *node;
 	
@@ -117,6 +116,10 @@ sc_pro_player_endgame (ScProPlayer *self,
 		memcpy (&p, my_turn ? me : opponent, sizeof (p));
 		//_Player *p = my_turn ? me : opponent;
 
+		//g_printerr ("Move: %d points\n", mp->rating);
+		if (mp->rating < 16)
+			continue;
+
 		ScBoard *b2 = sc_board_copy (board);
 		rating = sc_board_rate_move (b2, &(mp->move));
 		sc_board_get_needed_tiles (b2, &(mp->move), tiles, &n_tiles);
@@ -130,7 +133,11 @@ sc_pro_player_endgame (ScProPlayer *self,
 				               my_turn ? &p       : me,
 							   my_turn ? opponent : &p,
 		                       !my_turn);
+		g_object_unref (b2);
 	}
+
+	g_list_foreach (moves, (GFunc)g_free, NULL);
+	g_list_free (moves);
 	return 1;
 }
                        
@@ -169,6 +176,8 @@ sc_pro_player_do_endgame_move (ScProPlayer *self)
 		ScBoard *b2 = sc_board_copy (board);
 		sc_board_place_move (b2, &(mp->move));
 	}
+
+	sc_pro_player_endgame (self, board, &me, &opponent, TRUE);
 
 	/* Analyze moves */
 	for (node = moves; node; node = node->next) {
