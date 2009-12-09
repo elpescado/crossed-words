@@ -333,6 +333,9 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 	for (k = 0; k < move->n_letters; k++) {
 		int i = move->x + k*di;
 		int j = move->y + k*dj;
+		if (i < 0 || j < 0 || i >= BOARD_SIZE || j >= BOARD_SIZE)
+			return 0;
+
 		int pos = j * BOARD_SIZE + i;
 		Letter *l = alphabet_lookup_letter (priv->al, move->letters[k]);
 		FieldModifier fm = sc_board_get_field_modifier (self, i, j);
