@@ -12,13 +12,15 @@
 #include "sc-pro-player.h"
 
 
-#define N_SIMULATIONS 1000
+#define N_SIMULATIONS 10000
 #define N_PLAYERS 2
 
 int scores[N_SIMULATIONS][N_PLAYERS] = {{0}};
 int current_sim = 0;
 GMainLoop *loop = NULL;
 gboolean silent = TRUE;
+
+#define player_n(sim, i) ((sim+i)%N_PLAYERS)
 
 static void
 setup_game (void);
@@ -70,11 +72,11 @@ summarize (void)
 static void
 game_finished (ScGame *game, gpointer data)
 {
-	g_printerr ("%3d: ", current_sim+1);
+	g_printerr ("%5d: ", current_sim+1);
 
 	int i;
 	for (i = 0; i < N_PLAYERS; i++) {
-		ScPlayer *p = sc_game_get_player (game, i);
+		ScPlayer *p = sc_game_get_player (game, player_n(current_sim,i));
 		int score = sc_game_get_players_score (game, p);
 		g_printerr ("%4d ", score);
 
@@ -99,14 +101,15 @@ setup_game (void)
 
 	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
 	p1->game = game;
-	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
-	sc_game_set_player (game, 0, p1);
+	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
+	sc_game_set_player (game, player_n(current_sim,0), p1);
 
 	//ScPlayer *p2 = sc_computer_player_new ();
 	ScPlayer *p2 = SC_PLAYER (sc_computer_player_new ());
 	p2->game = game;
+	//sc_computer_player_set_hint (SC_COMPUTER_PLAYER (p2), SC_CONSIDER_RACK_LEAVE, TRUE);
 	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p2), TRUE);
-	sc_game_set_player (game, 1, p2);
+	sc_game_set_player (game, player_n(current_sim,1), p2);
 
 
 	g_signal_connect (game, "end", G_CALLBACK (game_finished), NULL);

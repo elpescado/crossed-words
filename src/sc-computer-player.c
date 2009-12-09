@@ -26,8 +26,10 @@ struct _ScComputerPlayerPrivate
 	gint   n_moves;
 
 	/* Exchange */
-	gboolean enable_exchange;
+	//gboolean enable_exchange;
 	gint     exchange_threshold;
+
+	gint     hints;
 
 	gboolean disposed;
 };
@@ -59,6 +61,29 @@ sc_computer_player_new (void)
 	return self;
 }
 
+void
+sc_computer_player_set_hint (ScComputerPlayer *self,
+                             ScPlayerHint      hint,
+                             gboolean          value)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	if (value)
+		priv->hints |= hint;
+	else
+		priv->hints &= ~hint;
+}
+
+
+gboolean
+sc_computer_player_get_hint (ScComputerPlayer *self,
+                             ScPlayerHint      hint)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	return (priv->hints & hint) ? 1 : 0;
+}
+
 
 static void
 _print_word (ScPlayer *p, LID *letters, gint n_letters)
@@ -73,9 +98,34 @@ _print_word (ScPlayer *p, LID *letters, gint n_letters)
 }
 
 
+static gint
+sc_computer_player_rate_move (ScComputerPlayer *self,
+                              ScMove           *move,
+                              gint              rating,
+							  ScRack           *rack_leave)
+{
+	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
+
+	if (sc_computer_player_get_hint (self, SC_CONSIDER_RACK_LEAVE)) {
+		int i;
+		int c = 0;
+		int v = 0;
+		for (i = 1; i < 34; i++) {
+			Letter *l = alphabet_lookup_letter (al, i);
+			if (l->flags & LETTER_VOWEL)     v += rack_leave->letters[i];
+			if (l->flags & LETTER_CONSONANT) c += rack_leave->letters[i];
+		}
+
+		//if (ABS(c-v) > 0) {
+			rating -= 1 * ABS(c-v);
+		//}
+	}
+	return rating;
+}
+
 
 void
-sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating)
+sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating, ScRack *rack_leave)
 {
 	ScComputerPlayerPrivate *priv = self->priv;
 
@@ -84,7 +134,9 @@ sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating)
 
 	_MoveProposal *mp = g_new(_MoveProposal, 1);
 	memcpy (&(mp->move), move, sizeof (ScMove));
-	mp->rating = rating;
+	mp->move_rating = rating;
+	mp->move_rating = rating;
+	mp->combined_rating = sc_computer_player_rate_move (self, move, rating, rack_leave);
 
 	priv->moves = g_list_prepend (priv->moves, mp);
 	priv->n_moves++;
@@ -127,7 +179,7 @@ sc_computer_player_steal_stored_moves (ScComputerPlayer *self)
 static gint
 _sort_compare (gconstpointer a, gconstpointer b)
 {
-	return ((const _MoveProposal*)a)->rating - ((const _MoveProposal*)b)->rating;
+	return ((const _MoveProposal*)a)->combined_rating - ((const _MoveProposal*)b)->combined_rating;
 }
 
 
@@ -143,14 +195,9 @@ sc_computer_player_sort_moves (ScComputerPlayer *self)
 static void
 _found_word (ScComputerPlayer *self,
             _TraverseCtx      *ctx,
-			/*
-             ScBoard          *board,
-             gint              si,
-			 gint              sj,
-			 LID              *letters,
-			 */
 			 gint              left_letters,
-			 gint              n_letters)
+			 gint              n_letters,
+			 ScRack           *rack_leave)
 {
 	if (ctx->needed_tiles == 0) {
 		return;
@@ -217,7 +264,7 @@ _found_word (ScComputerPlayer *self,
 		g_print (" (%d), %s\n", rating, ok ? "ok" : "bad");
 
 
-		sc_computer_player_save_move (self, &move, rating);
+		sc_computer_player_save_move (self, &move, rating, rack_leave);
 //		_move_acc_push (priv->moves, &move, rating);
 	}
 //	sc_game_init_move (SC_GAME (SC_PLAYER(self)->game), si, sj, SC_ORIENTATION_HORIZONTAL,
@@ -347,7 +394,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 		if (v2) {
 			ctx->letters[l_idx+idx] = lid;
 			if (sc_dawg_vertex_is_final (v2)) {
-				_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, l_idx, idx+1+l_idx);
+				_found_word (self, ctx, l_idx, idx+1+l_idx, rack);
 			}
 			_traverse_tree_right (self, ctx, l_idx, idx+1, v2, rack);
 		}
@@ -367,7 +414,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 				if (has_lid) {
 					ctx->letters[l_idx+idx] = lid;
 					if (sc_dawg_vertex_is_final (v2)) {
-						_found_word (self, ctx, l_idx, idx+1+l_idx);
+						_found_word (self, ctx, l_idx, idx+1+l_idx, rack);
 					}
 
 					sc_rack_remove (rack, lid);
@@ -379,7 +426,7 @@ _traverse_tree_right(ScComputerPlayer *self,
 				if (has_blank) {
 					ctx->letters[l_idx+idx] = lid | BLANK;
 					if (sc_dawg_vertex_is_final (v2)) {
-						_found_word (self, ctx, l_idx, idx+1+l_idx);
+						_found_word (self, ctx, l_idx, idx+1+l_idx, rack);
 					}
 
 					sc_rack_remove (rack, 0);
@@ -419,7 +466,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 		if (v2) {
 			ctx->letters[idx] = lid;
 			if (sc_dawg_vertex_is_final (v2)) {
-				_found_word (self, ctx/*->board, ctx->si, ctx->sj, ctx->letters*/, idx+1, idx+1);
+				_found_word (self, ctx, idx+1, idx+1, rack);
 			}
 			_traverse_tree_left (self, ctx, idx+1, v2, rack);
 		}
@@ -459,7 +506,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 					if (has_lid) {
 						ctx->letters[idx] = lid;
 						if (sc_dawg_vertex_is_final (v2)) {
-							_found_word (self, ctx, idx+1, idx+1);
+							_found_word (self, ctx, idx+1, idx+1, rack);
 						}
 
 						sc_rack_remove (rack, lid);
@@ -472,7 +519,7 @@ _traverse_tree_left (ScComputerPlayer *self,
 					if (has_blank) {
 						ctx->letters[idx] = lid | BLANK;
 						if (sc_dawg_vertex_is_final (v2)) {
-							_found_word (self, ctx, idx+1, idx+1);
+							_found_word (self, ctx, idx+1, idx+1, rack);
 						}
 
 						sc_rack_remove (rack, 0);
@@ -528,8 +575,8 @@ _sc_computer_player_analyze_moves (ScComputerPlayer *self)
 	GList *tmp;
 	for (tmp = priv->moves; tmp; tmp = tmp->next) {
 		_MoveProposal *mp = tmp->data;
-		if (mp->rating > max_score) {
-			max_score = mp->rating;
+		if (mp->combined_rating > max_score) {
+			max_score = mp->combined_rating;
 			best_move = &(mp->move);
 		}
 	}
@@ -547,16 +594,18 @@ void
 sc_computer_player_enable_exchange (ScComputerPlayer *self,
                                     gboolean          enabled)
 {
-	ScComputerPlayerPrivate *priv = self->priv;
-	priv->enable_exchange = enabled;
+//	ScComputerPlayerPrivate *priv = self->priv;
+//	priv->enable_exchange = enabled;
+	sc_computer_player_set_hint (self, SC_EXCHANGE_TILES, enabled);
 }
 
 
 gboolean
 sc_computer_player_exchange_enabled (ScComputerPlayer *self)
 {
-	ScComputerPlayerPrivate *priv = self->priv;
-	return priv->enable_exchange;
+	return sc_computer_player_get_hint (self, SC_EXCHANGE_TILES);
+//	ScComputerPlayerPrivate *priv = self->priv;
+//	return priv->enable_exchange;
 }
 
 
@@ -621,7 +670,7 @@ sc_computer_player_your_turn (ScComputerPlayer *self)
 		g_print ("OK\n");
 	} else {
 		g_print ("Giving up\n");
-		if (priv->enable_exchange) {
+		if (sc_computer_player_exchange_enabled (self)) {
 			//g_printerr ("Exchange: ");
 			move.type = SC_MOVE_TYPE_EXCHANGE;
 

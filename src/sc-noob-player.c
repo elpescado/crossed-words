@@ -70,15 +70,15 @@ _sc_noob_player_analyze_moves (ScComputerPlayer *self)
 	GList *tmp;
 	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self)); tmp; tmp = tmp->next) {
 		_MoveProposal *mp = tmp->data;
-		if (mp->rating > max_score) {
-			max_score = mp->rating;
+		if (mp->combined_rating > max_score) {
+			max_score = mp->combined_rating;
 		}
 		best_move = &(mp->move);
 	}
 
 	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self)); tmp; tmp = tmp->next) {
 		_MoveProposal *mp = tmp->data;
-		if (mp->rating >= priv->level * max_score) {
+		if (mp->combined_rating >= priv->level * max_score) {
 			return &(mp->move);
 		}
 	}

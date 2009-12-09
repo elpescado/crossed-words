@@ -53,10 +53,16 @@ struct _ScComputerPlayerClass
 };
 
 typedef struct {
-	ScMove move;
-	gint   rating;
+	ScMove move;             /**< Proposed move                              */
+	gint   move_rating;      /**< Number of poinys move yields               */
+	gint   combined_rating;  /**< Total rating including heuristic modifiers */
 } _MoveProposal;
 
+
+typedef enum {
+	SC_CONSIDER_RACK_LEAVE = 1 << 0,
+	SC_EXCHANGE_TILES      = 1 << 1
+} ScPlayerHint;
 
 
 GType
@@ -67,7 +73,7 @@ sc_computer_player_new				(void);
 
 
 void
-sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating);
+sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating, ScRack *rack_leave);
 
 
 void
@@ -96,6 +102,17 @@ sc_computer_player_enable_exchange (ScComputerPlayer *self,
 
 gboolean
 sc_computer_player_exchange_enabled (ScComputerPlayer *self);
+
+
+void
+sc_computer_player_set_hint (ScComputerPlayer *self,
+                             ScPlayerHint      hint,
+                             gboolean          value);
+
+gboolean
+sc_computer_player_get_hint (ScComputerPlayer *self,
+                             ScPlayerHint      hint);
+
 
 
 G_END_DECLS
