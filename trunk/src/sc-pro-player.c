@@ -117,7 +117,7 @@ sc_pro_player_endgame (ScProPlayer *self,
 		//_Player *p = my_turn ? me : opponent;
 
 		//g_printerr ("Move: %d points\n", mp->rating);
-		if (mp->rating < 16)
+		if (mp->combined_rating < 16)
 			continue;
 
 		ScBoard *b2 = sc_board_copy (board);
@@ -225,8 +225,8 @@ _sc_pro_player_analyze_moves (ScProPlayer *self)
 	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self));
 	     tmp; tmp = tmp->next) {
 		_MoveProposal *mp = tmp->data;
-		if (mp->rating > max_score) {
-			max_score = mp->rating;
+		if (mp->combined_rating > max_score) {
+			max_score = mp->combined_rating;
 			best_move = &(mp->move);
 		}
 	}

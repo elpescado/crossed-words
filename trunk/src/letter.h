@@ -9,11 +9,20 @@
  */
 typedef int LID;
 
+typedef enum {
+	/* Yes, I know they are mutually exclusive, but
+	    we've got plenty of bits to waste */
+	LETTER_VOWEL     = 1 << 0, /**< Letter is a vowel     */
+	LETTER_CONSONANT = 2 << 1, /**< Letter is a consonant */
+
+} LetterFlags;
+
 typedef struct {
 	LID  index;		/**< Letter index                     */
 	int  value;		/**< Point value for letter           */
 	int  count;		/**< Number of tiles with that letter */
-	char label[4];		/**< Unicode letter label             */
+	char label[4];	/**< Unicode letter label             */
+	gint flags;		/**< Letter flags                     */
 } Letter;
 
 #define BLANK 128

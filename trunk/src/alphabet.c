@@ -46,11 +46,12 @@ alphabet_load (Alphabet *al, const gchar *file_name)
 
 	while (fgets (buffer, BUFFER_SIZE, f) != NULL) {
 		char label[32];
+		char flags[32] = "\0";
 		gint value;
 		gint count;
-		gint n_tokens = sscanf (buffer, "%s %d %d", label, &count, &value);
+		gint n_tokens = sscanf (buffer, "%s %d %d %s", label, &count, &value, flags);
 
-		if (n_tokens == 3) {
+		if (n_tokens >= 3) {
 			Letter *l = &(al->letters[al->n_letters]);
 
 			l->index = FIRST_LETTER_INDEX + al->n_letters;
@@ -58,7 +59,17 @@ alphabet_load (Alphabet *al, const gchar *file_name)
 			l->count = count;
 			strncpy (l->label, label, 4);
 
-			
+			/* Parse flags */
+			char *c;
+			for (c = flags; *c; c++) {
+				switch (*c) {
+					case 'c': l->flags |= LETTER_CONSONANT; break;
+					case 'v': l->flags |= LETTER_VOWEL; break;
+					default: break;
+				}
+			}
+
+
 			/*
 			g_print ("LETTER %2d '%s' count = %d, value = %d points\n",
 			         l->index, l->label, l->count, l->value);
