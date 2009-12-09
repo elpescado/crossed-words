@@ -77,8 +77,9 @@ sc_rack_model_has_tiles (ScRackModel *self,
 	Alphabet *al = priv->al;
 	gboolean ok = TRUE;
 	int i;
+	gint t_counts = al->n_letters+2;
 
-	gint *tile_counts = g_new0 (gint, al->n_letters+2);
+	gint *tile_counts = g_new0 (gint, t_counts);
 
 	for (i = 0; i < n_tiles; i++) {
 		//g_print (" -> You need %d\n", tiles[i]);
@@ -95,7 +96,7 @@ sc_rack_model_has_tiles (ScRackModel *self,
 		}
 	}
 
-	for (i = 0; i < al->n_letters; i++) {
+	for (i = 0; i < t_counts; i++) {
 		if (tile_counts[i] != 0) {
 			Letter *l = alphabet_lookup_letter (priv->al, i);
 			g_print ("You don't have %d %s\n", tile_counts[i], l->label);
