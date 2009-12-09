@@ -314,6 +314,9 @@ scx_board_view_expose_event (GtkWidget           *widget,
 		for (k = 0, i = priv->move.x, j = priv->move.y ; k < priv->move.n_letters; k++, i += di, j += dj) {
 			//int x = ox + i * (TILE_SIZE + TILE_SPACING);
 			//int y = oy + j * (TILE_SIZE + TILE_SPACING);
+			if (i < 0 || j < 0 || i >= BOARD_SIZE || j >= BOARD_SIZE)
+				continue;
+
 
 			Letter *l = alphabet_lookup_letter (sc_board_get_alphabet (priv->board), priv->move.letters[k]);
 			if (l && sc_board_get_letter (priv->board, i, j) == NULL) {
