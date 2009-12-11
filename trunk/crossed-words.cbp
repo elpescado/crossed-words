@@ -133,6 +133,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\sc-move.h" />
+		<Unit filename="src\sc-noob-player.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src\sc-noob-player.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src\sc-player-factory.c">
 			<Option compilerVar="CC" />
 			<Option target="Debug" />
@@ -146,6 +155,15 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\sc-player.h" />
+		<Unit filename="src\sc-pro-player.c">
+			<Option compilerVar="CC" />
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src\sc-pro-player.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src\sc-rack-model.c">
 			<Option compilerVar="CC" />
 		</Unit>
