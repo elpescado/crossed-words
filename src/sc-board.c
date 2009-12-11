@@ -364,6 +364,8 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 		rating += letter_value;
 	}
 
+	rating *= multiplier;
+
 	if (needed_tiles == 0)
 		return 0;
 
@@ -385,10 +387,22 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 			int r1 = sc_board_rate_prefix (self, i, j, di2, dj2, &has_prefix);
 			int r2 = sc_board_rate_suffix (self, i, j, di2, dj2, &has_suffix);
 			int r0 = sc_letter_is_blank (move->letters[k]) ? 0 : l->value;
+			int m = 1;
+
+			FieldModifier fm = sc_board_get_field_modifier (self, i, j);
+			if (fm == FIELD_MODIFIER_DOUBLE_LETTER) {
+				r0 *= 2;
+			} else if (fm == FIELD_MODIFIER_TRIPLE_LETTER) {
+				r0 *= 3;
+			} else if (fm == FIELD_MODIFIER_DOUBLE_WORD) {
+				m = 2;
+			} else if (fm == FIELD_MODIFIER_TRIPLE_WORD) {
+				m = 3;
+			}
 
 			if (has_prefix || has_suffix) {
 				int r = r1 + r2 + r0;
-				rating += r;
+				rating += r*m;
 				//g_print ("Crossword: %d", r);
 			}
 		}
@@ -396,7 +410,6 @@ sc_board_rate_move (ScBoard *self, ScMove *move)
 
 
 
-	rating *= multiplier;
 	
 
 	if (needed_tiles == 7)

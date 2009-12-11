@@ -47,6 +47,12 @@ struct _ScxMoveEntryClass
 };
 
 
+typedef enum {
+	SCX_NONE,
+	SCX_VALID,
+	SCX_INVALID
+} ScxMoveEntryValidationStatus;
+
 
 GType
 scx_move_entry_get_type				(void);
@@ -66,6 +72,10 @@ scx_move_entry_get_text (ScxMoveEntry *self);
 void
 scx_move_entry_set_text (ScxMoveEntry *self, const gchar *text);
 
+
+void
+scx_move_entry_set_validation_status (ScxMoveEntry *self,
+                                      ScxMoveEntryValidationStatus status);
 
 G_END_DECLS
 
