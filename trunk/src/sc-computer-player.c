@@ -110,15 +110,22 @@ sc_computer_player_rate_move (ScComputerPlayer *self,
 		int i;
 		int c = 0;
 		int v = 0;
+		int m = 0;
 		for (i = 1; i < 34; i++) {
 			Letter *l = alphabet_lookup_letter (al, i);
 			if (l->flags & LETTER_VOWEL)     v += rack_leave->letters[i];
 			if (l->flags & LETTER_CONSONANT) c += rack_leave->letters[i];
+
+			if (rack_leave->letters[i] > 1)
+				m += rack_leave->letters[i];
 		}
 
 		//if (ABS(c-v) > 0) {
 			rating -= 1 * ABS(c-v);
 		//}
+
+		if (--m > 0)
+			rating -= 3*m;
 	}
 	return rating;
 }

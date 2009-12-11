@@ -26,6 +26,8 @@
 #include "scx-rack-view.h"
 #include "scx-game-panel.h"
 
+#include "version.h"
+
 
 G_DEFINE_TYPE (ScxMainWindow, scx_main_window, GTK_TYPE_WINDOW)
 
@@ -158,6 +160,26 @@ _action_game_new  (GtkAction     *action,
 }
 
 
+static void
+_action_help_about (GtkAction     *action,
+                    ScxMainWindow *self)
+{
+	const gchar *authors[] = {"Przemysław Sitek", NULL};
+
+	gtk_show_about_dialog (GTK_WINDOW (self),
+			"program-name", _("Crossed Words"),
+			"version", VERSION,
+			"comments", _("Word game playing program"),
+			"website", "http://code.google.com/p/crossed/words/",
+			"authors",  authors,
+			"copyright", "(c) 2009 Przemysław Sitek",
+			"license", "GNU LGPL 2.1",
+			"translator-credits", _("translator-credits"),
+			NULL);
+}
+
+
+
 static const gchar* ui_markup =
 "<ui>"
 	"<menubar>"
@@ -165,6 +187,9 @@ static const gchar* ui_markup =
 			"<menuitem action='New' />"
 			"<separator />"
 			"<menuitem action='Quit' />"
+		"</menu>"
+		"<menu action='Help'>"
+			"<menuitem action='About' />"
 		"</menu>"
 	"</menubar>"
 	"<toolbar>"
@@ -176,7 +201,9 @@ static const gchar* ui_markup =
 static const GtkActionEntry actions[] = {
 	{"Game", NULL, N_("Game")},
 		{"New", GTK_STOCK_NEW, NULL, "<Ctrl>n", N_("New game"), G_CALLBACK (_action_game_new)},
-		{"Quit", GTK_STOCK_QUIT, NULL, "<Ctrl>q", NULL, G_CALLBACK (gtk_main_quit)}
+		{"Quit", GTK_STOCK_QUIT, NULL, "<Ctrl>q", NULL, G_CALLBACK (gtk_main_quit)},
+	{"Help", NULL, N_("Help")},
+		{"About", GTK_STOCK_ABOUT, NULL, NULL, NULL, G_CALLBACK (_action_help_about)}
 };
 
 static const guint n_actions = G_N_ELEMENTS (actions);
@@ -373,6 +400,9 @@ static void
 scx_main_window_game_end (ScxMainWindow *self,
                           ScGame        *game)
 {
+	ScxMainWindowPrivate *priv = self->priv;
+
+	scx_game_panel_update (SCX_GAME_PANEL (priv->game_panel), priv->game);
 	GtkWidget *win = gtk_message_dialog_new (GTK_WINDOW (self),
 	                                         0,
 	                                         GTK_MESSAGE_INFO,
@@ -448,6 +478,10 @@ scx_main_window_update_move (ScxMainWindow *self)
 		return;
 
 	const gchar *word = scx_move_entry_get_text (SCX_MOVE_ENTRY (priv->move_entry));
+	if (*word == '\0') {
+		scx_move_entry_set_validation_status (SCX_MOVE_ENTRY (priv->move_entry), SCX_NONE);
+		return;
+	}
 	ScOrientation o = scx_move_entry_get_orientation (SCX_MOVE_ENTRY (priv->move_entry));
 	scx_board_view_get_selection (SCX_BOARD_VIEW (priv->board_view), &x, &y);
 
@@ -458,7 +492,10 @@ scx_main_window_update_move (ScxMainWindow *self)
 		gint move_rating = sc_board_rate_move (sc_game_get_board (priv->game), &move);
 		snprintf (rating_str, 12, " %d ", move_rating);
 		gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
-	}
+
+		scx_move_entry_set_validation_status (SCX_MOVE_ENTRY (priv->move_entry), 
+				sc_board_validate_move (sc_game_get_board (priv->game), &move) ? SCX_VALID : SCX_INVALID);
+	} 
 }
 
 

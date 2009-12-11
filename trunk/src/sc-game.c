@@ -394,20 +394,26 @@ sc_game_end (ScGame *self)
 		gint n_tiles;
 		int j;
 
+		gint penalty = 0;
 		sc_rack_model_get_tiles (rack, tiles, &n_tiles);
 		for (j = 0; j < n_tiles; j++) {
 			Letter *l = alphabet_lookup_letter (priv->al, tiles[j]);
 			if (l) { // unused blanks have no Letter*
-				priv->players[i]->points -= l->value;
-				t += l->value;
+				//priv->players[i]->points -= l->value;
+				//t += l->value;
+				penalty += l->value;
 			}
 		}
+		g_print ("Player %d: penalty %d, curr %d\n", i, penalty, priv->players[i]->points);
+		priv->players[i]->points -= penalty;
+		t += penalty;
 	}
 
 	for (i = 0; i < priv->n_players; i++) {
 		ScRackModel *rack = priv->players[i]->rack;
-		if (sc_rack_model_count_tiles (rack)) {
+		if (sc_rack_model_count_tiles (rack) == 0) {
 			priv->players[i]->points += t;
+			g_print ("Player %d: bonus %d\n", i, t);
 		}
 	}
 

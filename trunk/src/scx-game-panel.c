@@ -6,6 +6,8 @@
  * 
  */
 
+#include <stdio.h>
+
 #include <gtk/gtk.h>
 
 #include "sc-game.h"
@@ -21,6 +23,8 @@ struct _ScxGamePanelPrivate
 {
 	/* Private members go here */
 	GtkWidget *views[2];
+
+	GtkWidget *tiles_label;
 
 	gboolean disposed;
 };
@@ -53,6 +57,10 @@ scx_game_panel_init_gui (ScxGamePanel *self)
 		gtk_widget_show (view);
 		priv->views[i] = view;
 	}
+
+	priv->tiles_label = gtk_label_new ("");
+	gtk_box_pack_start (pbox, priv->tiles_label, FALSE, FALSE, 6);
+	gtk_widget_show (priv->tiles_label);
 }
 
 
@@ -79,6 +87,11 @@ scx_game_panel_update (ScxGamePanel *self, ScGame *game)
 		scx_player_view_set_player (SCX_PLAYER_VIEW (priv->views[i]), game,
 					sc_game_get_player (game, i));
 	}
+
+	gint tiles_left = sc_game_get_remaining_tiles (game);
+	gchar tiles_text[64];
+	snprintf (tiles_text, 64, "Tiles left: %d\n", tiles_left);
+	gtk_label_set_text (GTK_LABEL (priv->tiles_label), tiles_text);
 }
 
 

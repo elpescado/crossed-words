@@ -194,6 +194,17 @@ scx_move_entry_button_clicked (GtkButton    *button,
 }
 
 
+void
+scx_move_entry_set_validation_status (ScxMoveEntry *self,
+                                      ScxMoveEntryValidationStatus status)
+{
+	ScxMoveEntryPrivate *priv = self->priv;
+	const gchar *icons[] = {NULL, GTK_STOCK_YES, GTK_STOCK_NO};
+	gtk_entry_set_icon_from_stock (GTK_ENTRY (priv->entry), GTK_ENTRY_ICON_SECONDARY, icons[status]);
+}
+
+
+
 static void
 scx_move_entry_init (ScxMoveEntry *self)
 {

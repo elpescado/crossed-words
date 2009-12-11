@@ -6,7 +6,8 @@ CFLAGS=-O0 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 LIBS=-g -Wall `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
 
 PACKAGE=scrabble
-VERSION=1.0
+REVISION=$(shell LANG=C svn info | egrep ^Revision: | cut -d ' ' -f 2)
+VERSION=0.$(REVISION)
 PKG=$(PACKAGE)-$(VERSION)
 
 SOURCES=\
@@ -85,6 +86,9 @@ EXTRA_DIST=\
 OBJS=$(SOURCES:.c=.o)
 
 all: crossed-words gen-bad-words dictc simulation
+
+version.h: 
+	echo '#define VERSION "$(VERSION)"' > version.h
 
 .c.o:
 	$(CC) -c $(CFLAGS) $< -o $@
