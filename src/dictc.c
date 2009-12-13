@@ -67,11 +67,12 @@ test_dictionary (void *dict, Alphabet *al, const gchar *file_name, DictionaryTes
 	double t0 = foo_microtime ();
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
+		gint len;
 
-		if (!alphabet_translate (al, word, letters))
+		if (!alphabet_translate (al, word, letters, &len))
 			continue;
 
-		glong len = g_utf8_strlen (word, -1);
+		//glong len = g_utf8_strlen (word, -1);
 		if (len > opt_max_length)
 			continue;
 

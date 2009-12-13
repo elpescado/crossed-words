@@ -7,4 +7,6 @@
 
 GdkWindow *         gtk_widget_get_window               (GtkWidget *widget);
 
+GtkWidget *         gtk_dialog_get_content_area         (GtkDialog *dialog);
+
 #endif

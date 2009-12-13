@@ -26,6 +26,8 @@
 #include "scx-new-game-dialog.h"
 #include "scx-player-selector.h"
 
+#include "compat.h"
+
 
 G_DEFINE_TYPE (ScxNewGameDialog, scx_new_game_dialog, GTK_TYPE_DIALOG)
 
