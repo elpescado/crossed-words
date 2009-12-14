@@ -230,6 +230,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src\util.h" />
+		<Unit filename="src\version.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
