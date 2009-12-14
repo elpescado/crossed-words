@@ -74,9 +74,6 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
                                  ScxMainWindow *self);
 
 static void
-scx_main_window_create_player (ScxMainWindow *self, int num);
-
-static void
 scx_main_window_update_move (ScxMainWindow *self);
 
 static void
@@ -166,6 +163,8 @@ _action_help_about (GtkAction     *action,
 {
 	const gchar *authors[] = {"Przemysław Sitek", NULL};
 
+	GdkPixbuf *icon = gdk_pixbuf_new_from_file (PIXMAP_PATH "crossed-words.png", NULL);
+
 	gtk_show_about_dialog (GTK_WINDOW (self),
 			"program-name", _("Crossed Words"),
 			"version", VERSION,
@@ -175,6 +174,7 @@ _action_help_about (GtkAction     *action,
 			"copyright", "(c) 2009 Przemysław Sitek",
 			"license", "GNU LGPL 2.1",
 			"translator-credits", _("translator-credits"),
+			"logo", icon,
 			NULL);
 }
 
@@ -447,23 +447,6 @@ scx_main_window_players_turn_cb (ScPlayer      *player,
 
 
 	gtk_widget_set_sensitive (priv->bottom_hbox, TRUE);
-}
-
-
-static void
-scx_main_window_create_player (ScxMainWindow *self, int num)
-{
-	ScxMainWindowPrivate *priv = self->priv;
-
-	ScPlayer *p1 = !num ? SC_PLAYER (sc_human_player_new ()) : SC_PLAYER (sc_computer_player_new());
-	p1->game = (void*)priv->game;
-	sc_game_set_player (priv->game, num, SC_PLAYER (p1));
-
-	gchar name[32];
-	snprintf (name, 32, "%s %d", _("Player"), num+1);
-	sc_player_set_name (p1, name);
-
-	g_signal_connect (p1, "your-turn", G_CALLBACK (scx_main_window_players_turn_cb), self);
 }
 
 

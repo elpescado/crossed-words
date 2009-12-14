@@ -125,6 +125,7 @@ sc_rack_model_add_tile                (ScRackModel *rack,
 }
 
 
+/*
 static void
 _print_tiles (LID *tiles, gint n_tiles)
 {
@@ -136,6 +137,7 @@ _print_tiles (LID *tiles, gint n_tiles)
 	g_printerr (")");
 
 }
+*/
 
 
 void
@@ -171,18 +173,10 @@ sc_rack_model_remove_tiles (ScRackModel *rack,
                       LID    *tiles,
                       gint    n_tiles)
 {
-	ScRackModelPrivate *priv = rack->priv;
-	//g_printerr ("sc_rack_model_remove_tiles: ");
-	//_print_tiles (priv->tiles, priv->n_tiles);
-	//g_printerr (" - ");
-	//_print_tiles (tiles, n_tiles);
 	int i;
 	for (i = 0; i < n_tiles; i++) {
 		sc_rack_model_remove_tile (rack, tiles[i]);
 	}
-	//g_printerr (" = ");
-	//_print_tiles (priv->tiles, priv->n_tiles);
-	//g_printerr ("\n");
 }
 
 

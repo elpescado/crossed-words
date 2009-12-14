@@ -194,20 +194,22 @@ sc_pro_player_do_endgame_move (ScProPlayer *self)
 
 
 
-
+/*
 static void
 sc_pro_player_simulate_move (ScComputerPlayer *self,
                              ScMove           *move)
 {
 }
+*/
 
 
 /**
  * Analyze moves
  **/
 static ScMove *
-_sc_pro_player_analyze_moves (ScProPlayer *self)
+_sc_pro_player_analyze_moves (ScComputerPlayer *cp)
 {
+	ScProPlayer *self = SC_PRO_PLAYER (cp);
 	ScProPlayerPrivate *priv = self->priv;
 
 	gint max_score = 0;
@@ -235,10 +237,9 @@ _sc_pro_player_analyze_moves (ScProPlayer *self)
 
 
 static void
-sc_pro_player_your_turn (ScProPlayer *self)
+sc_pro_player_your_turn (ScPlayer *player)
 {
-	ScProPlayerPrivate *priv = self->priv;
-	
+	ScProPlayer *self = SC_PRO_PLAYER (player);
 	ScGame *game = SC_PLAYER(self)->game;
 	if (sc_game_get_remaining_tiles (game) == 0) {
 		sc_pro_player_do_endgame_move (self);
@@ -249,7 +250,7 @@ sc_pro_player_your_turn (ScProPlayer *self)
 		pro = SC_PRO_PLAYER_GET_CLASS (self);
 		comp = g_type_class_peek_parent (pro);
 
-		SC_PLAYER_CLASS(comp)->your_turn (self);
+		SC_PLAYER_CLASS(comp)->your_turn (SC_PLAYER(self));
 	}
 }
 

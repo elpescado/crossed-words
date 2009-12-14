@@ -101,7 +101,7 @@ scx_player_selector_init (ScxPlayerSelector *self)
 
 void
 scx_player_selector_set_types (ScxPlayerSelector  *self,
-                               const char        **types)
+                               char              **types)
 {
 	ScxPlayerSelectorPrivate *priv = self->priv;
 

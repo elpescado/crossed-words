@@ -127,6 +127,19 @@ sc_computer_player_rate_move (ScComputerPlayer *self,
 		if (--m > 0)
 			rating -= 3*m;
 	}
+
+	if (sc_computer_player_get_hint (self, SC_ENDGAME_HINT)) {
+		if (sc_game_get_remaining_tiles (SC_GAME (SC_PLAYER(self)->game)) == 0) {
+			gint n_leave = 0;
+			gint i;
+			for (i = 0; i < 64; i++)
+				n_leave += rack_leave->letters[i];
+
+			if (n_leave == 0)
+				rating += 0;
+		}
+	}
+
 	return rating;
 }
 
@@ -210,7 +223,6 @@ _found_word (ScComputerPlayer *self,
 		return;
 	}
 
-	ScComputerPlayerPrivate *priv = self->priv;
 	int i;
 	gint di, dj;
 	sc_move_vector (ctx->orient, &di, &dj);
@@ -317,7 +329,6 @@ __check_crosswords (ScComputerPlayer *self,
 		Letter *l = sc_board_get_letter (board, i, j);
 		if (l) {
 			crossword_len++;
-			l->index;
 			v = sc_dawg_vertex_child (v, l->index);	// TODO: valgrind
 			if (v == NULL)
 				return FALSE;
@@ -623,7 +634,6 @@ sc_computer_player_generate_moves (ScComputerPlayer *self, ScBoard *board, ScRac
 
 	ScComputerPlayerPrivate *priv = self->priv;
 	priv->dawg = sc_game_get_dictionary (SC_GAME (SC_PLAYER(self)->game));
-	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 
 	gint anchor_squares = 0;
 
@@ -655,9 +665,9 @@ sc_computer_player_generate_moves (ScComputerPlayer *self, ScBoard *board, ScRac
 
 
 static void
-sc_computer_player_your_turn (ScComputerPlayer *self)
+sc_computer_player_your_turn (ScPlayer *player)
 {
-	ScComputerPlayerPrivate *priv = self->priv;
+	ScComputerPlayer *self = SC_COMPUTER_PLAYER (player);
 	ScBoard *board;
 	ScMove move;
 	ScRack rack;
