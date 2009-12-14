@@ -61,8 +61,9 @@ sc_noob_player_init (ScNoobPlayer *self)
 
 
 static ScMove *
-_sc_noob_player_analyze_moves (ScComputerPlayer *self)
+_sc_noob_player_analyze_moves (ScComputerPlayer *cp)
 {
+	ScNoobPlayer *self = SC_NOOB_PLAYER (cp);
 	ScNoobPlayerPrivate *priv = self->priv;
 
 	gint max_score = 0;

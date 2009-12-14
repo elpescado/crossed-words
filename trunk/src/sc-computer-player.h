@@ -61,7 +61,8 @@ typedef struct {
 
 typedef enum {
 	SC_CONSIDER_RACK_LEAVE = 1 << 0,
-	SC_EXCHANGE_TILES      = 1 << 1
+	SC_EXCHANGE_TILES      = 1 << 1,
+	SC_ENDGAME_HINT        = 1 << 2
 } ScPlayerHint;
 
 

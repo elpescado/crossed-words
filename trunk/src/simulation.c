@@ -107,7 +107,7 @@ setup_game (void)
 	//ScPlayer *p2 = sc_computer_player_new ();
 	ScPlayer *p2 = SC_PLAYER (sc_computer_player_new ());
 	p2->game = game;
-	sc_computer_player_set_hint (SC_COMPUTER_PLAYER (p2), SC_CONSIDER_RACK_LEAVE, TRUE);
+	sc_computer_player_set_hint (SC_COMPUTER_PLAYER (p2), SC_ENDGAME_HINT, TRUE);
 	sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p2), TRUE);
 	sc_game_set_player (game, player_n(current_sim,1), p2);
 

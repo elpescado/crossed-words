@@ -12,12 +12,6 @@
 #include "common.h"
 #include "scx-move-entry.h"
 
-#ifdef __WIN32
-#  define PIXMAP_PATH "pixmaps\\"
-#else
-#  define PIXMAP_PATH "../pixmaps/"
-#endif
-
 
 G_DEFINE_TYPE (ScxMoveEntry, scx_move_entry, GTK_TYPE_VBOX)
 
