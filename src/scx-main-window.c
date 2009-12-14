@@ -163,7 +163,9 @@ _action_help_about (GtkAction     *action,
 {
 	const gchar *authors[] = {"Przemysław Sitek", NULL};
 
+#ifndef G_OS_WIN32
 	GdkPixbuf *icon = gdk_pixbuf_new_from_file (PIXMAP_PATH "crossed-words.png", NULL);
+#endif
 
 	gtk_show_about_dialog (GTK_WINDOW (self),
 			"program-name", _("Crossed Words"),
@@ -174,7 +176,9 @@ _action_help_about (GtkAction     *action,
 			"copyright", "(c) 2009 Przemysław Sitek",
 			"license", "GNU LGPL 2.1",
 			"translator-credits", _("translator-credits"),
+#ifndef G_OS_WIN32
 			"logo", icon,
+#endif
 			NULL);
 }
 
@@ -476,9 +480,9 @@ scx_main_window_update_move (ScxMainWindow *self)
 		snprintf (rating_str, 12, " %d ", move_rating);
 		gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
 
-		scx_move_entry_set_validation_status (SCX_MOVE_ENTRY (priv->move_entry), 
+		scx_move_entry_set_validation_status (SCX_MOVE_ENTRY (priv->move_entry),
 				sc_board_validate_move (sc_game_get_board (priv->game), &move) ? SCX_VALID : SCX_INVALID);
-	} 
+	}
 }
 
 
