@@ -1,7 +1,7 @@
 SetCompressor /SOLID /FINAL lzma
  
 !define PRODUCT_NAME "Crossed Words"
-!define VERSION 0.70
+!define VERSION 0.76
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\corssed-words.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -29,7 +29,7 @@ InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
 ShowUnInstDetails show
 
-
+# Install app for all users
 
 # Installer
 Section Main
@@ -118,8 +118,10 @@ SectionEnd
 
 # Shortcuts
 Section Shortcuts
+  SetShellVarContext all
   SetOutPath $INSTDIR
   CreateShortCut "$SMPROGRAMS\Crossed Words.lnk" "$INSTDIR\crossed-words.exe"
+  CreateShortCut "$DESKTOP\Crossed Words.lnk" "$INSTDIR\crossed-words.exe"
 SectionEnd
 
 
@@ -139,8 +141,10 @@ SectionEnd
 
 Section Uninstall
 
+  SetShellVarContext all
   RMDir /r "$INSTDIR"
   Delete "$SMPROGRAMS\Crossed Words.lnk"
+  Delete "$DESKTOP\Crossed Words.lnk"
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
 
