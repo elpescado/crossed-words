@@ -63,6 +63,10 @@
 			<Add library="pango-1.0" />
 			<Add directory="C:\gtk\lib" />
 		</Linker>
+		<Unit filename="resource.rc">
+			<Option compilerVar="WINDRES" />
+			<Option target="Release" />
+		</Unit>
 		<Unit filename="src\alphabet.c">
 			<Option compilerVar="CC" />
 		</Unit>
