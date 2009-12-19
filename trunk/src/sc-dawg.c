@@ -51,7 +51,7 @@ sc_dawg_ref (ScDawg *dawg)
 void
 sc_dawg_unref (ScDawg *dawg)
 {
-	if (--dawg->ref_count)
+	if (--dawg->ref_count == 0)
 		sc_dawg_free (dawg);
 }
 

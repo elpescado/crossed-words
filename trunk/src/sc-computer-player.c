@@ -61,6 +61,17 @@ sc_computer_player_new (void)
 	return self;
 }
 
+
+void
+sc_computer_player_set_hints (ScComputerPlayer *self,
+                              gint              hints)
+{
+	ScComputerPlayerPrivate *priv = self->priv;
+
+	priv->hints = hints;
+}
+
+
 void
 sc_computer_player_set_hint (ScComputerPlayer *self,
                              ScPlayerHint      hint,
@@ -136,7 +147,7 @@ sc_computer_player_rate_move (ScComputerPlayer *self,
 				n_leave += rack_leave->letters[i];
 
 			if (n_leave == 0)
-				rating += 0;
+				rating += 26;
 		}
 	}
 

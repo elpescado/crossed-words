@@ -104,6 +104,9 @@ sc_computer_player_enable_exchange (ScComputerPlayer *self,
 gboolean
 sc_computer_player_exchange_enabled (ScComputerPlayer *self);
 
+void
+sc_computer_player_set_hints (ScComputerPlayer *self,
+                              gint              hints);
 
 void
 sc_computer_player_set_hint (ScComputerPlayer *self,
