@@ -12,6 +12,8 @@ typedef struct {
 } ScRack;
 
 
+#define sc_rack_contains(rack,lid) (rack->letters[sc_letter_is_blank (lid) ? 0 : sc_letter_value (lid)] > 0)
+
 ScRack *
 sc_rack_new (void);
 
@@ -27,9 +29,10 @@ sc_rack_free (ScRack *rack);
 void
 sc_rack_assign (ScRack *lhs, ScRack *rhs);
 
-
+/*
 gboolean
 sc_rack_contains (ScRack *rack, LID lid);
+*/
 
 void
 sc_rack_add (ScRack *rack, LID lid);

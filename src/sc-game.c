@@ -94,13 +94,19 @@ sc_game_new (void)
 static void
 sc_game_init (ScGame *self)
 {
+	/* FIXME: Quick hack */
+	static Alphabet *_al = NULL;
+	if (_al == NULL) {
+		_al = alphabet_new ();
+		alphabet_load (_al, "lang/pl/alphabet.txt");
+	}
+
 	self->priv = SC_GAME_GET_PRIVATE (self);
 	ScGamePrivate *priv = self->priv;
 
 	priv->disposed = FALSE;
 
-	priv->al = alphabet_new ();
-	alphabet_load (priv->al, "lang/pl/alphabet.txt");
+	priv->al = _al;
 
 	priv->board = sc_board_new (priv->al);
 
@@ -495,12 +501,17 @@ sc_game_get_alphabet (ScGame *self)
 static void
 sc_game_load_dictionary (ScGame *self)
 {
+	/* FIXME: Quick hack */
+	static ScDawg *_dict = NULL;
+	if (_dict == NULL) {
+		_dict = sc_dawg_load ("gaddag.dag");
+	}
 	ScGamePrivate *priv = self->priv;
 
 	if (priv->dictionary)
 		sc_game_unload_dictionary (self);
 
-	priv->dictionary = sc_dawg_load ("gaddag.dag");
+	priv->dictionary = sc_dawg_ref (_dict);
 }
 
 

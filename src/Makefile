@@ -1,9 +1,10 @@
 CC=colorgcc
 REFERENCES=gtk+-2.0
-CFLAGS=-O0 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
+PROFILE=
+CFLAGS=$(PROFILE) -O2 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
 #STATIC_LIBS=`curl-config --static-libs`
-LIBS=-g -Wall `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
+LIBS=-g $(PROFILE) -Wall   `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
 
 PACKAGE=scrabble
 REVISION=$(shell LANG=C svn info | egrep ^Revision: | cut -d ' ' -f 2)
@@ -85,7 +86,7 @@ EXTRA_DIST=\
 
 OBJS=$(SOURCES:.c=.o)
 
-all: crossed-words gen-bad-words dictc simulation
+all: crossed-words gen-bad-words dictc simulation dawginfo
 
 version.h: 
 	echo '#define VERSION "$(VERSION)"' > version.h
@@ -103,6 +104,9 @@ gen-bad-words: $(OBJS) gen-bad-words.o
 
 dictc: $(OBJS) dictc.o
 	$(CC) -o $@ $(OBJS) dictc.o $(LIBS)
+
+dawginfo: $(OBJS) dawginfo.o
+	$(CC) -o $@ $(OBJS) dawginfo.o $(LIBS)
 
 simulation: $(OBJS) simulation.o
 	$(CC) -o $@ $(OBJS) simulation.o $(LIBS)

@@ -42,6 +42,7 @@ sc_rack_assign (ScRack *lhs, ScRack *rhs)
 }
 
 
+/*
 gboolean
 sc_rack_contains (ScRack *rack, LID lid)
 {
@@ -49,6 +50,7 @@ sc_rack_contains (ScRack *rack, LID lid)
 	lid = sc_letter_is_blank (lid) ? 0 : sc_letter_value (lid);
 	return rack->letters[lid] > 0;
 }
+*/
 
 
 void

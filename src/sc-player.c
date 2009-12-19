@@ -207,7 +207,7 @@ sc_player_set_property (GObject *object, guint property_id,
 static void
 _sc_player_your_turn (ScPlayer* self)
 {
-	g_printerr ("YOUR TURN\n");
+	//g_printerr ("YOUR TURN\n");
 }
 
 
