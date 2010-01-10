@@ -157,8 +157,6 @@ scx_painter_draw_tile (ScxPainter  *self,
 			pango_layout_set_text (layout, l->label, -1);
 			pango_layout_get_pixel_size (layout, &w, &h);
 
-			g_printerr ("Layout height: %d\n", h);
-
 			gdk_draw_layout (gtk_widget_get_window (priv->widget),
 			                 priv->tile_gc, x+1, y + (priv->tile_size - h)/2,// - 4,
 		    	             layout);

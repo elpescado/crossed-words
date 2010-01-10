@@ -64,10 +64,9 @@ scx_board_view_button_pressed (GtkWidget      *widget,
 
 
 
-GtkWidget*
-scx_board_view_new (void)
+static void
+set_size (ScxBoardView *self)
 {
-	ScxBoardView *self = g_object_new (SCX_TYPE_BOARD_VIEW, NULL);
 	ScxBoardViewPrivate *priv = self->priv;
 
 	gint tile_size = scx_painter_get_tile_size (priv->painter);
@@ -76,8 +75,19 @@ scx_board_view_new (void)
 	int board_size = (tile_size + tile_spacing) * 15 - tile_spacing + 4;
 	gtk_widget_set_size_request (GTK_WIDGET (self), board_size, board_size);
 
+}
+
+
+GtkWidget*
+scx_board_view_new (void)
+{
+	ScxBoardView *self = g_object_new (SCX_TYPE_BOARD_VIEW, NULL);
+
+	set_size (self);
+
 	return GTK_WIDGET (self);
 }
+
 
 
 static void
@@ -227,6 +237,16 @@ scx_board_view_init_gcs (ScxBoardView *self)
 	priv->tile_gc = gdk_gc_new (gtk_widget_get_window (GTK_WIDGET (self)));
 	gdk_color_parse ("#222222", &color);
 	gdk_gc_set_rgb_fg_color (priv->tile_gc, &color);
+}
+
+void
+scx_board_view_set_tile_size (ScxBoardView *self,
+                              gint          tile_size)
+{
+	ScxBoardViewPrivate *priv = self->priv;
+	scx_painter_set_tile_size (priv->painter, tile_size);
+	set_size (self);
+	gtk_widget_queue_draw (GTK_WIDGET (self));
 }
 
 
