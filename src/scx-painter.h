@@ -56,6 +56,25 @@ scx_painter_get_type				(void);
 ScxPainter*
 scx_painter_new				(GtkWidget *widget);
 
+
+gint
+scx_painter_get_tile_size (ScxPainter *self);
+
+
+void
+scx_painter_set_tile_size (ScxPainter *self,
+                           gint        tile_size);
+
+
+gint
+scx_painter_get_tile_spacing (ScxPainter *self);
+
+
+void
+scx_painter_set_tile_spacing (ScxPainter *self,
+                              gint        tile_spacing);
+
+
 void
 scx_painter_draw_tile (ScxPainter  *self,
                        Letter      *l,

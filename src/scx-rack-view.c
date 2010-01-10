@@ -29,8 +29,6 @@ struct _ScxRackViewPrivate
 	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
 	SCX_TYPE_RACK_VIEW, ScxRackViewPrivate))
 
-extern const int TILE_SIZE;
-extern const int TILE_SPACING;
 
 const int PADDING = 6;
 
@@ -39,11 +37,7 @@ GtkWidget*
 scx_rack_view_new (void)
 {
 	ScxRackView *self = g_object_new (SCX_TYPE_RACK_VIEW, NULL);
-
-	gint min_width = 2*PADDING + 7*(TILE_SIZE+TILE_SPACING) - TILE_SPACING;
-	gint min_height = 2*PADDING + TILE_SIZE;
-
-	gtk_widget_set_size_request (GTK_WIDGET (self), min_width, min_height);
+	ScxRackViewPrivate *priv = self->priv;
 
 	return GTK_WIDGET(self);
 }
@@ -90,8 +84,20 @@ scx_rack_view_expose_event (GtkWidget          *widget,
 	if (priv->rack == NULL)
 		return TRUE;
 
-	if (priv->painter == NULL)
+	if (priv->painter == NULL) {
 		priv->painter = scx_painter_new (GTK_WIDGET (self));
+
+		gint tile_size = scx_painter_get_tile_size (priv->painter);
+		gint tile_spacing = scx_painter_get_tile_spacing (priv->painter);
+
+		gint min_width = 2*PADDING + 7*(tile_spacing+tile_size) - tile_spacing;
+		gint min_height = 2*PADDING + tile_spacing;
+
+		gtk_widget_set_size_request (GTK_WIDGET (self), min_width, min_height);
+	}
+
+	gint tile_size = scx_painter_get_tile_size (priv->painter);
+	gint tile_spacing = scx_painter_get_tile_spacing (priv->painter);
 
 	int i;
 	int n_tiles;
@@ -101,7 +107,7 @@ scx_rack_view_expose_event (GtkWidget          *widget,
 
 	for (i = 0; i < n_tiles; i++) {
 		Letter *l = alphabet_lookup_letter (al, tiles[i]);
-		scx_painter_draw_tile (priv->painter, l, PADDING + i * (TILE_SIZE + TILE_SPACING), PADDING, 0, sc_letter_is_blank(tiles[i]));
+		scx_painter_draw_tile (priv->painter, l, PADDING + i * (tile_spacing + tile_size), PADDING, 0, sc_letter_is_blank(tiles[i]));
 	}
 
 	return TRUE;
