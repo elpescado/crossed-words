@@ -101,6 +101,81 @@ scx_painter_set_tile_spacing (ScxPainter *self,
 }
 
 
+void
+scx_painter_draw_field (ScxPainter *self,
+                        gint        x,
+						gint        y,
+						gint        mod)
+{
+	ScxPainterPrivate *priv = self->priv;
+
+	static gchar *field_colors[] = {
+		"#d3d7cf", "#000000",  /* Normal tile   */
+		"#729fcf", "#204a87",  /* Double letter */
+		"#204a87", "#102442",  /* Triple letter */
+		"#ef2929", "#a40000",  /* Double word   */
+		"#a40000", "#520000"   /* Triple word   */
+	};
+	priv->tile_gc = gdk_gc_new (gtk_widget_get_window (GTK_WIDGET (priv->widget)));
+
+	set_color (priv->tile_gc, "#2e3436");
+	gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (priv->widget)),
+						priv->tile_gc,
+						FALSE, x, y, priv->tile_size, priv->tile_size);
+
+	
+	set_color (priv->tile_gc, field_colors[2*mod]);
+	gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (priv->widget)),
+						priv->tile_gc,
+						TRUE, x+1, y+1, priv->tile_size-1, priv->tile_size-1);
+
+	if (mod) {
+		const char *texts[] = {"", "2x", "3x", "2x", "3x"};
+		const char *texts2[] = {"", "letter", "letter", "word", "word"};
+
+		gint font_size = priv->tile_size / 2;
+		gchar font_name[32];
+		snprintf (font_name, 32, "%s %dpx", "Arial bold", font_size);
+
+
+		PangoLayout *layout = gtk_widget_create_pango_layout (priv->widget, "");
+		PangoFontDescription *font = pango_font_description_from_string (font_name);
+		pango_layout_set_font_description (layout, font);
+		pango_layout_set_width (layout, (priv->tile_size - 2) * PANGO_SCALE);
+		pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
+
+		pango_layout_set_text (layout, texts[mod], -1);
+
+		set_color (priv->tile_gc, field_colors[2*mod+1]);
+		gdk_draw_layout (gtk_widget_get_window (priv->widget),
+	    	             priv->tile_gc, x+1, y+1,
+		                 layout);
+
+
+		gint font_size2 = priv->tile_size / 3;
+		gchar font_name2[32];
+		snprintf (font_name2, 32, "%s %dpx", "Arial ", font_size2);
+
+		PangoLayout *layout2 = gtk_widget_create_pango_layout (priv->widget, "");
+		PangoFontDescription *font2 = pango_font_description_from_string (font_name2);
+		pango_layout_set_font_description (layout2, font2);
+		pango_layout_set_width (layout2, (priv->tile_size - 2) * PANGO_SCALE);
+		pango_layout_set_alignment (layout2, PANGO_ALIGN_CENTER);
+
+		pango_layout_set_text (layout2, texts2[mod], -1);
+
+		set_color (priv->tile_gc, field_colors[2*mod+1]);
+		gdk_draw_layout (gtk_widget_get_window (priv->widget),
+	    	             priv->tile_gc, x+1, y+1 + priv->tile_size/2,
+		                 layout2);
+
+	
+		g_object_unref (layout);
+		g_object_unref (layout2);
+	}
+}
+
+
 /**
  * Draws a tile
  **/

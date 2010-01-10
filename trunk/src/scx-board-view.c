@@ -293,7 +293,7 @@ scx_board_view_expose_event (GtkWidget           *widget,
 		"#729fcf",  /* Double letter */
 		"#204a87",  /* Triple letter */
 		"#ef2929",  /* Double word   */
-		"#a40000"  /* Triple word   */
+		"#a40000"   /* Triple word   */
 	};
 
 	/* Draw board */
@@ -308,19 +308,9 @@ scx_board_view_expose_event (GtkWidget           *widget,
 		for (j = 0; j < 15; j++) {
 			int x = ox + i * (tile_size + tile_spacing);
 			int y = oy + j * (tile_size + tile_spacing);
-
-			set_color (priv->tile_gc, "#2e3436");
-			gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (self)),
-			                    priv->tile_gc,
-								FALSE, x, y, tile_size, tile_size);
-
-			
 			int mod = sc_board_get_field_modifier (priv->board, i, j);
-			set_color (priv->tile_gc, field_colors[mod]);
-			gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (self)),
-			                    priv->tile_gc,
-								TRUE, x+1, y+1, tile_size-1, tile_size-1);
 
+			scx_painter_draw_field (priv->painter, x, y, mod);
 		}
 	}
 
