@@ -50,8 +50,8 @@ static guint signals[LAST_SIGNAL];
 
 
 
-const int TILE_SIZE = 48;
-const int TILE_SPACING = 4;
+const int _TILE_SIZE = 48;
+const int _TILE_SPACING = 4;
 
 #define SCX_BOARD_VIEW_GET_PRIVATE(obj) \
 	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
@@ -68,7 +68,12 @@ GtkWidget*
 scx_board_view_new (void)
 {
 	ScxBoardView *self = g_object_new (SCX_TYPE_BOARD_VIEW, NULL);
-	int board_size = (TILE_SIZE + TILE_SPACING) * 15 - TILE_SPACING + 4;
+	ScxBoardViewPrivate *priv = self->priv;
+
+	gint tile_size = scx_painter_get_tile_size (priv->painter);
+	gint tile_spacing = scx_painter_get_tile_spacing (priv->painter);
+
+	int board_size = (tile_size + tile_spacing) * 15 - tile_spacing + 4;
 	gtk_widget_set_size_request (GTK_WIDGET (self), board_size, board_size);
 
 	return GTK_WIDGET (self);
@@ -178,7 +183,10 @@ scx_board_view_button_pressed (GtkWidget      *widget,
 {
 	ScxBoardViewPrivate *priv = self->priv;
 
-	int board_size = (TILE_SIZE + TILE_SPACING) * 15 - TILE_SPACING;
+	gint tile_size = scx_painter_get_tile_size (priv->painter);
+	gint tile_spacing = scx_painter_get_tile_spacing (priv->painter);
+
+	int board_size = (tile_size + tile_spacing) * 15 - tile_spacing;
 	int ox = (GTK_WIDGET(self)->allocation.width - board_size) / 2;
 	int oy = (GTK_WIDGET(self)->allocation.height - board_size) / 2;
 
@@ -187,8 +195,8 @@ scx_board_view_button_pressed (GtkWidget      *widget,
 
 
 	if (x > 0 && x < board_size && y > 0 && y < board_size) {
-		int i = x / (TILE_SIZE + TILE_SPACING);
-		int j = y / (TILE_SIZE + TILE_SPACING);
+		int i = x / (tile_size + tile_spacing);
+		int j = y / (tile_size + tile_spacing);
 
 		if (priv->selection_enabled)
 			scx_board_view_set_selection (self, i, j);
@@ -232,11 +240,14 @@ scx_board_view_draw_tile (ScxBoardView  *self,
 {
 	ScxBoardViewPrivate *priv = self->priv;
 
-	int board_size = (TILE_SIZE + TILE_SPACING) * 15 - TILE_SPACING;
+	gint tile_size = scx_painter_get_tile_size (priv->painter);
+	gint tile_spacing = scx_painter_get_tile_spacing (priv->painter);
+
+	int board_size = (tile_size + tile_spacing) * 15 - tile_spacing;
 	int ox = (GTK_WIDGET(self)->allocation.width - board_size) / 2;
 	int oy = (GTK_WIDGET(self)->allocation.height - board_size) / 2;
-	int x = ox + i * (TILE_SIZE + TILE_SPACING);
-	int y = oy + j * (TILE_SIZE + TILE_SPACING);
+	int x = ox + i * (tile_size + tile_spacing);
+	int y = oy + j * (tile_size + tile_spacing);
 
 	scx_painter_draw_tile (priv->painter, l, x, y, style_id, blank);
 }
@@ -252,6 +263,9 @@ scx_board_view_expose_event (GtkWidget           *widget,
 	if (priv->board == NULL)
 		return TRUE;
 
+	gint tile_size = scx_painter_get_tile_size (priv->painter);
+	gint tile_spacing = scx_painter_get_tile_spacing (priv->painter);
+
 	scx_board_view_init_gcs (self);
 
 	gchar *field_colors[] = {
@@ -265,27 +279,27 @@ scx_board_view_expose_event (GtkWidget           *widget,
 	/* Draw board */
 	int i;
 	int j;
-	int board_size = (TILE_SIZE + TILE_SPACING) * 15 - TILE_SPACING;
+	int board_size = (tile_size + tile_spacing) * 15 - tile_spacing;
 	int ox = (GTK_WIDGET(self)->allocation.width - board_size) / 2;
 	int oy = (GTK_WIDGET(self)->allocation.height - board_size) / 2;
 
 	/* Draw board background */
 	for (i = 0; i < 15; i++) {
 		for (j = 0; j < 15; j++) {
-			int x = ox + i * (TILE_SIZE + TILE_SPACING);
-			int y = oy + j * (TILE_SIZE + TILE_SPACING);
+			int x = ox + i * (tile_size + tile_spacing);
+			int y = oy + j * (tile_size + tile_spacing);
 
 			set_color (priv->tile_gc, "#2e3436");
 			gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (self)),
 			                    priv->tile_gc,
-								FALSE, x, y, TILE_SIZE, TILE_SIZE);
+								FALSE, x, y, tile_size, tile_size);
 
 			
 			int mod = sc_board_get_field_modifier (priv->board, i, j);
 			set_color (priv->tile_gc, field_colors[mod]);
 			gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (self)),
 			                    priv->tile_gc,
-								TRUE, x+1, y+1, TILE_SIZE-1, TILE_SIZE-1);
+								TRUE, x+1, y+1, tile_size-1, tile_size-1);
 
 		}
 	}
@@ -293,8 +307,8 @@ scx_board_view_expose_event (GtkWidget           *widget,
 	/* Draw tiles */
 	for (i = 0; i < 15; i++) {
 		for (j = 0; j < 15; j++) {
-			//int x = ox + i * (TILE_SIZE + TILE_SPACING);
-			//int y = oy + j * (TILE_SIZE + TILE_SPACING);
+			//int x = ox + i * (tile_size + tile_spacing);
+			//int y = oy + j * (tile_size + tile_spacing);
 
 			LID lid = sc_board_get_lid (priv->board, i, j);
 			Letter *l = sc_board_get_letter (priv->board, i, j);
@@ -312,8 +326,8 @@ scx_board_view_expose_event (GtkWidget           *widget,
 		int k;
 
 		for (k = 0, i = priv->move.x, j = priv->move.y ; k < priv->move.n_letters; k++, i += di, j += dj) {
-			//int x = ox + i * (TILE_SIZE + TILE_SPACING);
-			//int y = oy + j * (TILE_SIZE + TILE_SPACING);
+			//int x = ox + i * (tile_size + tile_spacing);
+			//int y = oy + j * (tile_size + tile_spacing);
 			if (i < 0 || j < 0 || i >= BOARD_SIZE || j >= BOARD_SIZE)
 				continue;
 
@@ -328,16 +342,16 @@ scx_board_view_expose_event (GtkWidget           *widget,
 
 	/* Draw selection */
 	if (priv->has_selection) {
-		int x = ox + priv->selection_x * (TILE_SIZE + TILE_SPACING);
-		int y = oy + priv->selection_y * (TILE_SIZE + TILE_SPACING);
+		int x = ox + priv->selection_x * (tile_size + tile_spacing);
+		int y = oy + priv->selection_y * (tile_size + tile_spacing);
 
 		set_color (priv->tile_gc, "#000000");
 		gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (self)),
 		                    priv->tile_gc,
-							FALSE, x-1, y-1, TILE_SIZE+2, TILE_SIZE+2);
+							FALSE, x-1, y-1, tile_size+2, tile_size+2);
 		gdk_draw_rectangle (gtk_widget_get_window (GTK_WIDGET (self)),
 		                    priv->tile_gc,
-							FALSE, x-2, y-2, TILE_SIZE+4, TILE_SIZE+4);
+							FALSE, x-2, y-2, tile_size+4, tile_size+4);
 
 	}
 

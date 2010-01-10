@@ -474,9 +474,9 @@ _traverse_tree_right(ScComputerPlayer *self,
 static void
 _traverse_tree_left (ScComputerPlayer *self,
                     _TraverseCtx      *ctx,
-					 gint              idx,
-				     ScDawgVertex     *node,
-				     ScRack           *rack)
+                     gint              idx,
+                     ScDawgVertex     *node,
+                     ScRack           *rack)
 {
 	//g_printerr (".");
 

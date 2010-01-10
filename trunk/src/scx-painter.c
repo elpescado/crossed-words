@@ -20,6 +20,9 @@ struct _ScxPainterPrivate
 	GtkWidget *widget;
 	GdkGC     *tile_gc;
 
+	gint tile_size;
+	gint tile_spacing;
+
 	gboolean disposed;
 };
 
@@ -29,8 +32,8 @@ struct _ScxPainterPrivate
 	SCX_TYPE_PAINTER, ScxPainterPrivate))
 
 
-extern const int TILE_SIZE;
-extern const int TILE_SPACING;
+extern const int _TILE_SIZE;
+extern const int _TILE_SPACING;
 
 
 ScxPainter*
@@ -50,6 +53,9 @@ scx_painter_init (ScxPainter *self)
 	self->priv = SCX_PAINTER_GET_PRIVATE (self);
 	ScxPainterPrivate *priv = self->priv;
 
+	priv->tile_size    = _TILE_SIZE;
+	priv->tile_spacing = _TILE_SPACING;
+
 	priv->disposed = FALSE;
 }
 
@@ -60,6 +66,38 @@ set_color (GdkGC *gc, const gchar *color_name)
 	
 	gdk_color_parse (color_name, &color);
 	gdk_gc_set_rgb_fg_color (gc, &color);
+}
+
+
+gint
+scx_painter_get_tile_size (ScxPainter *self)
+{
+	ScxPainterPrivate *priv = self->priv;
+	return priv->tile_size;
+}
+
+
+void
+scx_painter_set_tile_size (ScxPainter *self,
+                           gint        tile_size)
+{
+	ScxPainterPrivate *priv = self->priv;
+	priv->tile_size = tile_size;
+}
+
+gint
+scx_painter_get_tile_spacing (ScxPainter *self)
+{
+	ScxPainterPrivate *priv = self->priv;
+	return priv->tile_spacing;
+}
+
+void
+scx_painter_set_tile_spacing (ScxPainter *self,
+                              gint        tile_spacing)
+{
+	ScxPainterPrivate *priv = self->priv;
+	priv->tile_spacing = tile_spacing;
 }
 
 
@@ -81,50 +119,69 @@ scx_painter_draw_tile (ScxPainter  *self,
 
 	priv->tile_gc = gdk_gc_new (gtk_widget_get_window (GTK_WIDGET (priv->widget)));
 
+	gint font_size = priv->tile_size * 3 / 4;
+	gchar font_name[32];
+	snprintf (font_name, 32, "%s %dpx", "Arial bold", font_size);
+
 	PangoLayout *layout = gtk_widget_create_pango_layout (priv->widget, "");
-	PangoFontDescription *font = pango_font_description_from_string ("Arial bold 32px");
+	PangoFontDescription *font = pango_font_description_from_string (font_name);
 	pango_layout_set_font_description (layout, font);
-	pango_layout_set_width (layout, (TILE_SIZE - 2) * PANGO_SCALE);
+	pango_layout_set_width (layout, (priv->tile_size - 2) * PANGO_SCALE);
 	pango_layout_set_alignment (layout, PANGO_ALIGN_CENTER);
 
+	gint points_font_size = priv->tile_size / 3;
+	gchar points_font_name[32];
+	snprintf (points_font_name, 32, "%s %dpx", "Arial", points_font_size);
+
 	PangoLayout *layout2 = gtk_widget_create_pango_layout (priv->widget, "");
-	pango_layout_set_width (layout2, (TILE_SIZE - 2) * PANGO_SCALE);
+	PangoFontDescription *points_font = pango_font_description_from_string (points_font_name);
+	pango_layout_set_font_description (layout2, points_font);
+	pango_layout_set_width (layout2, (priv->tile_size - 2) * PANGO_SCALE);
 	pango_layout_set_alignment (layout2, PANGO_ALIGN_RIGHT);
 
 	set_color (priv->tile_gc, border);
 	gdk_draw_rectangle (gtk_widget_get_window (priv->widget),
 						priv->tile_gc,
-						FALSE, x, y, TILE_SIZE, TILE_SIZE);
+						FALSE, x, y, priv->tile_size, priv->tile_size);
 
 	
 	set_color (priv->tile_gc, bg);
 	gdk_draw_rectangle (gtk_widget_get_window (priv->widget),
 						priv->tile_gc,
-						TRUE, x+1, y+1, TILE_SIZE-1, TILE_SIZE-1);
+						TRUE, x+1, y+1, priv->tile_size-1, priv->tile_size-1);
 
 	set_color (priv->tile_gc, blank? border : "#000000");
 	if (l) {
-		pango_layout_set_text (layout, l->label, -1);
-		gdk_draw_layout (gtk_widget_get_window (priv->widget),
-		                 priv->tile_gc, x+1, 4 + y+1,
-		                 layout);
+		{
+			int w, h;
+			pango_layout_set_text (layout, l->label, -1);
+			pango_layout_get_pixel_size (layout, &w, &h);
+
+			g_printerr ("Layout height: %d\n", h);
+
+			gdk_draw_layout (gtk_widget_get_window (priv->widget),
+			                 priv->tile_gc, x+1, y + (priv->tile_size - h)/2,// - 4,
+		    	             layout);
+		}
 
 		if (!blank) {
 			/* Do not draw points on blanks */
 			gchar points_text[4];
 			snprintf (points_text, 4, "%d", l->value);
 			pango_layout_set_text (layout2, points_text, -1);
+			int w, h;
+			pango_layout_get_pixel_size (layout2, &w, &h);
 			gdk_draw_layout (gtk_widget_get_window (priv->widget),
-			                 priv->tile_gc, x+1, 32 + y+1,
+			                 priv->tile_gc, x+1, y + priv->tile_size - h + 2,
 			                 layout2);
 		}
 	}
 
 	set_color (priv->tile_gc, "#000000");
 	gdk_draw_line (gtk_widget_get_window (priv->widget),
-	               priv->tile_gc, x + 1, y + TILE_SIZE + 1, x + TILE_SIZE + 1, y + TILE_SIZE + 1);
+	               priv->tile_gc, x + 1, y + priv->tile_size + 1, x + priv->tile_size + 1, y + priv->tile_size + 1);
 	gdk_draw_line (gtk_widget_get_window (priv->widget),
-	               priv->tile_gc, x + TILE_SIZE + 1, y + 1, x + TILE_SIZE + 1, y + TILE_SIZE + 1);
+	               priv->tile_gc, x + priv->tile_size + 1, y + 1, x + priv->tile_size + 1, y + priv->tile_size + 1);
 
 	g_object_unref (layout);
 	g_object_unref (layout2);
