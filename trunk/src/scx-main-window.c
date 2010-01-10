@@ -61,8 +61,16 @@ struct _ScxMainWindowPrivate
 
 	ScPlayerFactory *factory;
 
+	gint       zoom_level;
+
 	gboolean disposed;
 };
+
+
+
+gint tile_sizes [] = {16, 24, 32, 48, 64, 96};
+const gint n_tile_sizes = sizeof(tile_sizes)/sizeof(tile_sizes[0]);
+const gint default_zoom_level = 2;
 
 
 #define SCX_MAIN_WINDOW_GET_PRIVATE(obj) \
@@ -184,6 +192,43 @@ _action_help_about (GtkAction     *action,
 
 
 
+static void
+set_zoom (ScxMainWindow *self,
+          gint zoom_level)
+{
+	ScxMainWindowPrivate *priv = self->priv;
+	if (zoom_level < 0)
+		zoom_level = 0;
+	if (zoom_level >= n_tile_sizes)
+		zoom_level = n_tile_sizes - 1;
+
+	priv->zoom_level = zoom_level;
+
+	scx_board_view_set_tile_size (SCX_BOARD_VIEW (priv->board_view), tile_sizes[priv->zoom_level]);	
+}
+
+
+static void
+_action_zoom_in (GtkAction     *action,
+                 ScxMainWindow *self)
+{
+	ScxMainWindowPrivate *priv = self->priv;
+	set_zoom (self, priv->zoom_level+1);
+}
+
+
+static void
+_action_zoom_out (GtkAction     *action,
+                  ScxMainWindow *self)
+{
+	ScxMainWindowPrivate *priv = self->priv;
+	set_zoom (self, priv->zoom_level-1);
+}
+
+
+
+
+
 static const gchar* ui_markup =
 "<ui>"
 	"<menubar>"
@@ -192,12 +237,19 @@ static const gchar* ui_markup =
 			"<separator />"
 			"<menuitem action='Quit' />"
 		"</menu>"
+		"<menu action='View'>"
+			"<menuitem action='ZoomIn' />"
+			"<menuitem action='ZoomOut' />"
+		"</menu>"
 		"<menu action='Help'>"
 			"<menuitem action='About' />"
 		"</menu>"
 	"</menubar>"
 	"<toolbar>"
 		"<toolitem action='New' />"
+		"<separator />"
+		"<toolitem action='ZoomIn' />"
+		"<toolitem action='ZoomOut' />"
 	"</toolbar>"
 "</ui>";
 
@@ -206,6 +258,9 @@ static const GtkActionEntry actions[] = {
 	{"Game", NULL, N_("Game")},
 		{"New", GTK_STOCK_NEW, NULL, "<Ctrl>n", N_("New game"), G_CALLBACK (_action_game_new)},
 		{"Quit", GTK_STOCK_QUIT, NULL, "<Ctrl>q", NULL, G_CALLBACK (gtk_main_quit)},
+	{"View", NULL, N_("View")},
+		{"ZoomIn", GTK_STOCK_ZOOM_IN, NULL, "<Ctrl>plus", NULL, G_CALLBACK (_action_zoom_in)},
+		{"ZoomOut", GTK_STOCK_ZOOM_OUT, NULL, "<Ctrl>minus", NULL, G_CALLBACK (_action_zoom_out)},
 	{"Help", NULL, N_("Help")},
 		{"About", GTK_STOCK_ABOUT, NULL, NULL, NULL, G_CALLBACK (_action_help_about)}
 };
@@ -378,8 +433,11 @@ scx_main_window_init (ScxMainWindow *self)
 	sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_computer_player_new, "computer", "Computer player");
 	//sc_player_factory_add_type (priv->factory, (ScPlayerConstructor)sc_pro_player_new,      "pro", "Pro computer");
 
+	priv->zoom_level = default_zoom_level;
+
 	scx_main_window_init_actions (self);
 	scx_main_window_init_gui (self);
+	set_zoom (self, default_zoom_level);
 }
 
 

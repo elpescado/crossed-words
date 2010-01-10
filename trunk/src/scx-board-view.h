@@ -57,6 +57,11 @@ scx_board_view_new				(void);
 
 
 void
+scx_board_view_set_tile_size (ScxBoardView *self,
+                              gint          tile_size);
+
+
+void
 scx_board_view_set_board (ScxBoardView *self,
                           ScBoard      *board);
 
