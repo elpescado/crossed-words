@@ -288,14 +288,6 @@ scx_board_view_expose_event (GtkWidget           *widget,
 
 	scx_board_view_init_gcs (self);
 
-	gchar *field_colors[] = {
-		"#d3d7cf",	/* Normal tile   */
-		"#729fcf",  /* Double letter */
-		"#204a87",  /* Triple letter */
-		"#ef2929",  /* Double word   */
-		"#a40000"   /* Triple word   */
-	};
-
 	/* Draw board */
 	int i;
 	int j;
