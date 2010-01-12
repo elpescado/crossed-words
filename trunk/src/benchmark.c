@@ -14,51 +14,14 @@
 const int N = 25;
 
 
-struct pstat_t {
-	int pst_pid;
-	char pst_comm[64];
-	char pst_state;
-	int pst_ppid;
-	int pst_pgrp;
-	int pst_session;
-	int pst_tty_nr;
-	int pst_tpgid;
-	unsigned pst_flags;
-	unsigned long pst_minflt;
-	unsigned long pst_cminflt;
-	unsigned long pst_majflt;
-	unsigned long pst_cmajflt;
-	unsigned long pst_utime;
-	unsigned long pst_stime;
-	long pst_cutime;
-	long pst_cstime;
-	long pst_priority;
-	long pst_nice;
-	long pst_num_threads;
-	long pst_itrealvalue;
-	unsigned long long pst_starttime;
-	unsigned long pst_vsize;
-	long pst_rss;
-	unsigned long pst_rsslim;
-	unsigned long pst_startcode;
-	unsigned long pst_endcode;
-	unsigned long pst_startstack;
-	unsigned long pst_kstkesp;
-	unsigned long pst_kstkeip;
-	unsigned long pst_signal;
-	unsigned long pst_blocked;
-	unsigned long pst_sigignore;
-	unsigned long pst_sigcatch;
-	unsigned long pst_wchan;
-	unsigned long pst_nswap;
-	unsigned long pst_cnswap;
-	int pst_exit_signal;
-	unsigned pst_processor;
-	unsigned pst_rt_priority;
-	unsigned pst_policy;
-	unsigned long long pst_delayacct_blkio_ticks;
-	unsigned long pst_guest_time;
-	long pst_cguest_time;	
+struct mstat_t {
+	long mst_size;
+	long mst_rss;
+	long mst_share;
+	long mst_text;
+	long mst_lib;
+	long mst_data;
+	long mst_dt;
 };
 
 
@@ -90,59 +53,27 @@ load_file (void *self, const gchar *file_name)
 
 
 static int
-my_pstat (struct pstat_t *pst)
+my_mstat (pid_t pid, struct mstat_t *st)
 {
 	char path[32];
-	snprintf (path, 32, "/proc/%d/stat", (int)getpid());
+	snprintf (path, 32, "/proc/%d/statm", (int) pid);
 
 	FILE *f = fopen (path, "r");
-	fscanf (f, "%d %s %c %d %d %d %d %d %u %lu %lu %lu %lu %lu %lu %lu %lu %lu %ld %ld %ld %llu %lu %ld %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d %u %u %llu %lu %ld",
-			&(pst->pst_pid),
-			pst->pst_comm,
-			&(pst->pst_state),
-			&(pst->pst_ppid),
-			&(pst->pst_pgrp),
-			&(pst->pst_session),
-			&(pst->pst_tty_nr),
-			&(pst->pst_tpgid),
-			&(pst->pst_flags),
-			&(pst->pst_minflt),
-			&(pst->pst_cminflt),
-			&(pst->pst_majflt),
-			&(pst->pst_cmajflt),
-			&(pst->pst_utime),
-			&(pst->pst_stime),
-			&(pst->pst_cutime),
-			&(pst->pst_cstime),
-			&(pst->pst_priority),
-			&(pst->pst_nice),
-			&(pst->pst_num_threads),
-			&(pst->pst_itrealvalue),
-			&(pst->pst_starttime),
-			&(pst->pst_vsize),
-			&(pst->pst_rss),
-			&(pst->pst_rsslim),
-			&(pst->pst_startcode),
-			&(pst->pst_endcode),
-			&(pst->pst_startstack),
-			&(pst->pst_kstkesp),
-			&(pst->pst_kstkeip),
-			&(pst->pst_signal),
-			&(pst->pst_blocked),
-			&(pst->pst_sigignore),
-			&(pst->pst_sigcatch),
-			&(pst->pst_wchan),
-			&(pst->pst_nswap),
-			&(pst->pst_cnswap),
-			&(pst->pst_exit_signal),
-			&(pst->pst_processor),
-			&(pst->pst_rt_priority),
-			&(pst->pst_policy),
-			&(pst->pst_delayacct_blkio_ticks),
-			&(pst->pst_guest_time),
-			&(pst->pst_cguest_time)
-		);
+	if (f == NULL)
+		return -1;
+
+	fscanf (f, "%ld %ld %ld %ld %ld %ld %ld",
+		&(st->mst_size),
+		&(st->mst_rss),
+		&(st->mst_share),
+		&(st->mst_text),
+		&(st->mst_lib),
+		&(st->mst_data),
+		&(st->mst_dt)
+	);
+
 	fclose (f);
+
 	return 0;
 }
 
@@ -150,19 +81,12 @@ my_pstat (struct pstat_t *pst)
 static void
 report_memory_usage (void)
 {
-	/*
-	struct rusage usage;
+	struct mstat_t st;
+	my_mstat (getpid (), &st);
 
-	if (getrusage (RUSAGE_SELF, &usage) == 0) {
-		g_printerr ("Memory: %ld\n", usage.ru_idrss);
-	}
-	*/
-	struct pstat_t st;
-	my_pstat (&st);
-	g_printerr ("Memory: %ld\n", st.pst_rss);
-	
-	sleep (10);
-	g_printerr ("Resuming\n");
+	long ps = sysconf(_SC_PAGESIZE);
+	g_printerr ("Size: %ld RSS: %ld data: %ld\n",
+			ps*st.mst_size, ps*st.mst_rss, ps*st.mst_data);
 }
 
 
