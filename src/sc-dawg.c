@@ -1,3 +1,4 @@
+#include "common.h"
 #include "sc-dawg.h"
 #include "sc-dsf.h"
 #include "sc-dag2.h"
@@ -141,7 +142,7 @@ sc_dawg_test_word (ScDawg *self, const gchar *word, Alphabet *al)
 	*/
 
 	gint len;
-	LID letters[15];
+	LID letters[MAX_LETTERS];
 	if (! alphabet_translate (al, word, letters, &len))
 		return FALSE;
 
@@ -169,22 +170,36 @@ sc_dawg_test_word_translated (ScDawg *self, LID *letters, glong len)
 {
 	ScDawgVertex *vert = sc_dawg_root (self);
 
-	//g_print ("Testing ");
-
 	gint i;
 	for (i = 0; i < len; i++) {
 		LID lid = letters[i];
 		vert = sc_dawg_vertex_child (vert, lid);
-	//	g_print (" -> %d", vert - self->vertices);
 		if (vert == NULL) {
-	//		g_print ("FAIL\n");
 			return FALSE;
 		}
 	}
-	//g_print ("\n");
 
 	return vert->flags & SC_DAG2_NODE_FINAL;
 }
+
+
+gboolean
+sc_dawg_test_word_chars (ScDawg *self, const char *letters, glong len)
+{
+	ScDawgVertex *vert = sc_dawg_root (self);
+
+	gint i;
+	for (i = 0; letters[i] != '\0'; i++) {
+		LID lid = letters[i];
+		vert = sc_dawg_vertex_child (vert, lid);
+		if (vert == NULL) {
+			return FALSE;
+		}
+	}
+
+	return vert->flags & SC_DAG2_NODE_FINAL;
+}
+
 
 
 void

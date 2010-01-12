@@ -74,7 +74,11 @@ sc_dawg_test_word (ScDawg *self, const gchar *word, Alphabet *al);
 gboolean
 sc_dawg_test_word_translated (ScDawg *self, LID *letters, glong len);
 
-		
+
+gboolean
+sc_dawg_test_word_chars (ScDawg *self, const char *letters, glong len);
+
+
 void
 sc_dawg_print (ScDawg *self, Alphabet *al);
 

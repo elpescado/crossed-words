@@ -1,5 +1,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <stdio.h>
@@ -127,6 +128,7 @@ benchmark (void *self, const gchar *file_name)
 #elif defined(DATA_HASH)
 			found = g_hash_table_lookup ((GHashTable *) self, word);
 #elif defined(DATA_DAWG)
+			found = sc_dawg_test_word_chars ((ScDawg *) self, word, -1);
 #endif
 			if (found == NULL)
 				exit (2);
@@ -155,6 +157,7 @@ int main (int argc, char *argv[])
 #elif defined(DATA_HASH)
 	GHashTable *self = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 #elif defined(DATA_DAWG)
+	ScDawg *self = sc_dawg_load ("utf.dag");
 #endif
 
 	const gchar *file = "lang/pl/dictionary.txt";
@@ -173,6 +176,7 @@ int main (int argc, char *argv[])
 #elif defined(DATA_HASH)
 	g_hash_table_unref ((GHashTable *) self);
 #elif defined(DATA_DAWG)
+	sc_dawg_unref ((ScDawg *) self);
 #endif
 
 	return 0;
