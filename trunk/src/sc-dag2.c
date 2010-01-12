@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common.h"
 #include "sc-dag2.h"
 #include "sc-dsf.h"
 
@@ -121,18 +122,8 @@ sc_dag2_node_hash (ScDag2Node *node)
 void
 sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 {
-	/*
-	//g_print ("adding (%s)\n", word);
-	glong len = g_utf8_strlen (word, -1);
-	if (len > 15) {
-	//	exit(0);
-	//	g_print ("too long, discarding: '%s'\n", word);
-		return;
-	}
-	*/
-
 	gint len;
-	LID letters[15];
+	LID letters[MAX_LETTERS];
 	if (!alphabet_translate (al, word, letters, &len)) {
 		//g_print ("Invalid word");
 		return;
@@ -141,7 +132,7 @@ sc_dag2_add_drowword (ScDag2 *self, const gchar *word, Alphabet *al)
 
 	int i, j;
 	for (i = 1; i <= len; i++) {
-		LID new_letters[17];
+		LID new_letters[MAX_LETTERS];
 		memset (new_letters, '\0', sizeof (new_letters));
 		for (j = 0; j < i; j++) {
 			new_letters[j] = letters[i-j-1];
@@ -179,7 +170,7 @@ sc_dag2_add_word (ScDag2 *self, const gchar *word, Alphabet *al)
 	*/
 
 	gint len;
-	LID letters[15];
+	LID letters[MAX_LETTERS];
 	if (! alphabet_translate (al, word, letters, &len)) {
 		//g_print ("sc_dag2_add_word: Invalid word '%s', discarding\n", word);
 		return;
@@ -187,6 +178,20 @@ sc_dag2_add_word (ScDag2 *self, const gchar *word, Alphabet *al)
 
 	sc_dag2_add_word_translated (self, letters, len);
 }
+
+
+void
+sc_dag2_add_str (ScDag2 *self, const gchar *word)
+{
+	gint len = /*g_utf8_*/strlen (word);
+	LID letters[len];
+	
+	for (int i = 0; i < len; i++)
+		letters[i] = (word)[i];
+
+	sc_dag2_add_word_translated (self, letters, len);
+}
+
 
 void
 sc_dag2_add_word_translated (ScDag2 *self, LID *letters, glong len)
@@ -229,7 +234,7 @@ sc_dag2_test_word (ScDag2 *self, const gchar *word, Alphabet *al)
 	*/
 
 	gint len;
-	LID letters[15];
+	LID letters[MAX_LETTERS];
 	if (! alphabet_translate (al, word, letters, &len))
 		return FALSE;
 
@@ -280,8 +285,8 @@ sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max)
 }
 
 
-static int nodes_per_level[16] = {0};
-static ScDag2Node **nodes_tmp[16] = {0};
+static int nodes_per_level[MAX_LETTERS+2] = {0};
+static ScDag2Node **nodes_tmp[MAX_LETTERS+2] = {0};
 
 
 static int _max_arcs_per_node = 0;
@@ -382,7 +387,7 @@ sc_dag2_node_equal (const ScDag2Node *a, const ScDag2Node *b)
 		return FALSE;
 
 	int i;
-	for (i = 0; i < 33; i++) {
+	for (i = 0; i < 256; i++) {
 		if (sc_dag2_node_child (a, i) != sc_dag2_node_child (b, i))
 			return FALSE;
 	}
@@ -417,7 +422,7 @@ sc_dag2_minimize (ScDag2 *self)
 
 
 	gint i;
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i <= MAX_LETTERS; i++) {
 		nodes_tmp[i] = g_malloc (sizeof (ScDag2Node *) * nodes_per_level[i]);
 	}
 
@@ -428,7 +433,7 @@ sc_dag2_minimize (ScDag2 *self)
 			(long long int)total_arcs, (int)_max_arcs_per_node, (long long int)total_arcs / self->n_nodes);
 
 	gint total_nodes = 0;
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i <= MAX_LETTERS; i++) {
 		g_print ("Level %2d: %8d nodes\n", i, nodes_per_level[i]);
 		total_nodes += nodes_per_level[i];
 	}
@@ -437,7 +442,7 @@ sc_dag2_minimize (ScDag2 *self)
 
 	gint total_edges = total_nodes - 1;
 
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i <= MAX_LETTERS; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
 			ScDag2Node *node = nodes_tmp[i][j];
@@ -503,7 +508,7 @@ sc_dag2_save (ScDag2 *self, const gchar *file_name)
 	gint arc_idx = 0;
 	gint vertex_idx = 0;
 	int i;
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i <= MAX_LETTERS; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
 			ScDag2Node *node = nodes_tmp[i][j];
@@ -522,7 +527,7 @@ sc_dag2_save (ScDag2 *self, const gchar *file_name)
 	} // for i
 
 	/* Write arcs */
-	for (i = 0; i < 16; i++) {
+	for (i = 0; i <= MAX_LETTERS; i++) {
 		int j;
 		for (j = 0; j < nodes_per_level[i]; j++) {
 			ScDag2Node *node = nodes_tmp[i][j];

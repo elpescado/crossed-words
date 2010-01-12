@@ -1,7 +1,7 @@
 CC=colorgcc
 REFERENCES=gtk+-2.0
 PROFILE=
-CFLAGS=$(PROFILE) -O2 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
+CFLAGS=$(PROFILE) -O2  -mtune=native -march=native -std=c99 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
 #STATIC_LIBS=`curl-config --static-libs`
 LIBS=-g $(PROFILE) -Wall   `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
@@ -87,7 +87,7 @@ EXTRA_DIST=\
 OBJS=$(SOURCES:.c=.o)
 
 all: crossed-words gen-bad-words dictc simulation dawginfo \
-	bench-bst bench-hash
+	bench-bst bench-hash bench-dawg
 
 version.h: 
 	echo '#define VERSION "$(VERSION)"' > version.h
@@ -117,6 +117,10 @@ bench-bst: $(OBJS) benchmark.c
 
 bench-hash: $(OBJS) benchmark.c
 	$(CC) -o $@ $(CFLAGS) -DDATA_HASH benchmark.c $(OBJS) $(LIBS)
+
+bench-dawg: $(OBJS) benchmark.c
+	$(CC) -o $@ $(CFLAGS) -DDATA_DAWG benchmark.c $(OBJS) $(LIBS)
+
 
 
 

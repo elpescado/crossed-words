@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 
+#include "common.h"
 #include "alphabet.h"
 #include "letter.h"
 #include "sc-board.h"
@@ -24,7 +25,7 @@
 /* Command line options */
 
 gchar   *opt_alphabet_file = NULL;
-gint     opt_max_length = 15;
+gint     opt_max_length = MAX_LETTERS;
 gboolean opt_gaddag = FALSE;
 gboolean opt_verify = FALSE;
 gboolean opt_verbose = FALSE;
@@ -62,15 +63,21 @@ test_dictionary (void *dict, Alphabet *al, const gchar *file_name, DictionaryTes
 	gint missed = 0;
 	gint n_words = 0;
 
-	LID letters[15];
+	LID letters[MAX_LETTERS];
 
 	double t0 = foo_microtime ();
 	while (fgets (buffer, 128, f)) {
 		char *word = g_strstrip (buffer);
 		gint len;
 
-		if (!alphabet_translate (al, word, letters, &len))
-			continue;
+		if (al) {
+			if (!alphabet_translate (al, word, letters, &len))
+				continue;
+		} else {
+			len = /*g_utf8_*/strlen (word);
+			for (int i = 0; i < len; i++)
+				letters[i] = (word)[i];
+		}	
 
 		//glong len = g_utf8_strlen (word, -1);
 		if (len > opt_max_length)
@@ -78,7 +85,7 @@ test_dictionary (void *dict, Alphabet *al, const gchar *file_name, DictionaryTes
 
 		n_words++;
 		if (func (dict, letters, len) != expected_result) {
-		//	g_print ("    Word '%s' not present\n", word);
+			g_print ("    Word '%s' not present\n", word);
 			missed++;
 		}
 	}
@@ -108,10 +115,13 @@ load_file (ScDag2 *self, const gchar *file_name, Alphabet *al)
 		if (g_utf8_strlen (word, -1) > opt_max_length)
 			continue;
 
-		if (opt_gaddag)
+		if (al == NULL)
+			sc_dag2_add_str (self, word);
+		else if (opt_gaddag)
 			sc_dag2_add_drowword (self, word, al);
 		else
 			sc_dag2_add_word (self, word, al);
+
 
 		//if (--max == 0)
 		//	break;
@@ -130,7 +140,7 @@ int main (int argc, char *argv[])
 	GError *error = NULL;
 	GOptionContext *context;
 
-	Alphabet  *al;
+	Alphabet  *al = NULL;
 	ScDag2 *dag;
 	ScDawg *dawg;
 
@@ -146,7 +156,7 @@ int main (int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (opt_alphabet_file == NULL || argc < 3) {
+	if (/*opt_alphabet_file == NULL ||*/argc < 2) {
 		g_printerr ("Bad arguments\n");
 		return EXIT_FAILURE;
 	}
@@ -156,8 +166,10 @@ int main (int argc, char *argv[])
 	
 	/* Load alphabet */
 
-	al = alphabet_new ();
-	alphabet_load (al, opt_alphabet_file);
+	if (opt_alphabet_file) {
+		al = alphabet_new ();
+		alphabet_load (al, opt_alphabet_file);
+	}
 
 
 	/* Load input file */
@@ -209,6 +221,7 @@ int main (int argc, char *argv[])
 
 	/* Save binary file */
 
+	
 	verbose ("Saving output file...");
 	if (!sc_dag2_save (dag, out_file)) {
 		verbose (" failed\n");
@@ -217,23 +230,25 @@ int main (int argc, char *argv[])
 	verbose (" ok\n");
 
 
-	/* Verify written file */
+	if (opt_verify) {
+		/* Verify written file */
 
-	verbose ("Verifying output file...");
-	dawg = sc_dawg_load (out_file);
-	if (dawg == NULL) {
-		verbose (" failed\n");
-		g_printerr ("Cannot load output file '%s' for verification\n", out_file);
-		return EXIT_FAILURE;
-	}
-	if (!test_dictionary (dawg, al, dict_file, (DictionaryTestFunc)sc_dawg_test_word_translated, TRUE)) {
-		verbose (" failed\n");
-		g_printerr ("Output file verification failed\n");
-		return EXIT_FAILURE;
-	}
-	//test_dictionary (dawg, al, "bad-words.txt", sc_dawg_test_word_translated, FALSE);
+		verbose ("Verifying output file...");
+		dawg = sc_dawg_load (out_file);
+		if (dawg == NULL) {
+			verbose (" failed\n");
+			g_printerr ("Cannot load output file '%s' for verification\n", out_file);
+			return EXIT_FAILURE;
+		}
+		if (!test_dictionary (dawg, al, dict_file, (DictionaryTestFunc)sc_dawg_test_word_translated, TRUE)) {
+			verbose (" failed\n");
+			g_printerr ("Output file verification failed\n");
+			return EXIT_FAILURE;
+		}
+		//test_dictionary (dawg, al, "bad-words.txt", sc_dawg_test_word_translated, FALSE);
 
-	verbose (" ok\n");
+		verbose (" ok\n");
+	}
 
 
 	return EXIT_SUCCESS;

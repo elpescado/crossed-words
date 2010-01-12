@@ -10,3 +10,5 @@
 
 
 #define BOARD_SIZE 15
+
+#define MAX_LETTERS 32

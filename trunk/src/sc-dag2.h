@@ -55,6 +55,10 @@ void
 sc_dag2_add_word (ScDag2 *self, const gchar *word, Alphabet *al);
 
 
+void
+sc_dag2_add_str (ScDag2 *self, const gchar *word);
+
+
 gboolean
 sc_dag2_load_file (ScDag2 *self, const gchar *file_name, Alphabet *al, gint max);
 
