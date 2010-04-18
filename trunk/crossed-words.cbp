@@ -44,6 +44,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-mms-bitfields" />
+			<Add option="-std=c99" />
 			<Add directory="C:\gtk\include" />
 			<Add directory="C:\gtk\include\gtk-2.0" />
 			<Add directory="C:\gtk\include\cairo" />
