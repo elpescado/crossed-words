@@ -81,6 +81,8 @@ ScPlayer *
 scx_new_game_dialog_create_player (ScxNewGameDialog *self,
                                    gint i);
 
+gint
+scx_new_game_dialog_get_time (ScxNewGameDialog *self);
 
 
 G_END_DECLS

@@ -36,6 +36,8 @@ struct _ScxNewGameDialogPrivate
 	/* Private members go here */
 	ScPlayerFactory *factory;
 
+	GtkWidget *time_entry;
+
 	GtkWidget *player_entries[2];
 
 
@@ -69,6 +71,26 @@ scx_new_game_dialog_init_gui (ScxNewGameDialog *self)
 	gtk_container_set_border_width (GTK_CONTAINER (vbox), 12);
 	gtk_container_add (GTK_CONTAINER (content_area), vbox);
 	gtk_widget_show (vbox);
+
+	GtkWidget *hbox = gtk_hbox_new (FALSE, 6);
+	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
+	gtk_widget_show (hbox);
+
+	GtkWidget *label1 = gtk_label_new (_("Game time:"));
+	gtk_misc_set_alignment (GTK_MISC (label1), 1.0, 0.5);
+	gtk_box_pack_start (GTK_BOX (hbox), label1, TRUE, TRUE, 0);
+	gtk_widget_show (label1);
+
+	priv->time_entry = gtk_spin_button_new_with_range (1.0, 60.0, 1.0);
+	gtk_spin_button_set_digits (GTK_SPIN_BUTTON (priv->time_entry), 0);
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (priv->time_entry), 15.0);
+	gtk_box_pack_start (GTK_BOX (hbox), priv->time_entry, FALSE, FALSE, 0);
+	gtk_widget_show (priv->time_entry);
+
+	GtkWidget *label2 = gtk_label_new (_("minutes"));
+	gtk_box_pack_start (GTK_BOX (hbox), label2, FALSE, FALSE, 0);
+	gtk_widget_show (label2);
+
 
 	gint i;
 	for (i = 0; i < 2; i++) {
@@ -119,6 +141,14 @@ scx_new_game_dialog_set_factory (ScxNewGameDialog *self,
 		}
 		g_free (types);
 	}
+}
+
+
+gint
+scx_new_game_dialog_get_time (ScxNewGameDialog *self)
+{
+	ScxNewGameDialogPrivate *priv = self->priv;
+	return (gint) gtk_spin_button_get_value (GTK_SPIN_BUTTON (priv->time_entry));
 }
 
 

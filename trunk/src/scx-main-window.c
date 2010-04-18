@@ -98,6 +98,10 @@ scx_main_window_game_end (ScxMainWindow *self,
                             ScGame        *game);
 
 
+static void
+scx_main_window_game_tick (ScxMainWindow *self,
+                           ScGame        *game);
+
 GtkWidget*
 scx_main_window_new (void)
 {
@@ -124,6 +128,7 @@ _action_game_new  (GtkAction     *action,
 		return;
 
 	priv->game = sc_game_new ();
+	sc_game_set_time (priv->game, 60 * scx_new_game_dialog_get_time (SCX_NEW_GAME_DIALOG (win)));
 
 	scx_board_view_set_board (SCX_BOARD_VIEW (priv->board_view),
 	                          sc_game_get_board (priv->game));
@@ -137,23 +142,10 @@ _action_game_new  (GtkAction     *action,
 	}
 
 	gtk_widget_destroy (win);
-//	sc_game_init_move (priv->game, &move, 5, 4, SC_VERTICAL, "pescado");
-//	scx_board_view_set_move (SCX_BOARD_VIEW (priv->board_view), &move);
 
-	/*
-	ScHumanPlayer *p1 = sc_human_player_new ();
-	sc_game_set_player (priv->game, 0, SC_PLAYER (p1));
-
-	ScHumanPlayer *p2 = sc_human_player_new ();
-	sc_game_set_player (priv->game, 1, SC_PLAYER (p2));
-	*/
-
-	/*
-	scx_main_window_create_player (self, 0);
-	scx_main_window_create_player (self, 1);
-	*/
 	g_signal_connect_swapped (priv->game, "begin", G_CALLBACK (scx_main_window_game_begin), self);
 	g_signal_connect_swapped (priv->game, "end", G_CALLBACK (scx_main_window_game_end), self);
+	g_signal_connect_swapped (priv->game, "tick", G_CALLBACK (scx_main_window_game_tick), self);
 
 	scx_board_view_enable_selection (SCX_BOARD_VIEW (priv->board_view));
 	scx_board_view_set_selection (SCX_BOARD_VIEW (priv->board_view), 3, 7);
@@ -472,6 +464,14 @@ scx_main_window_game_end (ScxMainWindow *self,
 	                                         "Game over");
 	gtk_dialog_run (GTK_DIALOG (win));
 	gtk_widget_destroy (win);
+}
+
+static void
+scx_main_window_game_tick (ScxMainWindow *self,
+                           ScGame        *game)
+{
+	ScxMainWindowPrivate *priv = self->priv;
+	scx_game_panel_update (SCX_GAME_PANEL (priv->game_panel), priv->game);
 }
 
 

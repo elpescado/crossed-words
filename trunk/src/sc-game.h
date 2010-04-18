@@ -110,11 +110,20 @@ sc_game_get_players_bingos (ScGame *self, ScPlayer *player);
 
 
 gint
+sc_game_get_players_time (ScGame *self, ScPlayer *player);
+
+
+gint
 sc_game_get_n_players (ScGame *self);
 
 
 ScPlayer *
 sc_game_get_player (ScGame *game, gint n);
+
+
+ScPlayer *
+sc_game_get_current_player (ScGame *game);
+
 
 
 ScDawg *
@@ -123,6 +132,15 @@ sc_game_get_dictionary (ScGame *game);
 
 gint
 sc_game_get_remaining_tiles (ScGame *game);
+
+
+void
+sc_game_set_time (ScGame *game,
+                  gint    time);
+
+
+gint
+sc_game_get_time (ScGame *game);
 
 
 G_END_DECLS
