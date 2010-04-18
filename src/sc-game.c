@@ -15,6 +15,7 @@
 #include "sc-dawg.h"
 
 #define BINGO_BONUS 50
+#define DEFAULT_TIME 120
 
 G_DEFINE_TYPE (ScGame, sc_game, G_TYPE_OBJECT)
 
@@ -26,26 +27,29 @@ gint n_bingos = 0;
 struct _ScGamePrivate
 {
 	/* Private members go here */
-	gboolean     running;
-	gint         current_player;
-	Alphabet    *al;
-	ScBag       *bag;
-	ScBoard     *board;
-	gint         n_players;
-	ScPlayerCtx *players[2];
-	gint         pass_counter;
+	gboolean     running;          /**< Whether or not game has ended       */
+	gint         current_player;   /**< Player number whose turn is current */
+	Alphabet    *al;               /**< Alphabet used in game               */
+	ScBag       *bag;              /**< Bag with tiles                      */
+	ScBoard     *board;            /**< Game board                          */
+	gint         n_players;        /**< Number of players                   */
+	ScPlayerCtx *players[2];       /**< Array of players                    */
+	gint         pass_counter;     /**< Number of consecutive passes        */
+	gint         time;             /**< Time per player                     */
+	guint        timer_id;         /**< Clock timer id                      */
 
-	ScDawg      *dictionary;
+	ScDawg      *dictionary;       /**< Dictionary                          */
 
 	gboolean disposed;
 };
 
 
 struct _ScPlayerCtx {
-	ScPlayer    *player;
-	gint         points;
-	gint         bingos;
-	ScRackModel *rack;
+	ScPlayer    *player;           /**< Player controller                   */
+	gint         points;           /**< Number of points scored             */
+	gint         bingos;           /**< Number of bingos                    */
+	gint         time;             /**< Remaining time                      */
+	ScRackModel *rack;             /**< Rack                                */
 };
 
 
@@ -53,6 +57,7 @@ struct _ScPlayerCtx {
 enum {
 	BEGIN,
 	END,
+	TICK,
 
 	LAST_SIGNAL
 };
@@ -111,6 +116,8 @@ sc_game_init (ScGame *self)
 	priv->board = sc_board_new (priv->al);
 
 	priv->n_players = 2;
+
+	priv->time = DEFAULT_TIME;
 
 	sc_game_load_dictionary (self);
 
@@ -342,6 +349,23 @@ sc_game_check_end (ScGame *self)
 }
 
 
+static gboolean
+sc_game_tick (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+
+	struct _ScPlayerCtx *ctx = priv->players[priv->current_player];
+
+	if (--ctx->time == 0) {
+		sc_game_end (self);
+	}	
+	//g_printerr ("%d seconds left\n", ctx->time);
+	g_signal_emit (self, signals[TICK], 0);
+
+	return TRUE;
+}
+
+
 /**
  * Starts a game
  **/
@@ -371,9 +395,11 @@ sc_game_start (ScGame *self)
 		ScPlayerCtx *ctx = priv->players[i];
 
 		sc_game_fill_rack (self, ctx->rack, priv->bag);
+		ctx->time = priv->time;
 	}
 
 	g_signal_emit (self, signals[BEGIN], 0);
+	priv->timer_id = g_timeout_add (1000, (GSourceFunc)sc_game_tick, self);
 
 	sc_game_request_move (self);
 }
@@ -389,6 +415,11 @@ sc_game_end (ScGame *self)
 
 	if (!priv->running)
 		return;
+
+	if (priv->timer_id != 0) {
+		g_source_remove (priv->timer_id);
+		priv->timer_id = 0;
+	}
 
 	g_print ("End game\n");
 
@@ -428,6 +459,7 @@ sc_game_end (ScGame *self)
 
 	g_signal_emit (self, signals[END], 0);
 }
+
 
 
 
@@ -471,6 +503,13 @@ sc_game_get_players_bingos (ScGame *self, ScPlayer *player)
 	return ctx->bingos;
 }
 
+gint
+sc_game_get_players_time (ScGame *self, ScPlayer *player)
+{
+	ScPlayerCtx *ctx = sc_game_get_ctx_by_player (self, player);
+	return ctx->time;
+}
+
 
 
 gint
@@ -487,6 +526,15 @@ sc_game_get_player (ScGame *self, gint n)
 	ScGamePrivate *priv = self->priv;
 	return priv->players[n]->player;
 }
+
+
+ScPlayer *
+sc_game_get_current_player (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+	return priv->players[priv->current_player]->player;
+}
+
 
 
 Alphabet *
@@ -539,6 +587,25 @@ sc_game_get_remaining_tiles (ScGame *game)
 	ScGamePrivate *priv = game->priv;
 	return sc_bag_n_tiles (priv->bag);
 }
+
+
+void
+sc_game_set_time (ScGame *game,
+                  gint    time)
+{
+	ScGamePrivate *priv = game->priv;
+	g_return_if_fail (!priv->running);
+	priv->time = time;
+}
+
+
+gint
+sc_game_get_time (ScGame *game)
+{
+	ScGamePrivate *priv = game->priv;
+	return priv->time;
+}
+
 
 
 static void
@@ -622,6 +689,16 @@ sc_game_class_init (ScGameClass *klass)
 			NULL);
 
 	signals[END] = g_signal_new ("end",
+			G_TYPE_FROM_CLASS (klass),
+			(GSignalFlags)(G_SIGNAL_RUN_LAST),
+			0,
+			NULL,
+			NULL,
+			g_cclosure_marshal_VOID__VOID,
+			G_TYPE_NONE, 0,
+			NULL);
+
+	signals[TICK] = g_signal_new ("tick",
 			G_TYPE_FROM_CLASS (klass),
 			(GSignalFlags)(G_SIGNAL_RUN_LAST),
 			0,

@@ -24,6 +24,7 @@ struct _ScxGamePanelPrivate
 	/* Private members go here */
 	GtkWidget *views[2];
 
+	GtkWidget *time_label;
 	GtkWidget *tiles_label;
 
 	gboolean disposed;
@@ -49,8 +50,15 @@ scx_game_panel_init_gui (ScxGamePanel *self)
 	ScxGamePanelPrivate *priv = self->priv;
 
 	GtkBox *pbox = GTK_BOX (self);
-	gint i;
 
+	priv->time_label = gtk_label_new ("00:00");
+	PangoFontDescription *font = pango_font_description_from_string ("bold 32");
+	gtk_widget_modify_font (priv->time_label, font);
+	gtk_box_pack_start (pbox, priv->time_label, FALSE, FALSE, 6);
+	gtk_widget_show (priv->time_label);
+	
+
+	gint i;
 	for (i = 0; i < 2; i++) {
 		GtkWidget *view = scx_player_view_new ();
 		gtk_box_pack_start (pbox, view, FALSE, FALSE, 0);
@@ -81,6 +89,13 @@ scx_game_panel_update (ScxGamePanel *self, ScGame *game)
 {
 	ScxGamePanelPrivate *priv = self->priv;
 	gint i;
+
+	ScPlayer *current = sc_game_get_current_player (game);
+	gint t = sc_game_get_players_time (game, current);
+	gchar time_text[32];
+	snprintf (time_text, 32, "%02d:%02d", t/60, t%60);
+	gtk_label_set_text (GTK_LABEL (priv->time_label), time_text);
+
 	gint n = sc_game_get_n_players (game);
 
 	for (i = 0; i < n; i++) {

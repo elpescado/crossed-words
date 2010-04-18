@@ -96,6 +96,7 @@ benchmark (void *self, const gchar *file_name)
 {
 	FILE *f = fopen (file_name, "r");
 	if (f == NULL) {
+		perror ("open");
 		exit (1);
 	}
 
@@ -130,8 +131,9 @@ benchmark (void *self, const gchar *file_name)
 #elif defined(DATA_DAWG)
 			found = sc_dawg_test_word_chars ((ScDawg *) self, word, -1);
 #endif
-			if (found == NULL)
-				exit (2);
+			if (found == NULL) {
+				//exit (2);
+			}
 
 			n++;
 		}
@@ -151,22 +153,25 @@ benchmark (void *self, const gchar *file_name)
 
 int main (int argc, char *argv[])
 {
+	const gchar *file = "lang/pl/dictionary.txt";
+
+	file = argv[1];
+
 	/* Init data structure */
 #if defined(DATA_BST)
 	GTree *self = g_tree_new_full ((GCompareDataFunc)strcmp, NULL, g_free, NULL);
 #elif defined(DATA_HASH)
 	GHashTable *self = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 #elif defined(DATA_DAWG)
-	ScDawg *self = sc_dawg_load ("utf.dag");
+	ScDawg *self = sc_dawg_load (file);
 #endif
 
-	const gchar *file = "lang/pl/dictionary.txt";
 
 	load_file (self, file);
 
 	report_memory_usage ();
 
-	double time = benchmark (self, file);
+	double time = benchmark (self, argv[2]);
 
 	g_printerr ("Time: %lf\n", time);
 
