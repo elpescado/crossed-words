@@ -58,7 +58,7 @@ sc_game_get_type				(void);
 
 
 ScGame*
-sc_game_new				(void);
+sc_game_new				(GMainContext *ctx);
 
 
 void

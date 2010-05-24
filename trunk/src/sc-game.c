@@ -91,11 +91,13 @@ sc_game_unload_dictionary (ScGame *self);
 
 
 ScGame*
-sc_game_new (void)
+sc_game_new (GMainContext *ctx)
 {
 	ScGame *self = g_object_new (SC_TYPE_GAME, NULL);
 	ScGamePrivate *priv = self->priv;
-	priv->loop_ctx = g_main_context_ref (g_main_context_default ());
+	if (!ctx)
+		ctx = g_main_context_default ();
+	priv->loop_ctx = g_main_context_ref (ctx);
 	return self;
 }
 

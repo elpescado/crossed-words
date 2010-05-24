@@ -127,7 +127,7 @@ _action_game_new  (GtkAction     *action,
 	if (response != GTK_RESPONSE_ACCEPT)
 		return;
 
-	priv->game = sc_game_new ();
+	priv->game = sc_game_new (NULL);
 	sc_game_set_time (priv->game, 60 * scx_new_game_dialog_get_time (SCX_NEW_GAME_DIALOG (win)));
 
 	scx_board_view_set_board (SCX_BOARD_VIEW (priv->board_view),

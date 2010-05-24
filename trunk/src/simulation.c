@@ -188,7 +188,7 @@ parse_desc (const gchar *desc)
 static void
 setup_game (void)
 {
-	ScGame *game = sc_game_new ();
+	ScGame *game = sc_game_new (NULL);
 
 	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
 	//ScPlayer *p1 = create_player (p1d);
