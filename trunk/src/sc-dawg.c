@@ -61,7 +61,6 @@ sc_dawg_unref (ScDawg *dawg)
 static void
 sc_dawg_header_cb (ScDsfReader *reader, struct ScDsfHeader *header, gpointer user_data)
 {
-	g_print ("got_header\n");
 	ScDawg *dawg = (ScDawg*)user_data;
 
 	sc_dawg_init (dawg, header->n_vertices, header->n_arcs);
@@ -95,7 +94,6 @@ sc_dawg_arc_cb    (ScDsfReader *reader, struct ScDsfArc    *arc,    gpointer use
 ScDawg *
 sc_dawg_load (const gchar *file_name)
 {
-	g_print ("load(%s)\n", file_name);
 	ScDsfReader *reader = sc_dsf_reader_open (file_name);
 	if (reader == NULL) {
 		return NULL;
@@ -116,7 +114,6 @@ sc_dawg_load (const gchar *file_name)
 	}
 	sc_dsf_reader_close (reader);
 
-	g_print (" -> vertices = %d, arcs = %d, ai = %d, vi = %d\n", dawg->n_vertices, dawg->n_arcs, dawg->ai, dawg->vi);
 
 	return dawg;
 }

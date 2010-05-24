@@ -27,6 +27,8 @@ gint n_bingos = 0;
 struct _ScGamePrivate
 {
 	/* Private members go here */
+	GMainContext *loop_ctx;        /**< Main loop context                   */
+
 	gboolean     running;          /**< Whether or not game has ended       */
 	gint         current_player;   /**< Player number whose turn is current */
 	Alphabet    *al;               /**< Alphabet used in game               */
@@ -92,6 +94,8 @@ ScGame*
 sc_game_new (void)
 {
 	ScGame *self = g_object_new (SC_TYPE_GAME, NULL);
+	ScGamePrivate *priv = self->priv;
+	priv->loop_ctx = g_main_context_ref (g_main_context_default ());
 	return self;
 }
 
@@ -234,7 +238,12 @@ sc_game_move_done (ScPlayer *player, ScMove *move, ScGame *game)
 		} else {
 			/* next player */
 			priv->current_player = (priv->current_player+1) % priv->n_players;
-			g_timeout_add (1, (GSourceFunc)sc_game_timeout_cb, game);
+//			g_timeout_add (1, (GSourceFunc)sc_game_timeout_cb, game);
+
+			GSource *source = g_timeout_source_new (1);
+			g_source_set_callback (source, (GSourceFunc)sc_game_timeout_cb, game, NULL);
+			g_source_attach (source, priv->loop_ctx);
+			g_source_unref (source);
 		}
 
 		return TRUE;
@@ -399,7 +408,13 @@ sc_game_start (ScGame *self)
 	}
 
 	g_signal_emit (self, signals[BEGIN], 0);
-	priv->timer_id = g_timeout_add (1000, (GSourceFunc)sc_game_tick, self);
+//	priv->timer_id = g_timeout_add (1000, (GSourceFunc)sc_game_tick, self);
+
+
+	GSource *source = g_timeout_source_new (1000);
+	g_source_set_callback (source, (GSourceFunc)sc_game_tick, self, NULL);
+	priv->timer_id = g_source_attach (source, priv->loop_ctx);
+	g_source_unref (source);
 
 	sc_game_request_move (self);
 }
@@ -417,7 +432,9 @@ sc_game_end (ScGame *self)
 		return;
 
 	if (priv->timer_id != 0) {
-		g_source_remove (priv->timer_id);
+		GSource *source = g_main_context_find_source_by_id (priv->loop_ctx, priv->timer_id);
+		g_source_destroy (source);
+//		g_source_remove (priv->timer_id);
 		priv->timer_id = 0;
 	}
 
@@ -633,6 +650,10 @@ sc_game_dispose (GObject *object)
 static void
 sc_game_finalize (GObject *object)
 {
+	ScGame *self = (ScGame*) object;
+	ScGamePrivate *priv = self->priv;
+
+	g_main_context_unref (priv->loop_ctx);
 	//g_printerr ("sc_game_finalize()\n");
 	G_OBJECT_CLASS (sc_game_parent_class)->finalize (object);
 }

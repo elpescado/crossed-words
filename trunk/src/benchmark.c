@@ -12,7 +12,7 @@
 #include "sc-dawg.h"
 #include "util.h"
 
-const int N = 25;
+const int N = 250;
 
 
 struct mstat_t {

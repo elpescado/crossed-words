@@ -119,9 +119,9 @@ sc_computer_player_rate_move (ScComputerPlayer *self,
 
 	if (sc_computer_player_get_hint (self, SC_CONSIDER_RACK_LEAVE)) {
 		int i;
-		int c = 0;
-		int v = 0;
-		int m = 0;
+		int c = 0;  // consonants
+		int v = 0;  // vowels
+		int m = 0;  // multiplied letters
 		for (i = 1; i < 34; i++) {
 			Letter *l = alphabet_lookup_letter (al, i);
 			if (l->flags & LETTER_VOWEL)     v += rack_leave->letters[i];
@@ -131,9 +131,7 @@ sc_computer_player_rate_move (ScComputerPlayer *self,
 				m += rack_leave->letters[i];
 		}
 
-		//if (ABS(c-v) > 0) {
-			rating -= 1 * ABS(c-v);
-		//}
+		rating -= 1 * ABS(c-v);
 
 		if (--m > 0)
 			rating -= 3*m;
