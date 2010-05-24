@@ -14,7 +14,7 @@
 #include "sc-pro-player.h"
 
 
-#define N_SIMULATIONS 10000
+#define N_SIMULATIONS 1000
 #define N_PLAYERS 2
 
 int scores[N_SIMULATIONS][N_PLAYERS] = {{0}};
@@ -55,14 +55,18 @@ summarize (void)
 
 	gint victories[N_PLAYERS];
 	memset (victories, 0, sizeof (victories));
+	gint draws = 0;
 
 	for (j = 0; j < n; j++) {
 		/* TODO: this works only for two players */
 		if (scores[j][0] > scores[j][1])
 			victories[0]++;
 
-		if (scores[j][1] > scores[j][0])
+		else if (scores[j][1] > scores[j][0])
 			victories[1]++;
+
+		else
+			draws++;
 //		for (i = 0; i < N_PLAYERS; i++) {
 
 //		}
@@ -98,7 +102,10 @@ summarize (void)
 	}
 
 	extern gint n_bingos;
-	g_printerr ("total bingos = %d\n", n_bingos);
+	g_printerr ("draws %d, total bingos %d\n", draws, n_bingos);
+
+	if (draws + victories[0] + victories[1] != n)
+		g_printerr (":-/\n");
 }
 
 
@@ -124,17 +131,19 @@ save_csv (const gchar *filename)
 static void
 game_finished (ScGame *game, gpointer data)
 {
-	g_printerr ("%5d: ", current_sim+1);
+	//g_printerr ("%5d: ", current_sim+1);
 
 	int i;
 	for (i = 0; i < N_PLAYERS; i++) {
 		ScPlayer *p = sc_game_get_player (game, player_n(current_sim,i));
 		int score = sc_game_get_players_score (game, p);
-		g_printerr ("%4d ", score);
+		//g_printerr ("%4d ", score);
 
 		scores[current_sim][i] = score;
+
+		//g_printerr ("%s(%d) -> %d\n", sc_player_get_name (p), score, i);
 	}
-	g_printerr ("\n");
+	//g_printerr ("\n");
 
 	g_object_unref (game);
 
@@ -183,7 +192,7 @@ setup_game (void)
 
 	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
 	//ScPlayer *p1 = create_player (p1d);
-	sc_player_set_name (p1, "1");
+	sc_player_set_name (p1, "Ambroży");
 	p1->game = game;
 	sc_game_set_player (game, player_n(current_sim,0), p1);
 
@@ -193,7 +202,7 @@ setup_game (void)
 
 	ScPlayer *p2 = SC_PLAYER (sc_computer_player_new ());
 	//ScPlayer *p2 = create_player (p2d);
-	sc_player_set_name (p2, "2");
+	sc_player_set_name (p2, "Barnaba");
 	p2->game = game;
 	sc_game_set_player (game, player_n(current_sim,1), p2);
 
