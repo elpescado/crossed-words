@@ -23,6 +23,7 @@ int main (int argc, char *argv[])
 {
 	GtkWidget *main_window;
 
+	g_thread_init (NULL);
 	gtk_init (&argc, &argv);
 	srand (time (NULL));
 

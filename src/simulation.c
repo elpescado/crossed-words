@@ -12,6 +12,7 @@
 #include "sc-computer-player.h"
 #include "sc-noob-player.h"
 #include "sc-pro-player.h"
+#include "sc-sim-player.h"
 
 
 #define N_SIMULATIONS 1000
@@ -190,7 +191,7 @@ setup_game (void)
 {
 	ScGame *game = sc_game_new (NULL);
 
-	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
+	ScPlayer *p1 = SC_PLAYER (sc_sim_player_new ());
 	//ScPlayer *p1 = create_player (p1d);
 	sc_player_set_name (p1, "Ambroży");
 	p1->game = game;
@@ -229,6 +230,7 @@ setup_simulation (void)
 int main (int argc, char *argv[])
 {
 	g_type_init ();
+	g_thread_init (NULL);
 	srand (time (NULL));
 
 	player_flags[0] = parse_desc (argv[1]);
