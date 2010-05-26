@@ -19,6 +19,7 @@
 #include "sc-rack-model.h"
 #include "sc-bag.h"
 #include "sc-dawg.h"
+#include "sc-rack.h"
 
 G_BEGIN_DECLS
 

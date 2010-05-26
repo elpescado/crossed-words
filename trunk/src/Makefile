@@ -1,5 +1,5 @@
 CC=colorgcc
-REFERENCES=gtk+-2.0
+REFERENCES=gtk+-2.0 gthread-2.0
 PROFILE=
 CFLAGS=$(PROFILE) -O2  -mtune=native -march=native -std=c99 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
@@ -33,6 +33,8 @@ SOURCES=\
 	sc-pro-player.c \
 	sc-rack.c \
 	sc-rack-model.c \
+	sc-sim-player.c \
+	sc-simulator.c \
 	scx-alphabet-panel.c \
 	scx-board-view.c \
 	scx-console.c \
@@ -68,6 +70,8 @@ HEADERS=\
 	sc-pro-player.h \
 	sc-rack-model.h \
 	sc-rack.h \
+	sc-sim-player.h \
+	sc-simulator.h \
 	scx-alphabet-panel.h \
 	scx-board-view.h \
 	scx-console.h \
