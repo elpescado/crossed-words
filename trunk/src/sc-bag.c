@@ -52,6 +52,14 @@ sc_bag_init (ScBag *self)
 }
 
 
+void
+sc_bag_clear (ScBag *bag)
+{
+	ScBagPrivate *priv = bag->priv;
+	priv->n_tiles = 0;
+}
+
+
 /**
  * Take a tile from the bag tile
  **/

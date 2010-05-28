@@ -467,6 +467,22 @@ sc_board_rate_move2 (ScBoard *self, ScMove *move)
 }
 
 
+void
+sc_board_get_tiles (ScBoard *self, LID *out_tiles)
+{
+	ScBoardPrivate *priv = self->priv;
+	memcpy (out_tiles, priv->letters, sizeof (LID)*BOARD_SIZE*BOARD_SIZE);
+}
+
+
+void
+sc_board_set_tiles (ScBoard *self, LID *tiles)
+{
+	ScBoardPrivate *priv = self->priv;
+	memcpy (priv->letters, tiles, sizeof (LID)*BOARD_SIZE*BOARD_SIZE);
+}
+
+
 static void
 sc_board_dispose (GObject *object)
 {

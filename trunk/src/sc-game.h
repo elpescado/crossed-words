@@ -54,6 +54,13 @@ struct _ScGameClass
 };
 
 
+typedef struct {
+	LID      board_state[BOARD_SIZE*BOARD_SIZE];
+	ScRack   racks[2];
+	gint     scores[2];
+} ScGameState;
+
+
 GType
 sc_game_get_type				(void);
 
@@ -143,6 +150,13 @@ sc_game_set_time (ScGame *game,
 gint
 sc_game_get_time (ScGame *game);
 
+
+ScGameState *
+sc_game_save_state (ScGame *game, ScPlayer *player);
+
+
+void
+sc_game_restore_state (ScGame *game, ScGameState *state);
 
 G_END_DECLS
 

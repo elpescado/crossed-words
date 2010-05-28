@@ -68,6 +68,19 @@ sc_rack_model_get_tiles               (ScRackModel *rack,
 }
 
 
+void
+sc_rack_model_set_tiles               (ScRackModel *rack,
+                                       LID         *tiles,
+                                       gint         n_tiles)
+{
+	ScRackModelPrivate *priv = rack->priv;
+
+	priv->n_tiles = n_tiles;
+	memcpy (priv->tiles, tiles, n_tiles * sizeof (LID));
+}
+
+
+
 gboolean
 sc_rack_model_has_tiles (ScRackModel *self,
                    LID    *tiles,

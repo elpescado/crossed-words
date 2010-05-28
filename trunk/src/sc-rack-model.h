@@ -59,8 +59,15 @@ sc_rack_model_new				(Alphabet *al);
 
 void
 sc_rack_model_get_tiles               (ScRackModel *rack,
-                                 LID    *tiles,
-                                 gint   *n_tiles);
+                                       LID         *tiles,
+                                       gint        *n_tiles);
+
+
+void
+sc_rack_model_set_tiles               (ScRackModel *rack,
+                                       LID         *tiles,
+                                       gint         n_tiles);
+
 
 
 gboolean
