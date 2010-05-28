@@ -76,6 +76,10 @@ void
 sc_bag_load (ScBag *bag, Alphabet *al);
 
 
+void
+sc_bag_clear (ScBag *bag);
+
+
 
 G_END_DECLS
 

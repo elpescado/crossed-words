@@ -13,7 +13,7 @@ typedef enum {
 	/* Yes, I know they are mutually exclusive, but
 	    we've got plenty of bits to waste */
 	LETTER_VOWEL     = 1 << 0, /**< Letter is a vowel     */
-	LETTER_CONSONANT = 2 << 1, /**< Letter is a consonant */
+	LETTER_CONSONANT = 1 << 1, /**< Letter is a consonant */
 
 } LetterFlags;
 

@@ -91,7 +91,7 @@ EXTRA_DIST=\
 OBJS=$(SOURCES:.c=.o)
 
 all: crossed-words gen-bad-words dictc simulation dawginfo \
-	bench-bst bench-hash bench-dawg
+	bench-bst bench-hash bench-dawg simulation2
 
 version.h: 
 	echo '#define VERSION "$(VERSION)"' > version.h
@@ -115,6 +115,9 @@ dawginfo: $(OBJS) dawginfo.o
 
 simulation: $(OBJS) simulation.o
 	$(CC) -o $@ $(OBJS) simulation.o $(LIBS)
+
+simulation2: $(OBJS) simulation2.o
+	$(CC) -o $@ $(OBJS) simulation2.o $(LIBS)
 
 bench-bst: $(OBJS) benchmark.c
 	$(CC) -o $@ $(CFLAGS) -DDATA_BST benchmark.c $(OBJS) $(LIBS)

@@ -110,6 +110,14 @@ gint
 sc_board_rate_move (ScBoard *self, ScMove *move);
 
 
+void
+sc_board_get_tiles (ScBoard *self, LID *out_tiles);
+
+
+void
+sc_board_set_tiles (ScBoard *self, LID *tiles);
+
+
 G_END_DECLS
 
 #endif

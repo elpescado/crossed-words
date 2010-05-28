@@ -395,7 +395,7 @@ sc_game_start (ScGame *self)
 		return;
 
 	priv->pass_counter = 0;
-	sc_board_clear (priv->board);
+	//sc_board_clear (priv->board);
 	sc_bag_load (priv->bag, priv->al);
 
 	priv->running = TRUE;
@@ -623,6 +623,78 @@ sc_game_get_time (ScGame *game)
 {
 	ScGamePrivate *priv = game->priv;
 	return priv->time;
+}
+
+
+ScGameState *
+sc_game_save_state (ScGame *game, ScPlayer *player)
+{
+	ScGamePrivate *priv = game->priv;
+	ScGameState *state = g_new0 (ScGameState, 1);
+
+	sc_board_get_tiles (priv->board, state->board_state);	
+
+	int i;
+	for (i = 0; i < 2; i++) {
+		state->scores[i] = priv->players[i]->points;
+
+		if (player == priv->players[i]->player) {
+			LID tiles[7];
+			gint n_tiles;
+			sc_rack_model_get_tiles (priv->players[i]->rack, tiles, &n_tiles);
+			sc_rack_assign_letters (&(state->racks[i]), tiles, n_tiles);
+		}
+	}
+
+	return state;
+}
+
+
+void
+sc_game_restore_state (ScGame *game, ScGameState *state)
+{
+	ScGamePrivate *priv = game->priv;
+	LID used_letters[SC_RACK_SIZE] = {0};
+	int i;
+
+	sc_board_set_tiles (priv->board, state->board_state);
+	for (i = 0; i < BOARD_SIZE*BOARD_SIZE; i++) {
+		int val = state->board_state[i];
+		used_letters[sc_letter_value(val)]++;
+	}
+
+
+	for (i = 0; i < 2; i++) {
+		LID tiles[7];
+		gint n_tiles;
+		int j;
+
+		struct _ScPlayerCtx *ctx = priv->players[i];
+		ctx->points = state->scores[i];
+		ctx->bingos = 0;
+		ctx->time = 0;
+
+		sc_rack_to_letters (&(state->racks[i]), tiles, &n_tiles);
+		sc_rack_model_set_tiles (priv->players[i]->rack, tiles, n_tiles);
+		for (j = 0; j < n_tiles; j++) {
+			used_letters[tiles[j]]++;
+		}
+	}
+
+
+	/* Reconstruct game */
+	sc_bag_clear (priv->bag);
+	for (i = 0; i < priv->al->n_letters; i++) {
+		Letter *l = priv->al->letters + i;
+		int n = l->count - used_letters[l->index];
+		while (n-- > 0) {
+			sc_bag_push (priv->bag, l->index);
+		}
+	}
+
+
+	//sc_game_fill_rack (game, priv->players[i]->rack, priv->bag);
+
 }
 
 

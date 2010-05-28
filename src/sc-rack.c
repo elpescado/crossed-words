@@ -77,11 +77,13 @@ void
 sc_rack_assign_letters (ScRack *rack, LID *letters, int n_letters)
 {
 	memset (rack, '\0', sizeof (ScRack));
-	do {
-		LID lid = sc_letter_value(letters[--n_letters]);
+	while (--n_letters >= 0) {
+//	do {
+		LID lid = sc_letter_value(letters[n_letters]);
 		VALIDATE_LID (lid);
 		rack->letters[lid]++;
-	} while (n_letters > 0);
+	}
+//	} while (n_letters > 0);
 }
 
 

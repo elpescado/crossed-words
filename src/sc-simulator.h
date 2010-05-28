@@ -14,6 +14,7 @@
 #include "sc-game.h"
 
 
+typedef struct _ScSimulatorTask ScSimulatorTask;
 typedef struct _ScSimulator ScSimulator;
 
 
@@ -26,7 +27,9 @@ sc_simulator_free (ScSimulator *sim);
 
 
 void
-sc_simulator_run (void);
+sc_simulator_run (ScSimulator *sim,
+		          ScGame   *game,
+                  ScPlayer *player);
 
 
 #endif /* __SC_SIMULATOR_H__ */
