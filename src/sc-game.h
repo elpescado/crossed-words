@@ -56,6 +56,7 @@ struct _ScGameClass
 
 typedef struct {
 	LID      board_state[BOARD_SIZE*BOARD_SIZE];
+	ScMove   move;
 	ScRack   racks[2];
 	gint     scores[2];
 } ScGameState;
@@ -152,7 +153,7 @@ sc_game_get_time (ScGame *game);
 
 
 ScGameState *
-sc_game_save_state (ScGame *game, ScPlayer *player);
+sc_game_save_state (ScGame *game, ScPlayer *player, ScMove *move);
 
 
 void

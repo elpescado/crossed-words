@@ -2,11 +2,18 @@
 #include "sc-game.h"
 #include "sc-computer-player.h"
 
+static void
+noop (const gchar *str)
+{
+}
+
 int main (int argc, char *argv[])
 {
 	g_type_init ();
 	g_thread_init (NULL);
 	srand (time (NULL));
+	g_set_print_handler (noop);
+
 
 
 	ScSimulator *sim = sc_simulator_new ();
@@ -21,7 +28,7 @@ int main (int argc, char *argv[])
 	sc_game_set_player (game, 1, p2);
 
 
-	sc_simulator_run (sim, game, p1);
+	sc_simulator_run (sim, game, p1, NULL);
 	
 
 

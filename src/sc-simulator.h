@@ -29,7 +29,8 @@ sc_simulator_free (ScSimulator *sim);
 void
 sc_simulator_run (ScSimulator *sim,
 		          ScGame   *game,
-                  ScPlayer *player);
+                  ScPlayer *player,
+				  ScMove   *move);
 
 
 #endif /* __SC_SIMULATOR_H__ */

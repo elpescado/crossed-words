@@ -85,10 +85,11 @@ sc_simulator_thread (gpointer data,
 void
 sc_simulator_run (ScSimulator *sim,
 		          ScGame   *game,
-                  ScPlayer *player)
+                  ScPlayer *player,
+				  ScMove   *move)
 {
 	ScSimulatorTask task;
-	ScGameState *state = sc_game_save_state (game, player);
+	ScGameState *state = sc_game_save_state (game, player, move);
 
 	task.game_state = state;
 
