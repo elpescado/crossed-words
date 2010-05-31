@@ -627,12 +627,20 @@ sc_game_get_time (ScGame *game)
 
 
 ScGameState *
-sc_game_save_state (ScGame *game, ScPlayer *player)
+sc_game_save_state (ScGame *game, ScPlayer *player, ScMove *move)
 {
 	ScGamePrivate *priv = game->priv;
 	ScGameState *state = g_new0 (ScGameState, 1);
+	int points = 0;
 
-	sc_board_get_tiles (priv->board, state->board_state);	
+	if (move) {
+		sc_board_get_tiles (priv->board, state->board_state);	
+	} else {
+		ScBoard *b2 = sc_board_copy (priv->board);
+		int points = sc_board_rate_move (priv->board, move);
+		sc_board_place_move (b2, move);
+		g_object_unref (b2);
+	}
 
 	int i;
 	for (i = 0; i < 2; i++) {
@@ -645,6 +653,8 @@ sc_game_save_state (ScGame *game, ScPlayer *player)
 			sc_rack_assign_letters (&(state->racks[i]), tiles, n_tiles);
 		}
 	}
+
+	state->scores[1] += points;
 
 	return state;
 }
