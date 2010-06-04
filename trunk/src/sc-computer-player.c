@@ -208,7 +208,7 @@ sc_computer_player_steal_stored_moves (ScComputerPlayer *self)
 static gint
 _sort_compare (gconstpointer a, gconstpointer b)
 {
-	return ((const _MoveProposal*)a)->combined_rating - ((const _MoveProposal*)b)->combined_rating;
+	return ((const _MoveProposal*)b)->combined_rating - ((const _MoveProposal*)a)->combined_rating;
 }
 
 

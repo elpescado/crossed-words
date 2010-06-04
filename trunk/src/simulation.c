@@ -15,7 +15,7 @@
 #include "sc-sim-player.h"
 
 
-#define N_SIMULATIONS 1000
+#define N_SIMULATIONS 10000
 #define N_PLAYERS 2
 
 int scores[N_SIMULATIONS][N_PLAYERS] = {{0}};
@@ -191,7 +191,7 @@ setup_game (void)
 {
 	ScGame *game = sc_game_new (NULL);
 
-	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
+	ScPlayer *p1 = SC_PLAYER (sc_sim_player_new ());
 	//ScPlayer *p1 = create_player (p1d);
 	sc_player_set_name (p1, "Ambroży");
 	p1->game = game;

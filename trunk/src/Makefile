@@ -1,7 +1,7 @@
 CC=colorgcc
 REFERENCES=gtk+-2.0 gthread-2.0
 PROFILE=
-CFLAGS=$(PROFILE) -O2  -mtune=native -march=native -std=c99 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX
+CFLAGS=$(PROFILE) -O0  -mtune=native -march=native -std=c99 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX -fno-strict-aliasing
 #LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
 #STATIC_LIBS=`curl-config --static-libs`
 LIBS=-g $(PROFILE) -Wall   `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
@@ -97,7 +97,8 @@ version.h:
 	echo '#define VERSION "$(VERSION)"' > version.h
 
 .c.o:
-	$(CC) -c $(CFLAGS) $< -o $@
+	@echo "(cc)" $< "->" $@
+	@$(CC) -c $(CFLAGS) $< -o $@
 
 $(OBJS): $(HEADERS)
 
