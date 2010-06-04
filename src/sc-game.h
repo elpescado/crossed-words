@@ -70,6 +70,10 @@ ScGame*
 sc_game_new				(GMainContext *ctx);
 
 
+GMainContext *
+sc_game_get_ctx (ScGame *self);
+
+
 void
 sc_game_set_player (ScGame *self, gint num, ScPlayer *player);
 

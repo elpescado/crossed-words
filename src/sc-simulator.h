@@ -18,6 +18,11 @@ typedef struct _ScSimulatorTask ScSimulatorTask;
 typedef struct _ScSimulator ScSimulator;
 
 
+typedef void (*ScSimulatorFunc)  (ScSimulator     *sim,
+                                  ScSimulatorTask *task,
+                                  gpointer         user_data);
+
+
 ScSimulator *
 sc_simulator_new (void);
 
@@ -30,7 +35,17 @@ void
 sc_simulator_run (ScSimulator *sim,
 		          ScGame   *game,
                   ScPlayer *player,
-				  ScMove   *move);
+				  ScMove   *move,
+				  ScSimulatorFunc callback,
+				  gpointer        user_data);
+
+
+ScSimulatorTask *
+sc_simulator_task_ref (ScSimulatorTask *task);
+
+
+void
+sc_simulator_task_unref (ScSimulatorTask *task);
 
 
 #endif /* __SC_SIMULATOR_H__ */

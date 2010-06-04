@@ -102,6 +102,14 @@ sc_game_new (GMainContext *ctx)
 }
 
 
+GMainContext *
+sc_game_get_ctx (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+	return priv->loop_ctx;
+}
+
+
 static void
 sc_game_init (ScGame *self)
 {
@@ -633,12 +641,13 @@ sc_game_save_state (ScGame *game, ScPlayer *player, ScMove *move)
 	ScGameState *state = g_new0 (ScGameState, 1);
 	int points = 0;
 
-	if (move) {
+	if (move == NULL) {
 		sc_board_get_tiles (priv->board, state->board_state);	
 	} else {
 		ScBoard *b2 = sc_board_copy (priv->board);
 		int points = sc_board_rate_move (priv->board, move);
 		sc_board_place_move (b2, move);
+		sc_board_get_tiles (b2, state->board_state);	
 		g_object_unref (b2);
 	}
 

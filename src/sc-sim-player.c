@@ -10,6 +10,7 @@
 #include <gtk/gtk.h>
 
 #include "sc-sim-player.h"
+#include "sc-simulator.h"
 #include "sc-game.h"
 
 
@@ -60,7 +61,9 @@ sc_sim_player_init (ScSimPlayer *self)
 	self->priv = SC_SIM_PLAYER_GET_PRIVATE (self);
 	ScSimPlayerPrivate *priv = self->priv;
 	priv->disposed = FALSE;
+	priv->moves_to_consider = 1;
 
+	/*
 	int n_threads = 2;
 	int i;
 
@@ -74,6 +77,7 @@ sc_sim_player_init (ScSimPlayer *self)
 		}
 		priv->worker_threads[i] = thread;
 	}
+	*/
 }
 
 
@@ -119,13 +123,54 @@ sc_sim_player_calculate_opponent_rack (ScSimPlayer      *self,
 
 
 
-/*
 static void
 sc_sim_player_simulate_move (ScComputerPlayer *self,
                              ScMove           *move)
 {
+
 }
-*/
+
+
+static void
+sc_sim_player_simulation_finished (ScSimPlayer     *self,
+                                   ScSimulatorTask *task)
+{
+//	g_printerr ("OK!!!\n");
+}
+
+
+static gboolean
+sc_sim_player_simulation_finished_proxy2 (gpointer data)
+{
+	void **args = (void **)data;
+
+	ScSimPlayer *sim = SC_SIM_PLAYER (args[0]);
+	ScSimulatorTask *task = (ScSimulatorTask *)args[1];
+
+	sc_sim_player_simulation_finished (sim, task);
+	sc_simulator_task_unref (task);
+	return FALSE;
+}
+
+
+static void
+sc_sim_player_simulation_finished_proxy (ScSimulator     *sim,
+                                         ScSimulatorTask *task,
+                                         gpointer         user_data)
+{
+	ScPlayer *player = SC_PLAYER (user_data);
+	ScGame *game = SC_GAME (player->game);
+
+	void **args = (gpointer *) g_malloc (sizeof(gpointer*) * 2);
+	args[0] = user_data;
+	args[1] = sc_simulator_task_ref (task);
+
+	GSource *source = g_timeout_source_new (0);
+	g_source_set_callback (source, (GSourceFunc) sc_sim_player_simulation_finished_proxy2,
+			               args, g_free);
+	g_source_attach (source, sc_game_get_ctx (game));
+	g_source_unref (source);
+}
 
 
 /**
@@ -146,7 +191,28 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 
 	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self)), i = 0;
 	     tmp && i < priv->moves_to_consider; tmp = tmp->next, i++) {
+		ScSimulator *sim = sc_simulator_new ();
+		ScGame *game = SC_PLAYER(self)->game;
+		_MoveProposal *mp = tmp->data;
+
+		g_printerr ("best(%d):  ", mp->move_rating);
+		sc_simulator_run (sim, game, SC_PLAYER (self), &(mp->move),
+				          sc_sim_player_simulation_finished_proxy, self);
+		sc_simulator_free (sim);
 	}
+
+	for (tmp = g_list_last(sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self))), i = 0;
+	     tmp && i < priv->moves_to_consider; tmp = tmp->next, i++) {
+		ScSimulator *sim = sc_simulator_new ();
+		ScGame *game = SC_PLAYER(self)->game;
+		_MoveProposal *mp = tmp->data;
+
+		g_printerr ("worst(%d): ", mp->move_rating);
+		sc_simulator_run (sim, game, SC_PLAYER (self), &(mp->move),
+				          sc_sim_player_simulation_finished_proxy, self);
+		sc_simulator_free (sim);
+	}
+
 
 
 	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self));
