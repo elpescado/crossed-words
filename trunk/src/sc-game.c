@@ -128,6 +128,7 @@ sc_game_init (ScGame *self)
 	priv->al = _al;
 
 	priv->board = sc_board_new (priv->al);
+	sc_board_clear (priv->board);
 
 	priv->n_players = 2;
 
