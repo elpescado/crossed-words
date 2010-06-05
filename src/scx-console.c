@@ -85,11 +85,14 @@ scx_console_init (ScxConsole *self)
 void
 scx_console_print (ScxConsole *self, const gchar *msg)
 {
+	return;
 	ScxConsolePrivate *priv = self->priv;
 	GtkTextIter iter;
 
+	gdk_threads_enter ();
 	gtk_text_buffer_get_end_iter (priv->buffer, &iter);
 	gtk_text_buffer_insert (priv->buffer, &iter, msg, -1);
+	gdk_threads_leave ();
 }
 
 
