@@ -22,6 +22,7 @@ struct _ScSimPlayerPrivate
 {
 	/* Private members go here */
 	gint moves_to_consider;
+	ScSimulator *simulator;
 
 	gint   n_simulations_pending;
 	gint   best_move_rating;
@@ -67,6 +68,8 @@ sc_sim_player_init (ScSimPlayer *self)
 	ScSimPlayerPrivate *priv = self->priv;
 	priv->disposed = FALSE;
 	priv->moves_to_consider = 2;
+
+	priv->simulator = sc_simulator_new ();
 
 	/*
 	int n_threads = 2;
@@ -150,6 +153,8 @@ sc_sim_player_simulation_finished (ScSimPlayer     *self,
 
 	sc_simulator_task_get_scores (task, &avg, &wins);
 	rating = sc_simulator_task_get_move_rating (task);
+	//hack
+	wins = avg;
 
 	g_printerr ("Simulation: %d %d\n", avg, wins);
 
@@ -214,8 +219,9 @@ sc_sim_player_simulate_move (ScSimPlayer      *self,
                              ScMove           *move,
 							 gint              rating)
 {
-	ScSimulator *sim = sc_simulator_new ();
+	//ScSimulator *sim = sc_simulator_new ();
 	ScSimPlayerPrivate *priv = self->priv;
+	ScSimulator *sim = priv->simulator;
 	ScGame *game = SC_PLAYER(self)->game;
 
 	priv->n_simulations_pending++;
@@ -224,7 +230,7 @@ sc_sim_player_simulate_move (ScSimPlayer      *self,
 
 	sc_simulator_run (sim, game, SC_PLAYER (self), move, rating,
 			          sc_sim_player_simulation_finished_proxy, self);
-	sc_simulator_free (sim);
+//	sc_simulator_free (sim);
 }
 
 
@@ -329,6 +335,9 @@ sc_sim_player_dispose (GObject *object)
 static void
 sc_sim_player_finalize (GObject *object)
 {
+	ScSimPlayer *self = (ScSimPlayer*) object;
+	ScSimPlayerPrivate *priv = self->priv;
+	sc_simulator_free (priv->simulator);
 	G_OBJECT_CLASS (sc_sim_player_parent_class)->finalize (object);
 }
 
