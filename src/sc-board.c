@@ -75,16 +75,6 @@ sc_board_init (ScBoard *self)
 	self->priv = SC_BOARD_GET_PRIVATE (self);
 	ScBoardPrivate *priv = self->priv;
 
-	priv->letters[109] = 25;
-	priv->letters[110] = 5;
-	priv->letters[111] = 24;
-	priv->letters[112] = 2;
-	priv->letters[113] = 4;
-	priv->letters[114] = 4;
-	priv->letters[115] = 16;
-	priv->letters[116] = 8;
-
-
 	memcpy (priv->current_modifiers, board_modifiers, sizeof(priv->current_modifiers));
 
 	priv->disposed = FALSE;
