@@ -5,6 +5,7 @@
  * Copyright (C) 2009 Przemysław Sitek
  * 
  */
+#include <string.h>
 
 #include "sc-simulator.h"
 
@@ -13,6 +14,8 @@
 
 #define N_PLAYERS 2
 #define N_SIMULATIONS 100
+
+//#define SC_ST
 
 struct _ScSimulatorTask {
 	ScGameState *game_state;
@@ -29,13 +32,26 @@ struct _ScSimulatorTask {
 };
 
 struct _ScSimulator {
+#ifndef SC_ST
+	GThreadPool *thread_pool;
+#endif
 };
+
+
+static void
+sc_simulator_thread (gpointer data,
+                     gpointer user_data);
+
 
 
 ScSimulator *
 sc_simulator_new (void)
 {
 	ScSimulator *sim = g_new0 (ScSimulator, 1);
+
+#ifndef SC_ST
+	sim->thread_pool = g_thread_pool_new (sc_simulator_thread, sim, 2, TRUE, NULL);
+#endif
 
 	return sim;
 }
@@ -44,6 +60,9 @@ sc_simulator_new (void)
 void
 sc_simulator_free (ScSimulator *sim)
 {
+#ifndef SC_ST
+	g_thread_pool_free (sim->thread_pool, FALSE, FALSE);
+#endif
 	g_free (sim);
 }
 
@@ -52,8 +71,8 @@ static void
 sc_simulator_thread (gpointer data,
                      gpointer user_data)
 {
-	ScSimulator *sim = (ScSimulator*) data;
-	ScSimulatorTask *task = (ScSimulatorTask*) user_data;
+	ScSimulator *sim = (ScSimulator*) user_data;
+	ScSimulatorTask *task = (ScSimulatorTask*) data;
 
 	sc_simulator_task_ref (task);
 
@@ -141,14 +160,19 @@ sc_simulator_run (ScSimulator    *sim,
 	task->callback_data = user_data;
 	task->ref_count = 1;
 
-	sc_simulator_thread (sim, task);
+#ifdef SC_ST
+	sc_simulator_thread (task, sim);
 
 	g_printerr (" scores -> %3d vs %3d = %d ", task->avg[0], task->avg[1],
 			 task->avg[0] - task->avg[1]);
 	g_printerr (" | wins -> %3d vs %3d = %d \n", task->wins[0], task->wins[1],
 			 task->wins[0] - task->wins[1]);
-
-	sc_simulator_task_unref (task);
+#else
+	g_thread_pool_push (sim->thread_pool, task, NULL);
+	g_printerr ("\n");
+#endif
+	
+//	sc_simulator_task_unref (task);
 }
 
 
