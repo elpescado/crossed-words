@@ -36,6 +36,7 @@ sc_simulator_run (ScSimulator *sim,
 		          ScGame   *game,
                   ScPlayer *player,
 				  ScMove   *move,
+				  gint      move_rating,
 				  ScSimulatorFunc callback,
 				  gpointer        user_data);
 
@@ -46,6 +47,20 @@ sc_simulator_task_ref (ScSimulatorTask *task);
 
 void
 sc_simulator_task_unref (ScSimulatorTask *task);
+
+
+ScMove *
+sc_simulator_task_get_move (ScSimulatorTask *task);
+
+gint
+sc_simulator_task_get_move_rating (ScSimulatorTask *task);
+
+
+
+void
+sc_simulator_task_get_scores (ScSimulatorTask *task,
+                              gint            *avg,
+                              gint            *wins);
 
 
 #endif /* __SC_SIMULATOR_H__ */

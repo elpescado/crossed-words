@@ -12,10 +12,12 @@
 
 
 #define N_PLAYERS 2
-#define N_SIMULATIONS 5
+#define N_SIMULATIONS 100
 
 struct _ScSimulatorTask {
 	ScGameState *game_state;
+	ScMove       move;
+	gint         move_rating;
 	gint         scores[N_SIMULATIONS][N_PLAYERS];
 	gint         avg[N_PLAYERS];
 	gint         wins[N_PLAYERS];
@@ -125,6 +127,7 @@ sc_simulator_run (ScSimulator    *sim,
 		          ScGame         *game,
                   ScPlayer       *player,
 				  ScMove         *move,
+				  gint            move_rating,
 				  ScSimulatorFunc callback,
 				  gpointer        user_data)
 {
@@ -132,6 +135,8 @@ sc_simulator_run (ScSimulator    *sim,
 	ScGameState *state = sc_game_save_state (game, player, move);
 
 	task->game_state = state;
+	memcpy (&(task->move), move, sizeof (ScMove));
+	task->move_rating = move_rating;
 	task->callback = callback;
 	task->callback_data = user_data;
 	task->ref_count = 1;
@@ -164,4 +169,35 @@ sc_simulator_task_unref (ScSimulatorTask *task)
 		g_free (task);
 	}
 }
+
+
+ScMove *
+sc_simulator_task_get_move (ScSimulatorTask *task)
+{
+	return &(task->move);	
+}
+
+
+
+gint
+sc_simulator_task_get_move_rating (ScSimulatorTask *task)
+{
+	return task->move_rating;	
+}
+
+
+void
+sc_simulator_task_get_scores (ScSimulatorTask *task,
+                              gint            *avg,
+                              gint            *wins)
+{
+	if (avg) {
+		*avg = task->avg[0] - task->avg[1];
+	}
+
+	if (wins) {
+		*wins = task->wins[0] - task->wins[1];
+	}
+}
+
 

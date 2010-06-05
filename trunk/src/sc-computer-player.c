@@ -610,7 +610,7 @@ _sc_computer_player_analyze_moves (ScComputerPlayer *self)
 	return best_move;
 }
 
-static ScMove *
+ScMove *
 sc_computer_player_analyze_moves (ScComputerPlayer *self)
 {
 	return SC_COMPUTER_PLAYER_GET_CLASS(self)->analyze_moves (self);
@@ -683,21 +683,13 @@ sc_computer_player_your_turn (ScPlayer *player)
 	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 
 	sc_player_get_rack (SC_PLAYER (self), &rack);
-	g_print ("\nMy rack: ");
-	sc_rack_print (&rack, al);
-	g_print ("\n");
-
 	board = sc_player_get_board (SC_PLAYER (self));
 	sc_computer_player_generate_moves (self, board, &rack);
 
-
 	ScMove *m_move = sc_computer_player_analyze_moves (self);
 	if (m_move && sc_player_do_move (SC_PLAYER (self), m_move)) {
-		g_print ("OK\n");
 	} else {
-		g_print ("Giving up\n");
 		if (sc_computer_player_exchange_enabled (self)) {
-			//g_printerr ("Exchange: ");
 			move.type = SC_MOVE_TYPE_EXCHANGE;
 
 			ScRack rack;
@@ -707,13 +699,6 @@ sc_computer_player_your_turn (ScPlayer *player)
 			if (sc_game_get_remaining_tiles (SC_GAME (SC_PLAYER(self)->game)) < 8)
 				move.type = SC_MOVE_TYPE_PASS;
 
-			/*
-			int i;
-			for (i = 0; i < move.n_letters; i++) {
-				g_printerr ("%d ", move.letters[i]);
-			}
-			g_printerr ("\n");
-			*/
 		} else {
 			move.type = SC_MOVE_TYPE_PASS;
 		}
