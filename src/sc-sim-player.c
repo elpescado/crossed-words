@@ -14,6 +14,8 @@
 #include "sc-game.h"
 
 
+#define SC_INF 10000
+
 G_DEFINE_TYPE (ScSimPlayer, sc_sim_player, SC_TYPE_COMPUTER_PLAYER)
 
 struct _ScSimPlayerPrivate
@@ -21,7 +23,10 @@ struct _ScSimPlayerPrivate
 	/* Private members go here */
 	gint moves_to_consider;
 
-	GThread **worker_threads;
+	gint   n_simulations_pending;
+	gint   best_move_rating;
+	gint   best_move_wins;
+	ScMove best_move;
 
 	gboolean disposed;
 };
@@ -61,7 +66,7 @@ sc_sim_player_init (ScSimPlayer *self)
 	self->priv = SC_SIM_PLAYER_GET_PRIVATE (self);
 	ScSimPlayerPrivate *priv = self->priv;
 	priv->disposed = FALSE;
-	priv->moves_to_consider = 1;
+	priv->moves_to_consider = 2;
 
 	/*
 	int n_threads = 2;
@@ -120,22 +125,54 @@ sc_sim_player_calculate_opponent_rack (ScSimPlayer      *self,
 	}
 }
 
-
-
-
 static void
-sc_sim_player_simulate_move (ScComputerPlayer *self,
-                             ScMove           *move)
+sc_sim_player_what_a_terrible_failure (ScSimPlayer *self)
 {
+	g_printerr ("What a terrible failure\n");
 
+	ScMove move;
+	move.type = SC_MOVE_TYPE_PASS;
+	sc_player_do_move (SC_PLAYER (self), &move);
 }
+
+
+
 
 
 static void
 sc_sim_player_simulation_finished (ScSimPlayer     *self,
                                    ScSimulatorTask *task)
 {
-//	g_printerr ("OK!!!\n");
+	ScSimPlayerPrivate *priv = self->priv;
+	gint avg;
+	gint wins;
+	gint rating;
+
+	sc_simulator_task_get_scores (task, &avg, &wins);
+	rating = sc_simulator_task_get_move_rating (task);
+
+	g_printerr ("Simulation: %d %d\n", avg, wins);
+
+	/* Now, check if it's a good move */
+	if (wins < priv->best_move_wins ||
+		(wins == priv->best_move_wins && rating > priv->best_move_rating)) {
+		// Try to minimize `wins'
+		priv->best_move_wins = wins;
+		priv->best_move_rating = rating;
+		memcpy (&(priv->best_move), sc_simulator_task_get_move (task), sizeof (ScMove));
+	}
+
+	if (--priv->n_simulations_pending == 0) {
+		/* All of simulations complete */
+		g_printerr ("Done (%d)\n", priv->best_move_rating);
+		if (priv->best_move_wins != SC_INF) {
+			sc_player_do_move (SC_PLAYER (self), &(priv->best_move));
+		} else {
+			// ???
+			g_printerr ("No best move??? ");
+			sc_sim_player_what_a_terrible_failure (self);
+		}
+	}
 }
 
 
@@ -172,6 +209,25 @@ sc_sim_player_simulation_finished_proxy (ScSimulator     *sim,
 	g_source_unref (source);
 }
 
+static void
+sc_sim_player_simulate_move (ScSimPlayer      *self,
+                             ScMove           *move,
+							 gint              rating)
+{
+	ScSimulator *sim = sc_simulator_new ();
+	ScSimPlayerPrivate *priv = self->priv;
+	ScGame *game = SC_PLAYER(self)->game;
+
+	priv->n_simulations_pending++;
+	priv->best_move_wins = SC_INF;
+	priv->best_move_rating = 0;
+
+	sc_simulator_run (sim, game, SC_PLAYER (self), move, rating,
+			          sc_sim_player_simulation_finished_proxy, self);
+	sc_simulator_free (sim);
+}
+
+
 
 /**
  * Analyze moves
@@ -187,43 +243,44 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 	GList *tmp;
 	gint i;
 
+	priv->n_simulations_pending = 0;
+
 	sc_computer_player_sort_moves (SC_COMPUTER_PLAYER (self));
 
-	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self)), i = 0;
-	     tmp && i < priv->moves_to_consider; tmp = tmp->next, i++) {
-		ScSimulator *sim = sc_simulator_new ();
-		ScGame *game = SC_PLAYER(self)->game;
-		_MoveProposal *mp = tmp->data;
+	GList *moves = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self));
+	if (moves) {
+		_MoveProposal *mp0 = moves->data;
 
-		g_printerr ("best(%d):  ", mp->move_rating);
-		sc_simulator_run (sim, game, SC_PLAYER (self), &(mp->move),
-				          sc_sim_player_simulation_finished_proxy, self);
-		sc_simulator_free (sim);
-	}
-
-	for (tmp = g_list_last(sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self))), i = 0;
-	     tmp && i < priv->moves_to_consider; tmp = tmp->next, i++) {
-		ScSimulator *sim = sc_simulator_new ();
-		ScGame *game = SC_PLAYER(self)->game;
-		_MoveProposal *mp = tmp->data;
-
-		g_printerr ("worst(%d): ", mp->move_rating);
-		sc_simulator_run (sim, game, SC_PLAYER (self), &(mp->move),
-				          sc_sim_player_simulation_finished_proxy, self);
-		sc_simulator_free (sim);
-	}
-
-
-
-	for (tmp = sc_computer_player_get_stored_moves (SC_COMPUTER_PLAYER (self));
-	     tmp; tmp = tmp->next) {
-		_MoveProposal *mp = tmp->data;
-		if (mp->combined_rating > max_score) {
-			max_score = mp->combined_rating;
-			best_move = &(mp->move);
+		for (tmp = moves->next, i = 0; tmp && i < priv->moves_to_consider; tmp = tmp->next, i++) {
+			_MoveProposal *mp = tmp->data;
+			
+			if (mp->move_rating < 0.85 * mp0->move_rating)
+				break;
 		}
+
+		gint n_moves = i + 1;
+		g_printerr ("Moves worth considering: %d\n", n_moves);
+
+		if (n_moves > 1) {
+			for (tmp = moves, i = 0; tmp && i < n_moves; tmp = tmp->next, i++) {
+				_MoveProposal *mp = tmp->data;
+				g_printerr ("best(%d):  ", mp->move_rating);
+
+				sc_sim_player_simulate_move (self, &(mp->move), mp->move_rating);
+			}
+		} else {
+			/* One sensible move... */
+			sc_player_do_move (SC_PLAYER (self), &(mp0->move));
+		}
+
+	} else {
+		// what to do???
+		g_printerr ("No moves at all??? ");
+		sc_sim_player_what_a_terrible_failure (self);
 	}
-	return best_move;
+
+
+	return NULL;
 }
 
 
@@ -231,19 +288,21 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 static void
 sc_sim_player_your_turn (ScPlayer *player)
 {
-	ScSimPlayer *self = SC_SIM_PLAYER (player);
-	ScGame *game = SC_PLAYER(self)->game;
-//	if (sc_game_get_remaining_tiles (game) == 0) {
-//		sc_sim_player_do_endgame_move (self);
-//	} else {
-		ScSimPlayerClass *pro;
-		ScComputerPlayerClass *comp;
+	ScComputerPlayer *self = SC_COMPUTER_PLAYER (player);
+	ScBoard *board;
+	ScMove move;
+	ScRack rack;
+	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 
-		pro = SC_SIM_PLAYER_GET_CLASS (self);
-		comp = g_type_class_peek_parent (pro);
+	sc_player_get_rack (SC_PLAYER (self), &rack);
+	board = sc_player_get_board (SC_PLAYER (self));
+	sc_computer_player_generate_moves (self, board, &rack);
 
-		SC_PLAYER_CLASS(comp)->your_turn (SC_PLAYER(self));
-//	}
+	ScMove *m_move = sc_computer_player_analyze_moves (self);
+	if (m_move && sc_player_do_move (SC_PLAYER (self), m_move)) {
+		// Ok, move was done
+	}
+	sc_computer_player_clear_moves (self);
 }
 
 
@@ -313,7 +372,7 @@ sc_sim_player_class_init (ScSimPlayerClass *klass)
 	gobject_class->finalize = sc_sim_player_finalize;
 
 	SC_COMPUTER_PLAYER_CLASS (klass)->analyze_moves = _sc_sim_player_analyze_moves;
-//	SC_PLAYER_CLASS (klass)->your_turn = sc_sim_player_your_turn;
+	SC_PLAYER_CLASS (klass)->your_turn = sc_sim_player_your_turn;
 
 	g_type_class_add_private (klass, sizeof (ScSimPlayerPrivate));
 }

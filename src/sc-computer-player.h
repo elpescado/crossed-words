@@ -76,6 +76,8 @@ sc_computer_player_new				(void);
 void
 sc_computer_player_save_move (ScComputerPlayer *self, ScMove *move, gint rating, ScRack *rack_leave);
 
+ScMove *
+sc_computer_player_analyze_moves (ScComputerPlayer *self);
 
 void
 sc_computer_player_clear_moves (ScComputerPlayer *self);
