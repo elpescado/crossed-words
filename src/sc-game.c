@@ -13,6 +13,7 @@
 #include "sc-board.h"
 #include "sc-game.h"
 #include "sc-dawg.h"
+#include "util.h"
 
 #define BINGO_BONUS 50
 #define DEFAULT_TIME 120
@@ -42,6 +43,8 @@ struct _ScGamePrivate
 
 	ScDawg      *dictionary;       /**< Dictionary                          */
 
+	GThread     *owner_thread;     /**< Thread that owns this game          */
+
 	gboolean disposed;
 };
 
@@ -54,6 +57,8 @@ struct _ScPlayerCtx {
 	ScRackModel *rack;             /**< Rack                                */
 };
 
+
+#define CHECK_THREAD(self) do { if (((ScGame*)self)->priv->owner_thread != g_thread_self ()) { g_printerr ("Bad thread\n"); abort (); } } while (0)
 
 
 enum {
@@ -137,6 +142,8 @@ sc_game_init (ScGame *self)
 	sc_game_load_dictionary (self);
 
 	priv->bag = sc_bag_new ();
+
+	priv->owner_thread = g_thread_self ();
 }
 
 
@@ -153,6 +160,9 @@ sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 {
 	ScGamePrivate *priv = game->priv;
 	ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
+
+	foo_assert (ctx != NULL);
+
 	g_print ("Move done (");
 	{
 		int i;
@@ -268,18 +278,21 @@ sc_game_set_player (ScGame *self, gint num, ScPlayer *player)
 {
 	ScGamePrivate *priv = self->priv;
 
-	ScPlayerCtx *ctx = g_new0 (ScPlayerCtx, 1);
-	ctx->player = g_object_ref (player);
-	ctx->rack   = sc_rack_model_new (priv->al);
-
 	if (priv->players[num]) {
 		g_object_unref (priv->players[num]->player);
 		g_free (priv->players[num]);
 	}
 
-	
-	priv->players[num] = ctx;
-	g_signal_connect (player, "move-done", G_CALLBACK(sc_game_move_done), self);
+	if (player) {	
+		ScPlayerCtx *ctx = g_new0 (ScPlayerCtx, 1);
+		ctx->player = g_object_ref (player);
+		ctx->rack   = sc_rack_model_new (priv->al);
+
+		priv->players[num] = ctx;
+		g_signal_connect (player, "move-done", G_CALLBACK(sc_game_move_done), self);
+	} else {
+		priv->players[num] = NULL;
+	}
 }
 
 
@@ -327,6 +340,7 @@ sc_game_get_ctx_by_player (ScGame *self, ScPlayer *player)
 static void
 sc_game_request_move (ScGame *self)
 {
+	CHECK_THREAD (self);
 	ScGamePrivate *priv = self->priv;
 
 	g_signal_emit_by_name (priv->players[priv->current_player]->player, "your-turn");
@@ -349,6 +363,7 @@ sc_game_fill_rack (ScGame *game, ScRackModel *rack, ScBag *bag)
 gboolean
 sc_game_check_end (ScGame *self)
 {
+	CHECK_THREAD (self);
 	ScGamePrivate *priv = self->priv;
 
 	if (priv->pass_counter == 2*priv->n_players)
@@ -372,16 +387,36 @@ sc_game_check_end (ScGame *self)
 static gboolean
 sc_game_tick (ScGame *self)
 {
+	/* Seems to be fixed */
+	CHECK_THREAD (self);
+	g_object_ref (self);
 	ScGamePrivate *priv = self->priv;
 
+	/* For debug */
+	GThread *current = g_thread_self ();
+	gint ref_count0 = ((GObject*)self)->ref_count;
+
+	if (((GObject*)self)->ref_count == 0) {
+		g_printerr ("Something very weird... ref_count = 0 (thread = %p)...\n",
+				    g_thread_self ());
+		abort ();
+	}
+	gint ref_count1 = ((GObject*)self)->ref_count;
+
 	struct _ScPlayerCtx *ctx = priv->players[priv->current_player];
+	gint ref_count2 = ((GObject*)self)->ref_count;
 
 	if (--ctx->time == 0) {
 		sc_game_end (self);
-	}	
+	} else {
+		g_signal_emit (self, signals[TICK], 0);
+	}
+	gint ref_count3 = ((GObject*)self)->ref_count;
 	//g_printerr ("%d seconds left\n", ctx->time);
-	g_signal_emit (self, signals[TICK], 0);
+	CHECK_THREAD (self);
+	gint ref_count4 = ((GObject*)self)->ref_count;
 
+	g_object_unref (self);
 	return TRUE;
 }
 
@@ -392,6 +427,7 @@ sc_game_tick (ScGame *self)
 void
 sc_game_start (ScGame *self)
 {
+	CHECK_THREAD (self);
 	ScGamePrivate *priv = self->priv;
 
 	if (priv->running)
@@ -424,7 +460,9 @@ sc_game_start (ScGame *self)
 
 	GSource *source = g_timeout_source_new (1000);
 	g_source_set_callback (source, (GSourceFunc)sc_game_tick, self, NULL);
+	foo_assert (priv->timer_id == 0);
 	priv->timer_id = g_source_attach (source, priv->loop_ctx);
+	//g_printerr ("priv->timer_id = %d\n", priv->timer_id);
 	g_source_unref (source);
 
 	sc_game_request_move (self);
@@ -437,6 +475,7 @@ sc_game_start (ScGame *self)
 void
 sc_game_end (ScGame *self)
 {
+	CHECK_THREAD (self);
 	ScGamePrivate *priv = self->priv;
 
 	if (!priv->running)
@@ -488,6 +527,12 @@ sc_game_end (ScGame *self)
 	g_signal_emit (self, signals[END], 0);
 }
 
+gboolean
+sc_game_is_running (ScGame *self)
+{
+	ScGamePrivate *priv = self->priv;
+	return priv->running;
+}
 
 
 
@@ -722,6 +767,8 @@ sc_game_restore_state (ScGame *game, ScGameState *state)
 static void
 sc_game_dispose (GObject *object)
 {
+	CHECK_THREAD (object);
+
 	ScGame *self = (ScGame*) object;
 	ScGamePrivate *priv = self->priv;
 
@@ -733,6 +780,10 @@ sc_game_dispose (GObject *object)
 	//g_printerr ("sc_game_dispose()\n");
 
 	sc_game_unload_dictionary (self);
+	g_main_context_unref (priv->loop_ctx);
+
+	sc_game_set_player (self, 0, NULL);
+	sc_game_set_player (self, 1, NULL);
 
 	priv->disposed = TRUE;
 
@@ -744,10 +795,20 @@ sc_game_dispose (GObject *object)
 static void
 sc_game_finalize (GObject *object)
 {
+	CHECK_THREAD (object);
+
+	g_printerr ("Game %p is finalizing from thread %p...\n", object, g_thread_self ());
 	ScGame *self = (ScGame*) object;
 	ScGamePrivate *priv = self->priv;
 
-	g_main_context_unref (priv->loop_ctx);
+	if (priv->timer_id != 0) {
+		g_printerr ("Hmmm... timer seems to be active\n");
+		GSource *source = g_main_context_find_source_by_id (priv->loop_ctx, priv->timer_id);
+		g_source_destroy (source);
+//		g_source_remove (priv->timer_id);
+		priv->timer_id = 0;
+	}
+
 	//g_printerr ("sc_game_finalize()\n");
 	G_OBJECT_CLASS (sc_game_parent_class)->finalize (object);
 }

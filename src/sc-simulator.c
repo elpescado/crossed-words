@@ -86,10 +86,12 @@ sc_simulator_thread (gpointer data,
 	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
 	p1->game = game;
 	sc_game_set_player (game, 0, p1);
+	g_object_unref (p1);
 
 	ScPlayer *p2 = SC_PLAYER (sc_computer_player_new ());
 	p2->game = game;
 	sc_game_set_player (game, 1, p2);
+	g_object_unref (p2);
 
 
 	int i;

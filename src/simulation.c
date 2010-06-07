@@ -15,7 +15,7 @@
 #include "sc-sim-player.h"
 
 
-#define N_SIMULATIONS 3
+#define N_SIMULATIONS 10
 #define N_PLAYERS 2
 
 int scores[N_SIMULATIONS][N_PLAYERS] = {{0}};
