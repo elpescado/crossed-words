@@ -99,6 +99,10 @@ sc_game_end (ScGame *self);
 
 
 gboolean
+sc_game_is_running (ScGame *self);
+
+
+gboolean
 sc_game_check_end (ScGame *self);
 
 

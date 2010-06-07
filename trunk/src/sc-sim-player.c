@@ -29,6 +29,8 @@ struct _ScSimPlayerPrivate
 	gint   best_move_wins;
 	ScMove best_move;
 
+	gint   min_rating;
+
 	gboolean disposed;
 };
 
@@ -67,7 +69,8 @@ sc_sim_player_init (ScSimPlayer *self)
 	self->priv = SC_SIM_PLAYER_GET_PRIVATE (self);
 	ScSimPlayerPrivate *priv = self->priv;
 	priv->disposed = FALSE;
-	priv->moves_to_consider = 2;
+	priv->moves_to_consider = 5;
+	priv->min_rating = 20;
 
 	priv->simulator = sc_simulator_new ();
 
@@ -147,37 +150,44 @@ sc_sim_player_simulation_finished (ScSimPlayer     *self,
                                    ScSimulatorTask *task)
 {
 	ScSimPlayerPrivate *priv = self->priv;
+	ScGame *game = SC_GAME (SC_PLAYER(self)->game);
 	gint avg;
 	gint wins;
 	gint rating;
 
-	sc_simulator_task_get_scores (task, &avg, &wins);
-	rating = sc_simulator_task_get_move_rating (task);
-	//hack
-	wins = avg;
+	if (sc_game_is_running (game)) {
 
-	g_printerr ("Simulation: %d %d\n", avg, wins);
+		sc_simulator_task_get_scores (task, &avg, &wins);
+		rating = sc_simulator_task_get_move_rating (task);
+		//hack
+		gint sc = avg;
 
-	/* Now, check if it's a good move */
-	if (wins < priv->best_move_wins ||
-		(wins == priv->best_move_wins && rating > priv->best_move_rating)) {
-		// Try to minimize `wins'
-		priv->best_move_wins = wins;
-		priv->best_move_rating = rating;
-		memcpy (&(priv->best_move), sc_simulator_task_get_move (task), sizeof (ScMove));
-	}
+		g_printerr ("Simulation: %d %d\n", avg, wins);
 
-	if (--priv->n_simulations_pending == 0) {
-		/* All of simulations complete */
-		g_printerr ("Done (%d)\n", priv->best_move_rating);
-		if (priv->best_move_wins != SC_INF) {
-			sc_player_do_move (SC_PLAYER (self), &(priv->best_move));
-		} else {
-			// ???
-			g_printerr ("No best move??? ");
-			sc_sim_player_what_a_terrible_failure (self);
+		/* Now, check if it's a good move */
+		if (sc < priv->best_move_wins ||
+			(sc == priv->best_move_wins && rating > priv->best_move_rating)) {
+			// Try to minimize `sc'
+			priv->best_move_wins = sc;
+			priv->best_move_rating = rating;
+			memcpy (&(priv->best_move), sc_simulator_task_get_move (task), sizeof (ScMove));
 		}
+
+		if (--priv->n_simulations_pending == 0) {
+			/* All of simulations complete */
+			g_printerr ("Done (%d)\n", priv->best_move_rating);
+			if (priv->best_move_wins != SC_INF) {
+				sc_player_do_move (SC_PLAYER (self), &(priv->best_move));
+			} else {
+				// ???
+				g_printerr ("No best move??? ");
+				sc_sim_player_what_a_terrible_failure (self);
+			}
+		}
+
 	}
+
+	g_object_unref (game);
 }
 
 
@@ -203,6 +213,7 @@ sc_sim_player_simulation_finished_proxy (ScSimulator     *sim,
 	ScPlayer *player = SC_PLAYER (user_data);
 	ScGame *game = SC_GAME (player->game);
 
+
 	void **args = (gpointer *) g_malloc (sizeof(gpointer*) * 2);
 	args[0] = user_data;
 	args[1] = sc_simulator_task_ref (task);
@@ -223,6 +234,8 @@ sc_sim_player_simulate_move (ScSimPlayer      *self,
 	ScSimPlayerPrivate *priv = self->priv;
 	ScSimulator *sim = priv->simulator;
 	ScGame *game = SC_PLAYER(self)->game;
+
+	g_object_ref (game);
 
 	priv->n_simulations_pending++;
 	priv->best_move_wins = SC_INF;
@@ -257,10 +270,13 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 	if (moves) {
 		_MoveProposal *mp0 = moves->data;
 
-		for (tmp = moves->next, i = 0; tmp && i < priv->moves_to_consider; tmp = tmp->next, i++) {
+		for (tmp = moves->next, i = 0; tmp && i+1 < priv->moves_to_consider; tmp = tmp->next, i++) {
 			_MoveProposal *mp = tmp->data;
 			
-			if (mp->move_rating < 0.85 * mp0->move_rating)
+			if (100 * mp->move_rating < 86 * mp0->move_rating)
+				break;
+
+			if (mp->move_rating < priv->min_rating)
 				break;
 		}
 
