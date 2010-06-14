@@ -15,7 +15,7 @@
 #include "sc-sim-player.h"
 
 
-#define N_SIMULATIONS 10
+#define N_SIMULATIONS 10000
 #define N_PLAYERS 2
 
 int scores[N_SIMULATIONS][N_PLAYERS] = {{0}};
@@ -138,6 +138,7 @@ game_finished (ScGame *game, gpointer data)
 	for (i = 0; i < N_PLAYERS; i++) {
 		ScPlayer *p = sc_game_get_player (game, player_n(current_sim,i));
 		int score = sc_game_get_players_score (game, p);
+		//g_printerr (" ref_count = %d\n", G_OBJECT(p)->ref_count);
 		//g_printerr ("%4d ", score);
 
 		scores[current_sim][i] = score;
@@ -190,8 +191,9 @@ static void
 setup_game (void)
 {
 	ScGame *game = sc_game_new (NULL);
+	sc_game_set_time (game, 15*60);
 
-	ScPlayer *p1 = SC_PLAYER (sc_sim_player_new ());
+	ScPlayer *p1 = SC_PLAYER (sc_computer_player_new ());
 	//ScPlayer *p1 = create_player (p1d);
 	sc_player_set_name (p1, "Ambroży");
 	p1->game = game;
@@ -201,17 +203,19 @@ setup_game (void)
 
 	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p1), TRUE);
 
-	ScPlayer *p2 = SC_PLAYER (sc_computer_player_new ());
+	ScPlayer *p2 = SC_PLAYER (sc_dumb_player_new ());
 	//ScPlayer *p2 = create_player (p2d);
 	sc_player_set_name (p2, "Barnaba");
 	p2->game = game;
 	sc_game_set_player (game, player_n(current_sim,1), p2);
 
-	sc_computer_player_set_hints (SC_COMPUTER_PLAYER (p2), player_flags[1]);
+	//sc_computer_player_set_hints (SC_COMPUTER_PLAYER (p2), player_flags[1]);
 
 	//sc_computer_player_set_hint (SC_COMPUTER_PLAYER (p2), SC_CONSIDER_RACK_LEAVE, TRUE);
 	//sc_computer_player_enable_exchange (SC_COMPUTER_PLAYER (p2), TRUE);
 
+	g_object_unref (p1);
+	g_object_unref (p2);
 
 	g_signal_connect (game, "end", G_CALLBACK (game_finished), NULL);
 	sc_game_start (game);
@@ -247,6 +251,9 @@ int main (int argc, char *argv[])
 
 	summarize ();
 	save_csv ("results.csv");
+
+	extern gint64 xxxt, xxxn;
+	g_printerr ("foo = %d (%lld)\n", (int) (xxxt / xxxn), xxxn);
 	
 	return EXIT_SUCCESS;
 }

@@ -119,6 +119,11 @@ gboolean
 sc_computer_player_get_hint (ScComputerPlayer *self,
                              ScPlayerHint      hint);
 
+void
+sc_computer_player_calculate_opponent_rack (ScComputerPlayer *self,
+                                            ScBoard          *board,
+                                            Alphabet         *al,
+                                            ScRack           *rack);
 
 
 G_END_DECLS

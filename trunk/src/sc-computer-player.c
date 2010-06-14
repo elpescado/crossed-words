@@ -31,10 +31,15 @@ struct _ScComputerPlayerPrivate
 
 	gint     hints;
 
+	gint     orv;
+
+
 	gboolean disposed;
 };
 
 
+gint64 xxxt;
+gint64 xxxn;
 
 
 typedef struct {
@@ -52,6 +57,11 @@ typedef struct {
 #define SC_COMPUTER_PLAYER_GET_PRIVATE(obj) \
 	(G_TYPE_INSTANCE_GET_PRIVATE ((obj), \
 	SC_TYPE_COMPUTER_PLAYER, ScComputerPlayerPrivate))
+
+static gint
+opponent_rack_value (ScComputerPlayer *player);
+
+
 
 
 ScComputerPlayer*
@@ -110,6 +120,24 @@ _print_word (ScPlayer *p, LID *letters, gint n_letters)
 
 
 static gint
+opponent_score (ScComputerPlayer *self)
+{
+	ScGame *game = SC_GAME (SC_PLAYER(self)->game);
+	gint n = sc_game_get_n_players (game);
+	gint i;
+
+	for (i = 0; i < n; i++) {
+		ScPlayer *p = sc_game_get_player (game, i);
+		if (p != SC_PLAYER (self)) {
+//			g_printerr ("p = %p self = %p\n", p, self);
+			return sc_game_get_players_score (game, p);
+		}
+	}	
+	return 0;
+}
+
+
+static gint
 sc_computer_player_rate_move (ScComputerPlayer *self,
                               ScMove           *move,
                               gint              rating,
@@ -138,14 +166,28 @@ sc_computer_player_rate_move (ScComputerPlayer *self,
 	}
 
 	if (sc_computer_player_get_hint (self, SC_ENDGAME_HINT)) {
-		if (sc_game_get_remaining_tiles (SC_GAME (SC_PLAYER(self)->game)) == 0) {
+		ScGame *game = SC_GAME (SC_PLAYER(self)->game);
+		if (sc_game_get_remaining_tiles (game) == 0) {
 			gint n_leave = 0;
 			gint i;
 			for (i = 0; i < 64; i++)
 				n_leave += rack_leave->letters[i];
 
-			if (n_leave == 0)
-				rating += 26;
+			//g_printerr ("Indeed, no tiles, rack_leave = %d\n", n_leave);
+			if (n_leave == 0) {
+				gint bonus = 2 * opponent_rack_value (self);
+
+				/* Check if this will win game */
+				gint my_score = sc_game_get_players_score (game, SC_PLAYER (self));
+				gint his_score = opponent_score (self);
+
+				if (my_score + rating + bonus > his_score) {
+					rating += bonus;// + 10000;
+				} else {
+					rating = 0;
+				}
+			}
+
 		}
 	}
 
@@ -607,6 +649,8 @@ _sc_computer_player_analyze_moves (ScComputerPlayer *self)
 			best_move = &(mp->move);
 		}
 	}
+	xxxt += max_score;
+	xxxn ++;
 	return best_move;
 }
 
@@ -677,10 +721,13 @@ static void
 sc_computer_player_your_turn (ScPlayer *player)
 {
 	ScComputerPlayer *self = SC_COMPUTER_PLAYER (player);
+	ScComputerPlayerPrivate *priv = self->priv;
 	ScBoard *board;
 	ScMove move;
 	ScRack rack;
 	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
+
+	priv->orv = -1;
 
 	sc_player_get_rack (SC_PLAYER (self), &rack);
 	board = sc_player_get_board (SC_PLAYER (self));
@@ -707,6 +754,77 @@ sc_computer_player_your_turn (ScPlayer *player)
 
 	/* Cleanup */
 	sc_computer_player_clear_moves (self);
+}
+
+
+static gint
+opponent_rack_value (ScComputerPlayer *player)
+{
+	ScComputerPlayerPrivate *priv = player->priv;
+
+	if (priv->orv == -1) {
+		ScRack rack;
+		ScGame *game = SC_GAME (SC_PLAYER (player)->game);
+		Alphabet *al = sc_game_get_alphabet (game);
+
+		sc_computer_player_calculate_opponent_rack (SC_COMPUTER_PLAYER (player),
+		                                            sc_game_get_board (game),
+													sc_game_get_alphabet (game),
+													&rack);
+
+		int v = 0;
+		int i;
+		for (i = 0; i < al->n_letters; i++) {
+			Letter *l = alphabet_lookup_letter (al, i);
+			if (l) {
+				v += l->value * rack.letters[i];
+			}
+		}
+
+		priv->orv = v;
+	}
+
+	return priv->orv;
+}
+
+
+void
+sc_computer_player_calculate_opponent_rack (ScComputerPlayer *self,
+                                            ScBoard          *board,
+                                            Alphabet         *al,
+                                            ScRack           *rack)
+{
+	int i, j;
+	ScRack my_rack;
+
+	sc_player_get_rack (SC_PLAYER (self), &my_rack);
+
+	rack->letters[0] = 2; // Two blanks
+
+	/* Init rack with all tiles */
+	for (i = 0; i < al->n_letters; i++) {
+		Letter *l = al->letters+i;
+		rack->letters[l->index] = l->count;
+	}
+
+	/* Subtract tiles on board */
+	for (i = 0; i < BOARD_SIZE; i++) {
+		for (j = 0; j < BOARD_SIZE; j++) {
+			LID lid = sc_board_get_lid (board, i, j);
+			if (lid != 0) {
+				if (sc_letter_is_blank (lid)) {
+					sc_rack_remove (rack, 0);
+				} else {
+					sc_rack_remove (rack, lid);
+				}
+			}
+		}
+	}
+
+	/* Subtract players rack */
+	for (i = 0; i < al->n_letters; i++) {
+		rack->letters[i] -= my_rack.letters[i];
+	}
 }
 
 
@@ -756,7 +874,9 @@ sc_computer_player_dispose (GObject *object)
 static void
 sc_computer_player_finalize (GObject *object)
 {
-	G_OBJECT_CLASS (sc_computer_player_parent_class)->finalize (object);
+	ScComputerPlayer *self = (ScComputerPlayer*) object;
+	ScComputerPlayerPrivate *priv = self->priv;
+		G_OBJECT_CLASS (sc_computer_player_parent_class)->finalize (object);
 }
 
 

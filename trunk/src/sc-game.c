@@ -155,6 +155,34 @@ sc_game_timeout_cb (ScGame *self)
 }
 
 
+gboolean
+sc_game_validate_move (ScGame *game, ScPlayer *player, ScMove *move)
+{
+	ScGamePrivate *priv = game->priv;
+	ScPlayerCtx * ctx = sc_game_get_ctx_by_player (game, player);
+
+	/* Can move be placed on board? */
+	if (! sc_board_validate_move (priv->board, move))
+		return FALSE;
+
+	/* Does player have needed tiles? */
+	LID needed_tiles[BOARD_SIZE] = {0};
+	gint n_needed_tiles = 0;
+	sc_board_get_needed_tiles (priv->board, move, needed_tiles, &n_needed_tiles);
+	if (! sc_rack_model_has_tiles (ctx->rack, needed_tiles, n_needed_tiles)) {
+		g_print ("You don't have needed tiles\n");
+		return FALSE;
+	}
+
+	if (n_needed_tiles == 0)
+		return FALSE;
+
+
+
+	return TRUE;
+}
+
+
 static gboolean
 sc_game_do_move (ScPlayer *player, ScMove *move, ScGame *game)
 {
@@ -392,29 +420,21 @@ sc_game_tick (ScGame *self)
 	g_object_ref (self);
 	ScGamePrivate *priv = self->priv;
 
-	/* For debug */
-	GThread *current = g_thread_self ();
-	gint ref_count0 = ((GObject*)self)->ref_count;
-
 	if (((GObject*)self)->ref_count == 0) {
 		g_printerr ("Something very weird... ref_count = 0 (thread = %p)...\n",
 				    g_thread_self ());
 		abort ();
 	}
-	gint ref_count1 = ((GObject*)self)->ref_count;
 
 	struct _ScPlayerCtx *ctx = priv->players[priv->current_player];
-	gint ref_count2 = ((GObject*)self)->ref_count;
+	foo_assert (ctx != NULL);
 
 	if (--ctx->time == 0) {
+		g_printerr ("Time over!\n");
 		sc_game_end (self);
 	} else {
 		g_signal_emit (self, signals[TICK], 0);
 	}
-	gint ref_count3 = ((GObject*)self)->ref_count;
-	//g_printerr ("%d seconds left\n", ctx->time);
-	CHECK_THREAD (self);
-	gint ref_count4 = ((GObject*)self)->ref_count;
 
 	g_object_unref (self);
 	return TRUE;
@@ -462,7 +482,6 @@ sc_game_start (ScGame *self)
 	g_source_set_callback (source, (GSourceFunc)sc_game_tick, self, NULL);
 	foo_assert (priv->timer_id == 0);
 	priv->timer_id = g_source_attach (source, priv->loop_ctx);
-	//g_printerr ("priv->timer_id = %d\n", priv->timer_id);
 	g_source_unref (source);
 
 	sc_game_request_move (self);
@@ -706,10 +725,11 @@ sc_game_save_state (ScGame *game, ScPlayer *player, ScMove *move)
 			gint n_tiles;
 			sc_rack_model_get_tiles (priv->players[i]->rack, tiles, &n_tiles);
 			sc_rack_assign_letters (&(state->racks[i]), tiles, n_tiles);
+
+			state->scores[i] += points;
 		}
 	}
 
-	state->scores[1] += points;
 
 	return state;
 }
@@ -735,9 +755,9 @@ sc_game_restore_state (ScGame *game, ScGameState *state)
 		int j;
 
 		struct _ScPlayerCtx *ctx = priv->players[i];
-		ctx->points = state->scores[i];
+		//ctx->points = state->scores[i];
 		ctx->bingos = 0;
-		ctx->time = 0;
+		ctx->time = 15*60;
 
 		sc_rack_to_letters (&(state->racks[i]), tiles, &n_tiles);
 		sc_rack_model_set_tiles (priv->players[i]->rack, tiles, n_tiles);
@@ -777,7 +797,6 @@ sc_game_dispose (GObject *object)
 	if (priv->disposed) {
 		return;
 	}
-	//g_printerr ("sc_game_dispose()\n");
 
 	sc_game_unload_dictionary (self);
 	g_main_context_unref (priv->loop_ctx);
@@ -797,19 +816,15 @@ sc_game_finalize (GObject *object)
 {
 	CHECK_THREAD (object);
 
-	g_printerr ("Game %p is finalizing from thread %p...\n", object, g_thread_self ());
 	ScGame *self = (ScGame*) object;
 	ScGamePrivate *priv = self->priv;
 
 	if (priv->timer_id != 0) {
-		g_printerr ("Hmmm... timer seems to be active\n");
 		GSource *source = g_main_context_find_source_by_id (priv->loop_ctx, priv->timer_id);
 		g_source_destroy (source);
-//		g_source_remove (priv->timer_id);
 		priv->timer_id = 0;
 	}
 
-	//g_printerr ("sc_game_finalize()\n");
 	G_OBJECT_CLASS (sc_game_parent_class)->finalize (object);
 }
 
