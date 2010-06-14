@@ -13,7 +13,7 @@
 
 
 #define N_PLAYERS 2
-#define N_SIMULATIONS 100
+#define N_SIMULATIONS 400
 
 //#define SC_ST
 
@@ -80,6 +80,7 @@ sc_simulator_thread (gpointer data,
 	GMainLoop *loop = g_main_loop_new (ctx, FALSE);
 
 	ScGame *game = sc_game_new (ctx);
+	sc_game_set_time (game, 15*60);
 	g_signal_connect_swapped (game, "end", G_CALLBACK(g_main_loop_quit), loop);
 	ScGameState *st = task->game_state;
 
@@ -103,16 +104,12 @@ sc_simulator_thread (gpointer data,
 
 		/* Summarize */
 		int j;
-//		g_printerr (" * ");
 		for (j = 0; j < N_PLAYERS; j++) {
 			ScPlayer *player = sc_game_get_player (game, j);
 			int score = sc_game_get_players_score (game, player);
 
 			task->scores[i][j] = score;
-
-//			g_printerr ("%4d ", score);
 		}
-//		g_printerr ("\n");
 	}
 
 	/* Count totals */
@@ -165,13 +162,13 @@ sc_simulator_run (ScSimulator    *sim,
 #ifdef SC_ST
 	sc_simulator_thread (task, sim);
 
+	/*
 	g_printerr (" scores -> %3d vs %3d = %d ", task->avg[0], task->avg[1],
 			 task->avg[0] - task->avg[1]);
-	g_printerr (" | wins -> %3d vs %3d = %d \n", task->wins[0], task->wins[1],
 			 task->wins[0] - task->wins[1]);
+	*/
 #else
 	g_thread_pool_push (sim->thread_pool, task, NULL);
-	g_printerr ("\n");
 #endif
 	
 //	sc_simulator_task_unref (task);
@@ -191,7 +188,6 @@ void
 sc_simulator_task_unref (ScSimulatorTask *task)
 {
 	if (--task->ref_count == 0) {
-		g_printerr ("Freeing task\n");
 		g_free (task);
 	}
 }

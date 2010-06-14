@@ -541,7 +541,8 @@ scx_main_window_update_move (ScxMainWindow *self)
 		gtk_label_set_text (GTK_LABEL (priv->score_label), rating_str);
 
 		scx_move_entry_set_validation_status (SCX_MOVE_ENTRY (priv->move_entry),
-				sc_board_validate_move (sc_game_get_board (priv->game), &move) ? SCX_VALID : SCX_INVALID);
+				sc_game_validate_move (priv->game, sc_game_get_current_player (priv->game), &move) ? SCX_VALID : SCX_INVALID);
+				//sc_board_validate_move (sc_game_get_board (priv->game), &move) ? SCX_VALID : SCX_INVALID);
 	}
 }
 

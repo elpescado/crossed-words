@@ -53,15 +53,6 @@ sc_sim_player_new (void)
 }
 
 
-static gpointer
-worker_thread (gpointer data)
-{
-	GMainContext *ctx = g_main_context_new ();
-	GMainLoop *loop = g_main_loop_new (ctx, FALSE);
-
-	g_main_loop_run (loop);
-}
-
 
 static void
 sc_sim_player_init (ScSimPlayer *self)
@@ -93,52 +84,39 @@ sc_sim_player_init (ScSimPlayer *self)
 
 
 static void
-sc_sim_player_calculate_opponent_rack (ScSimPlayer      *self,
-                                       ScBoard          *board,
-                                       Alphabet         *al,
-                                       ScRack           *rack)
-{
-	int i, j;
-	ScRack my_rack;
-
-	sc_player_get_rack (SC_PLAYER (self), &my_rack);
-
-	rack->letters[0] = 2; // Two blanks
-
-	/* Init rack with all tiles */
-	for (i = 0; i < al->n_letters; i++) {
-		Letter *l = al->letters+i;
-		rack->letters[l->index] = l->count;
-	}
-
-	/* Subtract tiles on board */
-	for (i = 0; i < BOARD_SIZE; i++) {
-		for (j = 0; j < BOARD_SIZE; j++) {
-			LID lid = sc_board_get_lid (board, i, j);
-			if (lid != 0) {
-				if (sc_letter_is_blank (lid)) {
-					sc_rack_remove (rack, 0);
-				} else {
-					sc_rack_remove (rack, lid);
-				}
-			}
-		}
-	}
-
-	/* Subtract players rack */
-	for (i = 0; i < al->n_letters; i++) {
-		rack->letters[i] -= my_rack.letters[i];
-	}
-}
-
-static void
 sc_sim_player_what_a_terrible_failure (ScSimPlayer *self)
 {
-	g_printerr ("What a terrible failure\n");
+//	ScMove move;
+//	move.type = SC_MOVE_TYPE_PASS;
+//	sc_player_do_move (SC_PLAYER (self), &move);
 
-	ScMove move;
-	move.type = SC_MOVE_TYPE_PASS;
-	sc_player_do_move (SC_PLAYER (self), &move);
+	// call ScComputerPlayer::analyze_moves
+	ScSimPlayerClass *sim;
+	ScComputerPlayerClass *comp;
+
+	sim = SC_SIM_PLAYER_GET_CLASS (self);
+	comp = g_type_class_peek_parent (sim);
+
+	ScMove *m_move = comp->analyze_moves (SC_COMPUTER_PLAYER (self));
+	if (m_move && sc_player_do_move (SC_PLAYER (self), m_move)) {
+	} else {
+		ScMove move;
+		if (sc_computer_player_exchange_enabled (SC_COMPUTER_PLAYER (self))) {
+			move.type = SC_MOVE_TYPE_EXCHANGE;
+
+			ScRack rack;
+			sc_player_get_rack (SC_PLAYER (self), &rack);
+			sc_rack_to_letters (&rack, move.letters, &(move.n_letters));
+			
+			if (sc_game_get_remaining_tiles (SC_GAME (SC_PLAYER(self)->game)) < 8)
+				move.type = SC_MOVE_TYPE_PASS;
+
+		} else {
+			move.type = SC_MOVE_TYPE_PASS;
+		}
+		sc_player_do_move (SC_PLAYER (self), &move);
+	}
+
 }
 
 
@@ -160,9 +138,7 @@ sc_sim_player_simulation_finished (ScSimPlayer     *self,
 		sc_simulator_task_get_scores (task, &avg, &wins);
 		rating = sc_simulator_task_get_move_rating (task);
 		//hack
-		gint sc = avg;
-
-		g_printerr ("Simulation: %d %d\n", avg, wins);
+		gint sc = wins;
 
 		/* Now, check if it's a good move */
 		if (sc < priv->best_move_wins ||
@@ -175,12 +151,9 @@ sc_sim_player_simulation_finished (ScSimPlayer     *self,
 
 		if (--priv->n_simulations_pending == 0) {
 			/* All of simulations complete */
-			g_printerr ("Done (%d)\n", priv->best_move_rating);
 			if (priv->best_move_wins != SC_INF) {
 				sc_player_do_move (SC_PLAYER (self), &(priv->best_move));
 			} else {
-				// ???
-				g_printerr ("No best move??? ");
 				sc_sim_player_what_a_terrible_failure (self);
 			}
 		}
@@ -257,8 +230,6 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 	ScSimPlayer *self = SC_SIM_PLAYER (cp);
 	ScSimPlayerPrivate *priv = self->priv;
 
-	gint max_score = 0;
-	ScMove *best_move = NULL;
 	GList *tmp;
 	gint i;
 
@@ -281,12 +252,11 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 		}
 
 		gint n_moves = i + 1;
-		g_printerr ("Moves worth considering: %d\n", n_moves);
+		g_print ("Moves worth considering: %d\n", n_moves);
 
 		if (n_moves > 1) {
 			for (tmp = moves, i = 0; tmp && i < n_moves; tmp = tmp->next, i++) {
 				_MoveProposal *mp = tmp->data;
-				g_printerr ("best(%d):  ", mp->move_rating);
 
 				sc_sim_player_simulate_move (self, &(mp->move), mp->move_rating);
 			}
@@ -296,8 +266,6 @@ _sc_sim_player_analyze_moves (ScComputerPlayer *cp)
 		}
 
 	} else {
-		// what to do???
-		g_printerr ("No moves at all??? ");
 		sc_sim_player_what_a_terrible_failure (self);
 	}
 
@@ -312,9 +280,7 @@ sc_sim_player_your_turn (ScPlayer *player)
 {
 	ScComputerPlayer *self = SC_COMPUTER_PLAYER (player);
 	ScBoard *board;
-	ScMove move;
 	ScRack rack;
-	Alphabet *al = sc_game_get_alphabet (SC_GAME (SC_PLAYER(self)->game));
 
 	sc_player_get_rack (SC_PLAYER (self), &rack);
 	board = sc_player_get_board (SC_PLAYER (self));
