@@ -1,10 +1,9 @@
+include ../Makefile.inc
 CC=colorgcc
 REFERENCES=gtk+-2.0 gthread-2.0
 PROFILE=
-CFLAGS=$(PROFILE) -O0  -mtune=native -march=native -std=c99 -Wall `pkg-config --cflags $(REFERENCES)` -g -DSTM_POSIX -fno-strict-aliasing
-#LIBS=-Wall -dynamic `curl-config --libs` -dynamic `pkg-config --libs $(REFERENCES)` -g
-#STATIC_LIBS=`curl-config --static-libs`
-LIBS=-g $(PROFILE) -Wall   `pkg-config --libs $(REFERENCES)`  $(STATIC_LIBS) -pthread
+CFLAGS=$(PROFILE) -O0  -mtune=native -march=native -std=c99 -Wall $(UC_CFLAGS) -g  -fno-strict-aliasing
+LIBS=-g $(PROFILE) -Wall $(UC_LDFLAGS)  $(STATIC_LIBS) -pthread
 
 PACKAGE=scrabble
 REVISION=$(shell LANG=C svn info | egrep ^Revision: | cut -d ' ' -f 2)
