@@ -1,0 +1,1 @@
+A SCRABBLE playing program developed as a part of MSc thesis. Includes a GTK+ GUI.
